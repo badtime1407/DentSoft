@@ -1,10 +1,18 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    // Google Login
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+
+    // Email/Username Login
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -14,7 +22,6 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.identifier || !credentials?.password) return null
 
-        // ค้นหาจาก email หรือ username
         const user = await prisma.user.findFirst({
           where: {
             OR: [
@@ -38,10 +45,40 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      // กรณี Login ผ่าน Google
+      if (account?.provider === 'google') {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email! },
+        })
+
+        if (!existingUser) {
+          // สร้าง User ใหม่อัตโนมัติถ้ายังไม่มี
+          await prisma.user.create({
+            data: {
+              email: user.email!,
+              username: user.email!.split('@')[0],
+              password: '',
+              role: 'PATIENT',
+              patient: {
+                create: {
+                  firstName: user.name?.split(' ')[0] || '',
+                  lastName: user.name?.split(' ')[1] || '',
+                },
+              },
+            },
+          })
+        }
+      }
+      return true
+    },
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role
-        token.id = user.id
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email! },
+        })
+        token.role = dbUser?.role
+        token.id = dbUser?.id
       }
       return token
     },
