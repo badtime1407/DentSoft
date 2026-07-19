@@ -1,0 +1,40 @@
+import { withAuth } from 'next-auth/middleware'
+import { NextResponse } from 'next/server'
+
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token
+    const pathname = req.nextUrl.pathname
+    const role = token?.role as string
+
+    // ถ้าเข้า /admin แต่ไม่ใช่ ADMIN → redirect
+    if (pathname.startsWith('/admin') && role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+
+    // ถ้าเข้า /dentist แต่ไม่ใช่ DENTIST → redirect
+    if (pathname.startsWith('/dentist') && role !== 'DENTIST') {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+
+    // ถ้าเข้า /patient แต่ไม่ใช่ PATIENT → redirect
+    if (pathname.startsWith('/patient') && role !== 'PATIENT') {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+
+    return NextResponse.next()
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+  }
+)
+
+export const config = {
+  matcher: [
+    '/admin/:path*',
+    '/dentist/:path*',
+    '/patient/:path*',
+  ],
+}

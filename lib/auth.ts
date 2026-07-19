@@ -1,6 +1,7 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
+import FacebookProvider from 'next-auth/providers/facebook'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
@@ -10,6 +11,12 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+
+    // Facebook Login
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
     }),
 
     // Email/Username Login
@@ -46,42 +53,44 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account }) {
-      // กรณี Login ผ่าน Google
-      if (account?.provider === 'google') {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        })
+    if (account?.provider === 'google' || account?.provider === 'facebook') {
+      
+      // เช็คว่ามี email ไหม ถ้าไม่มีให้ข้ามไป
+      if (!user.email) return true
 
-        if (!existingUser) {
-          // สร้าง User ใหม่อัตโนมัติถ้ายังไม่มี
-          await prisma.user.create({
-            data: {
-              email: user.email!,
-              username: user.email!.split('@')[0],
-              password: '',
-              role: 'PATIENT',
-              patient: {
-                create: {
-                  firstName: user.name?.split(' ')[0] || '',
-                  lastName: user.name?.split(' ')[1] || '',
-                },
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      })
+
+      if (!existingUser) {
+        await prisma.user.create({
+          data: {
+            email: user.email,
+            username: user.email.split('@')[0],
+            password: '',
+            role: 'PATIENT',
+            patient: {
+              create: {
+                firstName: user.name?.split(' ')[0] || '',
+                lastName: user.name?.split(' ')[1] || '',
               },
             },
-          })
-        }
-      }
-      return true
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email! },
+          },
         })
-        token.role = dbUser?.role
-        token.id = dbUser?.id
       }
-      return token
-    },
+    }
+    return true
+  },
+    async jwt({ token, user }) {
+    if (user?.email) {
+      const dbUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      })
+      token.role = dbUser?.role
+      token.id = dbUser?.id
+    }
+    return token
+  },
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).role = token.role
