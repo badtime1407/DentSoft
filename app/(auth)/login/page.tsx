@@ -12,21 +12,31 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async () => {
-    setLoading(true)
-    setError('')
+  setLoading(true)
+  setError('')
 
-    const res = await signIn('credentials', {
-      identifier,
-      password,
-      redirect: false,
-    })
+  const res = await signIn('credentials', {
+    identifier,
+    password,
+    redirect: false,
+  })
 
-    setLoading(false)
+  setLoading(false)
 
-    if (res?.error) {
+  if (res?.error) {
       setError('Email/Username หรือรหัสผ่านไม่ถูกต้อง')
     } else {
-      router.push('/dashboard')
+      // ดึง session เพื่อเช็ค role
+      const session = await fetch('/api/auth/session').then((r) => r.json())
+      const role = session?.user?.role
+
+      if (role === 'ADMIN') {
+        router.push('/admin/dashboard')
+      } else if (role === 'DENTIST') {
+        router.push('/dentist/dashboard')
+      } else {
+      router.push('/patient/dashboard')
+      }
     }
   }
 
@@ -75,7 +85,7 @@ export default function LoginPage() {
 
         {/* ปุ่ม Google */}
         <button
-          onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+          onClick={() => signIn('google', { callbackUrl: '/api/auth/callback-redirect' })}
           className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -89,7 +99,7 @@ export default function LoginPage() {
 
         {/* ปุ่ม Facebook */}
         <button
-          onClick={() => signIn('facebook', { callbackUrl: '/dashboard' })}
+          onClick={() => signIn('facebook', { callbackUrl: '/api/auth/callback-redirect' })}
           className="w-full bg-[#1877F2] text-white py-2 rounded-lg hover:bg-[#166FE5] transition flex items-center justify-center gap-2 mt-2"
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
