@@ -86,18 +86,18 @@ DENTSOFT/
 - [x] Middleware ควบคุมสิทธิ์ (ปิดชั่วคราวเพื่อทำ Frontend)
 - [x] Landing Page (Demo) — ยังต้องปรับแต่งเพิ่ม
 - [x] หน้า Login, Register, Forgot Password, Reset Password
-- [x] Admin Dashboard (Mock Data)
+- [x] Admin Frontend ครบทุกหน้า (Mock Data) — Dashboard, Appointments, Patients, Dentists, Reports (branch `ui/admin`)
 
 ---
 
 ## 🔲 สิ่งที่ต้องทำต่อ (Frontend)
 
-### Admin — branch `ui/admin`
+### Admin — branch `ui/admin` (เสร็จแล้วทั้งหมด ✅)
 - [x] `app/admin/dashboard/page.tsx` — ภาพรวมระบบ สถิติ
-- [ ] `app/admin/appointments/page.tsx` — จัดการนัดหมาย
-- [ ] `app/admin/patients/page.tsx` — รายชื่อคนไข้
-- [ ] `app/admin/dentists/page.tsx` — จัดการทันตแพทย์
-- [ ] `app/admin/reports/page.tsx` — รายงานสถิติ
+- [x] `app/admin/appointments/page.tsx` — จัดการนัดหมาย
+- [x] `app/admin/patients/page.tsx` — รายชื่อคนไข้
+- [x] `app/admin/dentists/page.tsx` — จัดการทันตแพทย์
+- [x] `app/admin/reports/page.tsx` — รายงานสถิติ
 
 ### Dentist — branch `ui/dentist`
 - [ ] `app/dentist/dashboard/page.tsx` — ภาพรวมนัดหมายวันนี้
