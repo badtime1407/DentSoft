@@ -5,9 +5,8 @@ import { PageHeader } from '@/components/admin/PageHeader'
 import { StatCard } from '@/components/admin/StatCard'
 import { RevenueTrendChart } from '@/components/admin/RevenueTrendChart'
 import { VisitsStatusChart } from '@/components/admin/VisitsStatusChart'
-import { RankedBarChart } from '@/components/admin/RankedBarChart'
 import { IconWallet, IconCalendar, IconCheckCircle, IconXCircle } from '@/components/admin/icons'
-import { buildDailyStats, buildRevenueByService, buildBookingsByDentist } from './mock-reports'
+import { buildDailyStats } from './mock-reports'
 import { focusRing } from '@/lib/admin/focus-ring'
 
 const rangeOptions = [
@@ -38,9 +37,6 @@ export default function AdminReports() {
       completed,
     }
   }, [dailyStats])
-
-  const revenueByService = useMemo(() => buildRevenueByService(totals.revenue), [totals.revenue])
-  const bookingsByDentist = useMemo(() => buildBookingsByDentist(totals.completed), [totals.completed])
 
   return (
     <>
@@ -83,20 +79,6 @@ export default function AdminReports() {
           <h2 className="font-semibold text-gray-900">คิวเสร็จสิ้น / ยกเลิก</h2>
           <p className="text-xs text-gray-400 mt-0.5 mb-4">Visits by status</p>
           <VisitsStatusChart data={dailyStats} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-semibold text-gray-900">รายได้ตามบริการ</h2>
-          <p className="text-xs text-gray-400 mt-0.5 mb-4">Revenue by service</p>
-          <RankedBarChart items={revenueByService} formatValue={(v) => `฿${v.toLocaleString()}`} />
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-semibold text-gray-900">จำนวนคิวตามทันตแพทย์</h2>
-          <p className="text-xs text-gray-400 mt-0.5 mb-4">Bookings by dentist</p>
-          <RankedBarChart items={bookingsByDentist} color="#0d9488" formatValue={(v) => `${v} คิว`} />
         </div>
       </div>
 
