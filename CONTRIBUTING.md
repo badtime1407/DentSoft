@@ -87,6 +87,7 @@ DENTSOFT/
 - [x] Landing Page (Demo) — ยังต้องปรับแต่งเพิ่ม
 - [x] หน้า Login, Register, Forgot Password, Reset Password
 - [x] Admin Frontend ครบทุกหน้า (Mock Data) — Dashboard, Appointments, Patients, Dentists, Reports (branch `ui/admin`)
+- [x] Dentist Frontend ครบทุกหน้า (Mock Data) — Dashboard, Appointments (ปฏิทิน), Treatment (branch `ui/dentist`)
 
 ---
 
@@ -99,10 +100,10 @@ DENTSOFT/
 - [x] `app/admin/dentists/page.tsx` — จัดการทันตแพทย์
 - [x] `app/admin/reports/page.tsx` — รายงานสถิติ
 
-### Dentist — branch `ui/dentist`
-- [ ] `app/dentist/dashboard/page.tsx` — ภาพรวมนัดหมายวันนี้
-- [ ] `app/dentist/appointments/page.tsx` — รายการนัดหมาย
-- [ ] `app/dentist/treatment/page.tsx` — บันทึกการรักษา
+### Dentist — branch `ui/dentist` (เสร็จแล้วทั้งหมด ✅)
+- [x] `app/dentist/dashboard/page.tsx` — ภาพรวมนัดหมายวันนี้
+- [x] `app/dentist/appointments/page.tsx` — ปฏิทินนัดหมาย + ตารางรายวัน
+- [x] `app/dentist/treatment/page.tsx` — บันทึกการรักษา
 
 ### Patient — branch `ui/patient`
 - [ ] `app/patient/dashboard/page.tsx` — หน้าหลักคนไข้
