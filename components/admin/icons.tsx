@@ -205,3 +205,22 @@ export function IconPhone({ className = '' }: { className?: string }) {
     </svg>
   )
 }
+
+export function IconBell({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...stroke}>
+      <path d="M6 9.5a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6.5H4c.5-1 2-2.5 2-6.5Z" />
+      <path d="M10 19.5a2 2 0 0 0 4 0" />
+    </svg>
+  )
+}
+
+export function IconAlertTriangle({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...stroke}>
+      <path d="M12 4 2.5 20.5h19L12 4Z" />
+      <path d="M12 10v4.2" />
+      <circle cx="12" cy="17.3" r="0.15" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}

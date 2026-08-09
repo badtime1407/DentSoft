@@ -1,12 +1,14 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { PageHeader } from '@/components/admin/PageHeader'
 import { SearchBar } from '@/components/admin/SearchBar'
 import { StatusBadge, type StatusTone } from '@/components/admin/StatusBadge'
 import { StatCard } from '@/components/admin/StatCard'
 import { AppointmentScheduleBoard } from '@/components/admin/AppointmentScheduleBoard'
 import { AppointmentDrawer, type AppointmentFormValues } from '@/components/admin/AppointmentDrawer'
+import { useCancelRequests } from '@/components/admin/CancelRequestsProvider'
 import { IconCalendar, IconClock, IconXCircle, IconChevronLeft, IconChevronRight, IconPlus } from '@/components/admin/icons'
 import { dentists, services } from '@/app/admin/_mock/reference'
 import { addDays, buildMockAppointments, toISODate, type BookingStatus, type ScheduleAppointment } from './mock-appointments'
@@ -40,6 +42,10 @@ type DrawerState =
   | { open: true; mode: 'edit'; appointment: ScheduleAppointment }
 
 export default function AdminAppointments() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { requests, resolveRequestByAppointment } = useCancelRequests()
+
   const [appointments, setAppointments] = useState<ScheduleAppointment[]>(() => buildMockAppointments())
   const [weekOffset, setWeekOffset] = useState(0)
   const [selectedDate, setSelectedDate] = useState(() => toISODate(new Date()))
@@ -51,6 +57,24 @@ export default function AdminAppointments() {
 
   const serviceNameById = useMemo(() => Object.fromEntries(services.map((s) => [s.id, s.name])), [])
   const dentistNameById = useMemo(() => Object.fromEntries(dentists.map((d) => [d.id, d.name])), [])
+
+  useEffect(() => {
+    const requestId = searchParams.get('requestId')
+    if (!requestId) return
+    const appointment = appointments.find((a) => a.id === requestId)
+    if (appointment) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reacting to an external navigation signal (notification click), not derivable render state
+      setSelectedDate(appointment.date)
+      setDrawer({ open: true, mode: 'edit', appointment })
+    }
+    router.replace('/admin/appointments')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  const activeCancelReason =
+    drawer.open && drawer.mode === 'edit'
+      ? requests.find((r) => r.appointmentId === drawer.appointment.id)?.reason
+      : undefined
 
   const weekDates = useMemo(() => {
     const start = startOfWeek(addDays(new Date(), weekOffset * 7))
@@ -93,6 +117,7 @@ export default function AdminAppointments() {
 
   function cancelAppointment(id: string) {
     setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'CANCELLED' } : a)))
+    resolveRequestByAppointment(id)
     setDrawer({ open: false })
   }
 
@@ -107,6 +132,7 @@ export default function AdminAppointments() {
             : a
         )
       )
+      resolveRequestByAppointment(id)
     } else {
       setAppointments((prev) => [
         ...prev,
@@ -382,6 +408,7 @@ export default function AdminAppointments() {
         appointment={drawer.open && drawer.mode === 'edit' ? drawer.appointment : undefined}
         defaults={drawer.open && drawer.mode === 'create' ? drawer.defaults : { date: selectedDate }}
         allDentists={dentists}
+        cancelRequestReason={activeCancelReason}
         onClose={() => setDrawer({ open: false })}
         onSubmit={handleSubmit}
         onConfirm={

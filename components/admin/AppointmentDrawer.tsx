@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { dentistsForService, services, type ReferenceDentist } from '@/app/admin/_mock/reference'
 import type { ScheduleAppointment } from '@/app/admin/appointments/mock-appointments'
-import { IconX } from './icons'
+import { IconX, IconAlertTriangle } from './icons'
 import { focusRing } from '@/lib/admin/focus-ring'
 
 export type AppointmentFormValues = {
@@ -25,6 +25,7 @@ export function AppointmentDrawer({
   appointment,
   defaults,
   allDentists,
+  cancelRequestReason,
   onClose,
   onSubmit,
   onConfirm,
@@ -35,6 +36,7 @@ export function AppointmentDrawer({
   appointment?: ScheduleAppointment
   defaults?: { date: string; dentistId?: string; startTime?: string }
   allDentists: ReferenceDentist[]
+  cancelRequestReason?: string
   onClose: () => void
   onSubmit: (values: AppointmentFormValues) => void
   onConfirm?: () => void
@@ -105,6 +107,16 @@ export function AppointmentDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          {cancelRequestReason && (
+            <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 rounded-xl px-3.5 py-3">
+              <IconAlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-rose-800">คนไข้ขอยกเลิกนัดหมายนี้</p>
+                <p className="text-xs text-rose-600 mt-0.5">เหตุผล: {cancelRequestReason}</p>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <label className={labelClass}>ชื่อคนไข้</label>
