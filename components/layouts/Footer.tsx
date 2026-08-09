@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
 
 const columns = [
   {
@@ -23,14 +24,7 @@ export default function Footer() {
     <footer id="footer" className="bg-white border-t border-gray-100">
       <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-10">
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3.5c-1.6 0-2.4.9-3.6.9-1.9 0-3.4 1.7-3.4 4.3 0 2.4.6 4.8 1.4 6.8.6 1.5 1 3.5 2.2 3.5.9 0 .9-2.3 1.6-3.7.4-.8.8-1.3 1.8-1.3s1.4.5 1.8 1.3c.7 1.4.7 3.7 1.6 3.7 1.2 0 1.6-2 2.2-3.5.8-2 1.4-4.4 1.4-6.8 0-2.6-1.5-4.3-3.4-4.3-1.2 0-2-.9-3.6-.9Z" />
-              </svg>
-            </div>
-            <span className="font-bold text-gray-900">DentSoft</span>
-          </div>
+          <Logo size="sm" className="mb-3" />
           <p className="text-sm text-gray-400 leading-relaxed">
             ระบบบริหารจัดการคลินิกทันตกรรม ครบวงจรสำหรับคนไข้และทีมงาน
           </p>
