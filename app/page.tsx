@@ -1,27 +1,25 @@
 import Navbar from '@/components/layouts/Navbar'
 import Footer from '@/components/layouts/Footer'
 import HeroSection from '@/components/ui/HeroSection'
-import FeaturesSection from '@/components/ui/FeaturesSection'
-import AboutSection from '@/components/ui/AboutSection'
-import TeamSection from '@/components/ui/TeamSection'
+import StepsSection from '@/components/ui/StepsSection'
 import Link from 'next/link'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div id="top" className="min-h-screen bg-white font-sans">
       <Navbar />
       <HeroSection />
-      <FeaturesSection />
-      <AboutSection />
-      <TeamSection />
+      <StepsSection />
 
-      {/* CTA Section */}
-      <section className="bg-blue-600 text-white text-center py-16 px-8">
-        <h2 className="text-3xl font-bold mb-4">Ready for your best smile?</h2>
-        <p className="text-blue-100 mb-8">รับบริการทันตกรรมคุณภาพจากทีมผู้เชี่ยวชาญของเรา</p>
-        <Link href="/register" className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
-          จองนัดหมายแรก
-        </Link>
+      {/* CTA */}
+      <section className="px-6 py-4">
+        <div className="max-w-4xl mx-auto bg-blue-600 rounded-3xl text-center py-14 px-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">พร้อมดูแลสุขภาพช่องปากของคุณแล้วหรือยัง?</h2>
+          <p className="text-blue-100 mb-8">สมัครสมาชิกวันนี้ เริ่มต้นดูแลรอยยิ้มของคุณไปกับเรา</p>
+          <Link href="/register" className="inline-block px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
+            สมัครสมาชิกวันนี้
+          </Link>
+        </div>
       </section>
 
       <Footer />
