@@ -25,7 +25,7 @@ export function AdminHeader() {
 
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer">
-          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-sm font-semibold">A</div>
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-sm font-semibold">A</div>
           <div className="hidden sm:block min-w-0">
             <p className="text-sm font-medium text-gray-900 leading-none truncate">Admin</p>
             <p className="text-xs text-gray-400 mt-0.5 truncate">ผู้ดูแลระบบ</p>

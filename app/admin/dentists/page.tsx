@@ -48,7 +48,7 @@ export default function AdminDentists() {
           <button
             type="button"
             onClick={() => setDrawer({ open: true, mode: 'create' })}
-            className={`flex items-center gap-2 px-3.5 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 ${focusRing}`}
+            className={`flex items-center gap-2 px-3.5 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
           >
             <IconPlus className="w-4 h-4" />
             เพิ่มทันตแพทย์
@@ -69,7 +69,7 @@ export default function AdminDentists() {
             <div key={d.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-semibold shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-semibold shrink-0">
                     {d.name.split(' ')[1]?.charAt(0) ?? d.name.charAt(0)}
                   </div>
                   <div className="min-w-0">
@@ -95,7 +95,7 @@ export default function AdminDentists() {
                         key={dayIdx}
                         title={day.active ? `${day.startTime} - ${day.endTime}` : 'วันหยุด'}
                         className={`flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-[11px] font-medium ${
-                          day.active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-50 text-gray-300'
+                          day.active ? 'bg-blue-50 text-blue-700' : 'bg-gray-50 text-gray-300'
                         }`}
                       >
                         <span>{dayShortLabels[dayOrder.indexOf(dayIdx)]}</span>
@@ -117,7 +117,7 @@ export default function AdminDentists() {
               <button
                 type="button"
                 onClick={() => setDrawer({ open: true, mode: 'edit', dentist: d })}
-                className={`mt-auto text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 text-xs font-medium transition px-2.5 py-2 rounded-md self-start ${focusRing}`}
+                className={`mt-auto text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2.5 py-2 rounded-md self-start ${focusRing}`}
               >
                 แก้ไขข้อมูล / เวลาทำงาน
               </button>

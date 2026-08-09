@@ -12,7 +12,7 @@ function formatShortDate(iso: string): string {
 
 export function RevenueTrendChart({
   data,
-  color = '#059669',
+  color = '#2563eb',
 }: {
   data: { date: string; value: number }[]
   color?: string

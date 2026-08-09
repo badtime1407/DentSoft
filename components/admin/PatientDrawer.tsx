@@ -14,7 +14,7 @@ export type PatientFormValues = {
   allergyNote: string
 }
 
-const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 transition-all ${focusRing}`
+const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 
 const emptyValues: PatientFormValues = { firstName: '', lastName: '', phone: '', birthDate: '', allergyNote: '' }
@@ -95,7 +95,7 @@ export function PatientDrawer({
               </div>
               <Link
                 href="/admin/appointments"
-                className={`flex items-center justify-center gap-2 mt-2 px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:border-emerald-300 hover:text-emerald-700 transition-all ${focusRing}`}
+                className={`flex items-center justify-center gap-2 mt-2 px-3.5 py-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 hover:border-blue-300 hover:text-blue-700 transition-all ${focusRing}`}
               >
                 <IconCalendarPlus className="w-3.5 h-3.5" />
                 จองนัดหมาย

@@ -13,7 +13,7 @@ const BOARD_HEIGHT = SLOT_COUNT * ROW_HEIGHT
 const blockTone: Record<BookingStatus, string> = {
   PENDING: 'bg-amber-100 border border-amber-300 text-amber-800',
   CONFIRMED: 'bg-sky-100 border border-sky-300 text-sky-800',
-  COMPLETED: 'bg-emerald-100 border border-emerald-300 text-emerald-800',
+  COMPLETED: 'bg-blue-100 border border-blue-300 text-blue-800',
   CANCELLED: 'bg-rose-50 border border-rose-200 text-rose-400 line-through',
 }
 

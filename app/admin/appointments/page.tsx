@@ -15,7 +15,7 @@ import { focusRing } from '@/lib/admin/focus-ring'
 const statusConfig: Record<BookingStatus, { label: string; tone: StatusTone }> = {
   PENDING: { label: 'รอยืนยัน', tone: 'amber' },
   CONFIRMED: { label: 'ยืนยันแล้ว', tone: 'sky' },
-  COMPLETED: { label: 'เสร็จสิ้น', tone: 'emerald' },
+  COMPLETED: { label: 'เสร็จสิ้น', tone: 'blue' },
   CANCELLED: { label: 'ยกเลิก', tone: 'rose' },
 }
 
@@ -131,7 +131,7 @@ export default function AdminAppointments() {
           <button
             type="button"
             onClick={() => setDrawer({ open: true, mode: 'create', defaults: { date: selectedDate } })}
-            className={`flex items-center gap-2 px-3.5 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 ${focusRing}`}
+            className={`flex items-center gap-2 px-3.5 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
           >
             <IconPlus className="w-4 h-4" />
             เพิ่มนัดหมาย
@@ -160,12 +160,12 @@ export default function AdminAppointments() {
                 type="button"
                 onClick={() => setSelectedDate(iso)}
                 className={`flex flex-col items-center gap-0.5 py-2 rounded-xl text-sm transition-all ${focusRing} ${
-                  active ? 'bg-emerald-600 text-white font-medium shadow-sm shadow-emerald-200' : 'text-gray-600 hover:bg-gray-50'
+                  active ? 'bg-blue-600 text-white font-medium shadow-sm shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                <span className={`text-[11px] ${active ? 'text-emerald-50' : 'text-gray-400'}`}>{dayLabels[date.getDay()]}</span>
+                <span className={`text-[11px] ${active ? 'text-blue-50' : 'text-gray-400'}`}>{dayLabels[date.getDay()]}</span>
                 <span className="tabular-nums">{date.getDate()}</span>
-                <span className={`w-1 h-1 rounded-full ${hasBookings ? (active ? 'bg-white' : 'bg-emerald-500') : 'bg-transparent'}`} />
+                <span className={`w-1 h-1 rounded-full ${hasBookings ? (active ? 'bg-white' : 'bg-blue-500') : 'bg-transparent'}`} />
               </button>
             )
           })}
@@ -213,7 +213,7 @@ export default function AdminAppointments() {
                   <button
                     type="button"
                     onClick={() => confirmAppointment(a.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition ${focusRing}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition ${focusRing}`}
                   >
                     ยืนยัน
                   </button>
@@ -245,7 +245,7 @@ export default function AdminAppointments() {
                   type="button"
                   onClick={() => setViewMode('board')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                    viewMode === 'board' ? 'bg-emerald-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                    viewMode === 'board' ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                   }`}
                 >
                   ตารางเวลา
@@ -254,7 +254,7 @@ export default function AdminAppointments() {
                   type="button"
                   onClick={() => setViewMode('agenda')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                    viewMode === 'agenda' ? 'bg-emerald-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                    viewMode === 'agenda' ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                   }`}
                 >
                   รายการ
@@ -299,7 +299,7 @@ export default function AdminAppointments() {
                             <button
                               type="button"
                               onClick={() => setDrawer({ open: true, mode: 'edit', appointment: a })}
-                              className={`text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
+                              className={`text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
                             >
                               แก้ไข
                             </button>
@@ -339,7 +339,7 @@ export default function AdminAppointments() {
                   type="button"
                   onClick={() => setStatusFilter(tab.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                    statusFilter === tab.id ? 'bg-emerald-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                    statusFilter === tab.id ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                   }`}
                 >
                   {tab.label}

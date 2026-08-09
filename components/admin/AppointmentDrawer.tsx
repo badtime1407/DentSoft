@@ -16,7 +16,7 @@ export type AppointmentFormValues = {
   note: string
 }
 
-const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 transition-all ${focusRing}`
+const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 
 export function AppointmentDrawer({
@@ -159,7 +159,7 @@ export function AppointmentDrawer({
             <button
               type="button"
               onClick={onConfirm}
-              className={`w-full px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 ${focusRing}`}
+              className={`w-full px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
             >
               ยืนยันนัดหมาย
             </button>

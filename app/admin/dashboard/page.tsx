@@ -87,14 +87,14 @@ const initialActivities: Activity[] = [
 const statusConfig: Record<AppointmentStatus, { label: string; tone: StatusTone }> = {
   CONFIRMED: { label: 'ยืนยันแล้ว', tone: 'sky' },
   WAITING: { label: 'รอคิว', tone: 'amber' },
-  IN_TREATMENT: { label: 'กำลังรักษา', tone: 'teal' },
-  COMPLETED: { label: 'เสร็จสิ้น', tone: 'emerald' },
+  IN_TREATMENT: { label: 'กำลังรักษา', tone: 'cyan' },
+  COMPLETED: { label: 'เสร็จสิ้น', tone: 'blue' },
   CANCELLED: { label: 'ยกเลิก', tone: 'rose' },
 }
 
 const dentistStatusConfig: Record<DentistStatus, { label: string; dot: string; text: string }> = {
-  AVAILABLE: { label: 'ว่าง', dot: 'bg-emerald-500', text: 'text-emerald-700' },
-  WITH_PATIENT: { label: 'กำลังตรวจ', dot: 'bg-teal-500', text: 'text-teal-700' },
+  AVAILABLE: { label: 'ว่าง', dot: 'bg-blue-500', text: 'text-blue-700' },
+  WITH_PATIENT: { label: 'กำลังตรวจ', dot: 'bg-cyan-500', text: 'text-cyan-700' },
   BREAK: { label: 'พัก', dot: 'bg-slate-400', text: 'text-slate-500' },
 }
 
@@ -222,7 +222,7 @@ export default function AdminDashboard() {
                 <button
                   key={action.label}
                   type="button"
-                  className={`flex items-center gap-2 px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50/50 transition-all ${focusRing}`}
+                  className={`flex items-center gap-2 px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50/50 transition-all ${focusRing}`}
                 >
                   <ActionIcon className="w-4 h-4" />
                   {action.label}
@@ -231,7 +231,7 @@ export default function AdminDashboard() {
             })}
             <Link
               href="/admin/appointments"
-              className={`flex items-center gap-2 px-3.5 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 ${focusRing}`}
+              className={`flex items-center gap-2 px-3.5 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
             >
               <IconClipboardList className="w-4 h-4" />
               ดูตารางทั้งหมด
@@ -256,9 +256,9 @@ export default function AdminDashboard() {
           </div>
 
           {nextPatient ? (
-            <div className={`px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${nextUrgency === 'URGENT' ? 'bg-rose-50/60' : 'bg-emerald-50/40'}`}>
+            <div className={`px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${nextUrgency === 'URGENT' ? 'bg-rose-50/60' : 'bg-blue-50/40'}`}>
               <div className="flex items-center gap-4 min-w-0">
-                <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg font-semibold shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg font-semibold shrink-0">
                   {nextPatient.patient.charAt(0)}
                 </div>
                 <div className="min-w-0">
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => callPatient(nextPatient.id)}
-                className={`px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 shrink-0 ${focusRing}`}
+                className={`px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 shrink-0 ${focusRing}`}
               >
                 เรียกคิว
               </button>
@@ -319,7 +319,7 @@ export default function AdminDashboard() {
               <h2 className="font-semibold text-gray-900">กำลังรักษา</h2>
               <p className="text-xs text-gray-400 mt-0.5">Current treatment</p>
             </div>
-            <span className="text-xs font-medium text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full ring-1 ring-inset ring-teal-200">
+            <span className="text-xs font-medium text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-full ring-1 ring-inset ring-cyan-200">
               {currentTreatment.length} ห้องตรวจ
             </span>
           </div>
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
               {currentTreatment.map((a) => (
                 <li key={a.id} className="px-6 py-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center text-sm font-semibold shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center text-sm font-semibold shrink-0">
                       {a.patient.charAt(0)}
                     </div>
                     <div className="min-w-0">
@@ -341,7 +341,7 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => completeTreatment(a.id)}
-                    className={`shrink-0 px-3.5 py-2 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all ${focusRing}`}
+                    className={`shrink-0 px-3.5 py-2 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all ${focusRing}`}
                   >
                     เสร็จสิ้น
                   </button>
@@ -366,13 +366,13 @@ export default function AdminDashboard() {
       {/* Financial summary — separated from operational data */}
       <div className="mb-8">
         <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">ภาพรวมการเงิน</p>
-        <div className="bg-emerald-600 rounded-2xl p-5 flex items-center gap-4 shadow-sm shadow-emerald-200 max-w-md">
+        <div className="bg-blue-600 rounded-2xl p-5 flex items-center gap-4 shadow-sm shadow-blue-200 max-w-md">
           <div className="w-11 h-11 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0">
             <IconWallet className="w-5 h-5" />
           </div>
           <div>
             <p className="text-2xl font-bold text-white tabular-nums tracking-tight">฿21,840</p>
-            <p className="text-xs text-emerald-50 font-medium mt-0.5">รายได้วันนี้ · +8.4% จากเมื่อวาน</p>
+            <p className="text-xs text-blue-50 font-medium mt-0.5">รายได้วันนี้ · +8.4% จากเมื่อวาน</p>
           </div>
         </div>
       </div>
@@ -399,7 +399,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setFilter(tab.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                      filter === tab.id ? 'bg-emerald-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                      filter === tab.id ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                     }`}
                   >
                     {tab.label}
@@ -426,7 +426,7 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 font-mono font-medium text-gray-900 tabular-nums">{a.time}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-xs font-semibold">
+                          <div className="w-7 h-7 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-semibold">
                             {a.patient.charAt(0)}
                           </div>
                           <span className="text-gray-800">{a.patient}</span>
@@ -443,13 +443,13 @@ export default function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => rescheduleAppointment(a.id)}
-                              className={`inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
+                              className={`inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
                             >
                               <IconRotate className="w-3.5 h-3.5" /> จัดคิวใหม่
                             </button>
                           ) : (
                             <>
-                              <button type="button" className={`text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}>
+                              <button type="button" className={`text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}>
                                 แก้ไข
                               </button>
                               {(a.status === 'CONFIRMED' || a.status === 'WAITING') && (
@@ -539,7 +539,7 @@ export default function AdminDashboard() {
                 const ActivityIcon = activityIcon[item.kind]
                 return (
                   <li key={`${item.time}-${i}`} className="px-6 py-3.5 flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
                       <ActivityIcon className="w-3.5 h-3.5" />
                     </div>
                     <div className="min-w-0">

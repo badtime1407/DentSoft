@@ -11,7 +11,7 @@ import { buildMockPatients, type MockPatient, type RecallStatus } from './mock-p
 import { focusRing } from '@/lib/admin/focus-ring'
 
 const recallConfig: Record<RecallStatus, { label: string; tone: StatusTone }> = {
-  ON_TRACK: { label: 'ปกติ', tone: 'emerald' },
+  ON_TRACK: { label: 'ปกติ', tone: 'blue' },
   DUE_SOON: { label: 'ถึงกำหนดตรวจ', tone: 'amber' },
   OVERDUE: { label: 'เกินกำหนด', tone: 'rose' },
   NEW: { label: 'คนไข้ใหม่', tone: 'sky' },
@@ -109,7 +109,7 @@ export default function AdminPatients() {
           <button
             type="button"
             onClick={() => setDrawer({ open: true, mode: 'create' })}
-            className={`flex items-center gap-2 px-3.5 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200 ${focusRing}`}
+            className={`flex items-center gap-2 px-3.5 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
           >
             <IconPlus className="w-4 h-4" />
             เพิ่มคนไข้ใหม่
@@ -140,7 +140,7 @@ export default function AdminPatients() {
                 type="button"
                 onClick={() => setFilter(tab.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                  filter === tab.id ? 'bg-emerald-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                  filter === tab.id ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                 }`}
               >
                 {tab.label}
@@ -167,7 +167,7 @@ export default function AdminPatients() {
                 <tr key={p.id} className="hover:bg-slate-50 transition">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-xs font-semibold shrink-0">
+                      <div className="w-7 h-7 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-semibold shrink-0">
                         {p.firstName.charAt(0)}
                       </div>
                       <span className="text-gray-800">{p.firstName} {p.lastName}</span>
@@ -190,7 +190,7 @@ export default function AdminPatients() {
                     <button
                       type="button"
                       onClick={() => setDrawer({ open: true, mode: 'edit', patient: p })}
-                      className={`text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
+                      className={`text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
                     >
                       ดูรายละเอียด
                     </button>

@@ -13,7 +13,7 @@ export type DentistFormValues = {
   schedule: WeeklySchedule
 }
 
-const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 transition-all ${focusRing}`
+const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 const dayLabels = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์']
 
@@ -114,7 +114,7 @@ export function DentistDrawer({
                       type="checkbox"
                       checked={d.active}
                       onChange={(e) => updateDay(i, { active: e.target.checked })}
-                      className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     {dayLabels[i]}
                   </label>
