@@ -140,7 +140,7 @@ export default function AdminPatients() {
                 type="button"
                 onClick={() => setFilter(tab.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                  filter === tab.id ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                  filter === tab.id ? 'bg-blue-50 text-blue-700' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                 }`}
               >
                 {tab.label}

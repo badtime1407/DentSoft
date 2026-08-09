@@ -186,12 +186,12 @@ export default function AdminAppointments() {
                 type="button"
                 onClick={() => setSelectedDate(iso)}
                 className={`flex flex-col items-center gap-0.5 py-2 rounded-xl text-sm transition-all ${focusRing} ${
-                  active ? 'bg-blue-600 text-white font-medium shadow-sm shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'
+                  active ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                <span className={`text-[11px] ${active ? 'text-blue-50' : 'text-gray-400'}`}>{dayLabels[date.getDay()]}</span>
+                <span className={`text-[11px] ${active ? 'text-blue-400' : 'text-gray-400'}`}>{dayLabels[date.getDay()]}</span>
                 <span className="tabular-nums">{date.getDate()}</span>
-                <span className={`w-1 h-1 rounded-full ${hasBookings ? (active ? 'bg-white' : 'bg-blue-500') : 'bg-transparent'}`} />
+                <span className={`w-1 h-1 rounded-full ${hasBookings ? 'bg-blue-500' : 'bg-transparent'}`} />
               </button>
             )
           })}
@@ -271,7 +271,7 @@ export default function AdminAppointments() {
                   type="button"
                   onClick={() => setViewMode('board')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                    viewMode === 'board' ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                    viewMode === 'board' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                   }`}
                 >
                   ตารางเวลา
@@ -280,7 +280,7 @@ export default function AdminAppointments() {
                   type="button"
                   onClick={() => setViewMode('agenda')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                    viewMode === 'agenda' ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                    viewMode === 'agenda' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                   }`}
                 >
                   รายการ
@@ -365,7 +365,7 @@ export default function AdminAppointments() {
                   type="button"
                   onClick={() => setStatusFilter(tab.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                    statusFilter === tab.id ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                    statusFilter === tab.id ? 'bg-blue-50 text-blue-700' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                   }`}
                 >
                   {tab.label}

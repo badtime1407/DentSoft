@@ -258,7 +258,7 @@ export default function AdminDashboard() {
           {nextPatient ? (
             <div className={`px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${nextUrgency === 'URGENT' ? 'bg-rose-50/60' : 'bg-blue-50/40'}`}>
               <div className="flex items-center gap-4 min-w-0">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg font-semibold shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg font-semibold shrink-0">
                   {nextPatient.patient.charAt(0)}
                 </div>
                 <div className="min-w-0">
@@ -366,13 +366,13 @@ export default function AdminDashboard() {
       {/* Financial summary — separated from operational data */}
       <div className="mb-8">
         <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">ภาพรวมการเงิน</p>
-        <div className="bg-blue-600 rounded-2xl p-5 flex items-center gap-4 shadow-sm shadow-blue-200 max-w-md">
-          <div className="w-11 h-11 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0">
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 flex items-center gap-4 max-w-md">
+          <div className="w-11 h-11 rounded-xl bg-white text-blue-600 flex items-center justify-center shrink-0 shadow-sm">
             <IconWallet className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-white tabular-nums tracking-tight">฿21,840</p>
-            <p className="text-xs text-blue-50 font-medium mt-0.5">รายได้วันนี้ · +8.4% จากเมื่อวาน</p>
+            <p className="text-2xl font-bold text-blue-900 tabular-nums tracking-tight">฿21,840</p>
+            <p className="text-xs text-blue-600 font-medium mt-0.5">รายได้วันนี้ · +8.4% จากเมื่อวาน</p>
           </div>
         </div>
       </div>
@@ -399,7 +399,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setFilter(tab.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                      filter === tab.id ? 'bg-blue-600 text-white' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+                      filter === tab.id ? 'bg-blue-50 text-blue-700' : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
                     }`}
                   >
                     {tab.label}

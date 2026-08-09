@@ -36,11 +36,11 @@ export function AdminSidebar() {
               href={item.href}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${focusRing}
                 ${active
-                  ? 'bg-blue-600 text-white font-medium shadow-sm shadow-blue-200'
+                  ? 'bg-blue-50 text-blue-700 font-medium'
                   : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                 }`}
             >
-              <ItemIcon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-gray-400'}`} />
+              <ItemIcon className={`w-4 h-4 shrink-0 ${active ? 'text-blue-600' : 'text-gray-400'}`} />
               {item.label}
             </Link>
           )

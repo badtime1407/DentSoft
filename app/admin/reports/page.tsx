@@ -51,7 +51,7 @@ export default function AdminReports() {
                 type="button"
                 onClick={() => setRangeDays(opt.id)}
                 className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${focusRing} ${
-                  rangeDays === opt.id ? 'bg-blue-600 text-white shadow-sm shadow-blue-200' : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-300'
+                  rangeDays === opt.id ? 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200' : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-300'
                 }`}
               >
                 {opt.label}
