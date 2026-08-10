@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import type { ReactNode } from 'react'
+import { ParticleBackground } from './ParticleBackground'
 
 const badges = [
   {
@@ -21,8 +22,9 @@ const badges = [
 
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 bg-white rounded-3xl shadow-xl overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center bg-gray-50 p-6 overflow-hidden">
+      <ParticleBackground />
+      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 bg-white rounded-3xl shadow-xl overflow-hidden">
         <div className="hidden lg:flex flex-col p-10 bg-gradient-to-br from-blue-400 to-blue-700 text-white relative overflow-hidden">
           <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-white/10 blur-xl" />
           <div className="absolute bottom-24 -right-10 w-48 h-48 rounded-full bg-white/10 blur-xl" />
@@ -39,7 +41,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
 
           <div className="relative z-10 grid grid-cols-2 gap-3 my-8">
             {badges.map((badge) => (
-              <div key={badge.label} className="bg-white/10 backdrop-blur rounded-xl px-3 py-3 flex flex-col items-center gap-1.5 text-center">
+              <div key={badge.label} className="bg-white/5 backdrop-blur border border-white/10 rounded-xl px-3 py-3 flex flex-col items-center gap-1.5 text-center">
                 <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                   {badge.icon}
                 </svg>
@@ -48,8 +50,8 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             ))}
           </div>
 
-          <div className="relative z-10 mt-auto rounded-2xl bg-white/10 backdrop-blur p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+          <div className="relative z-10 mt-auto rounded-2xl bg-white/5 backdrop-blur border border-white/10 p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
               <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 21v-8a8 8 0 0 1 16 0v8" />
                 <path d="M2 21h20" />
