@@ -3,7 +3,7 @@ import { Logo } from '@/components/ui/Logo'
 
 const navLinks = [
   { href: '/', label: 'หน้าหลัก' },
-  { href: '#steps', label: 'วิธีใช้งาน' },
+  { href: '#services', label: 'บริการ' },
   { href: '#footer', label: 'ติดต่อเรา' },
 ]
 
@@ -22,10 +22,10 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Link href="/login" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition">
+          <Link href="/login" className="px-4 py-2 border border-blue-200 text-blue-700 rounded-full text-sm font-medium hover:bg-blue-50 transition">
             เข้าสู่ระบบ
           </Link>
-          <Link href="/register" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm shadow-blue-200">
+          <Link href="/register" className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition shadow-sm shadow-blue-200">
             สมัครสมาชิก
           </Link>
         </div>

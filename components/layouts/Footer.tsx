@@ -1,63 +1,55 @@
-import Link from 'next/link'
 import { Logo } from '@/components/ui/Logo'
 
-const columns = [
+const socialLinks = [
   {
-    title: 'เกี่ยวกับ',
-    links: [
-      { label: 'วิธีใช้งาน', href: '#steps' },
-      { label: 'เข้าสู่ระบบ', href: '/login' },
-      { label: 'สมัครสมาชิก', href: '/register' },
-    ],
+    label: 'Facebook',
+    href: 'https://facebook.com',
+    icon: (
+      <path d="M14 9h2.5V6.5h-2.5c-1.9 0-3.5 1.6-3.5 3.5v2H8.5v3H10.5v6.5h3V14.5h2.3l.7-3H13.5v-1.5c0-.55.45-1 .5-1Z" />
+    ),
   },
   {
-    title: 'ติดต่อ',
-    links: [
-      { label: 'support@dentsoft.local', href: 'mailto:support@dentsoft.local' },
-      { label: 'โทร 02-123-4567', href: 'tel:021234567' },
-    ],
+    label: 'Instagram',
+    href: 'https://instagram.com',
+    icon: (
+      <>
+        <rect x="4" y="4" width="16" height="16" rx="4.5" />
+        <circle cx="12" cy="12" r="3.2" />
+        <circle cx="16.3" cy="7.7" r="0.6" fill="currentColor" stroke="none" />
+      </>
+    ),
+  },
+  {
+    label: 'โทรศัพท์',
+    href: 'tel:021234567',
+    icon: (
+      <path d="M6.6 4.5h3l1.4 4-2 1.5a12 12 0 0 0 5 5l1.5-2 4 1.4v3a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 5.1 6.1a1.5 1.5 0 0 1 1.5-1.6Z" />
+    ),
   },
 ]
 
 export default function Footer() {
   return (
     <footer id="footer" className="bg-white border-t border-gray-100">
-      <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-10">
+      <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-5 text-center md:text-left">
         <div>
-          <Logo size="sm" className="mb-3" />
-          <p className="text-sm text-gray-400 leading-relaxed">
-            ระบบบริหารจัดการคลินิกทันตกรรม ครบวงจรสำหรับคนไข้และทีมงาน
-          </p>
+          <Logo size="sm" />
+          <p className="text-xs text-gray-400 mt-2">© 2569 DentSoft Clinic. All rights reserved.</p>
         </div>
 
-        {columns.map((col) => (
-          <div key={col.title}>
-            <p className="text-sm font-semibold text-gray-900 mb-3">{col.title}</p>
-            <ul className="space-y-2">
-              {col.links.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-gray-500 hover:text-blue-600 transition">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      <div className="border-t border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-          <p className="text-xs text-gray-400">© 2569 DentSoft Dental Management Platform. All rights reserved.</p>
-          <a
-            href="#top"
-            aria-label="กลับขึ้นด้านบน"
-            className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center hover:bg-gray-700 transition"
-          >
-            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 19V5M6 11l6-6 6 6" />
-            </svg>
-          </a>
+        <div className="flex items-center gap-3">
+          {socialLinks.map((social) => (
+            <a
+              key={social.label}
+              href={social.href}
+              aria-label={social.label}
+              className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                {social.icon}
+              </svg>
+            </a>
+          ))}
         </div>
       </div>
     </footer>
