@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Logo } from '@/components/ui/Logo'
 
 const socialLinks = [
@@ -28,28 +29,111 @@ const socialLinks = [
   },
 ]
 
+const quickLinks = [
+  { label: 'หน้าหลัก', href: '/' },
+  { label: 'บริการ', href: '#services' },
+  { label: 'เข้าสู่ระบบ', href: '/login' },
+  { label: 'สมัครสมาชิก', href: '/register' },
+]
+
+const contactItems = [
+  {
+    text: '123 ถนนสุขุมวิท แขวงคลองตัน กรุงเทพฯ 10110',
+    href: undefined,
+    icon: (
+      <>
+        <path d="M12 21s-7-6.5-7-11.5A7 7 0 0 1 19 9.5C19 14.5 12 21 12 21Z" />
+        <circle cx="12" cy="9.5" r="2.25" />
+      </>
+    ),
+  },
+  {
+    text: 'โทร 02-123-4567',
+    href: 'tel:021234567',
+    icon: <path d="M6.6 4.5h3l1.4 4-2 1.5a12 12 0 0 0 5 5l1.5-2 4 1.4v3a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 5.1 6.1a1.5 1.5 0 0 1 1.5-1.6Z" />,
+  },
+  {
+    text: 'support@dentsoft.local',
+    href: 'mailto:support@dentsoft.local',
+    icon: (
+      <>
+        <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+        <path d="m4.5 7 7.5 6 7.5-6" />
+      </>
+    ),
+  },
+  {
+    text: 'จันทร์-เสาร์ 09:00-19:00 น.',
+    href: undefined,
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3.5 2" />
+      </>
+    ),
+  },
+]
+
 export default function Footer() {
   return (
     <footer id="footer" className="bg-white border-t border-gray-100">
-      <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-5 text-center md:text-left">
+      <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1.2fr] gap-10">
         <div>
-          <Logo size="sm" />
-          <p className="text-xs text-gray-400 mt-2">© 2569 DentSoft Clinic. All rights reserved.</p>
+          <Logo size="sm" className="mb-3" />
+          <p className="text-sm text-gray-400 leading-relaxed mb-4">
+            ดูแลสุขภาพช่องปากของคุณให้ครบวงจร ด้วยทีมทันตแพทย์และเทคโนโลยีที่ทันสมัย
+          </p>
+          <div className="flex items-center gap-3">
+            {socialLinks.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                aria-label={social.label}
+                className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition"
+              >
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                  {social.icon}
+                </svg>
+              </a>
+            ))}
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {socialLinks.map((social) => (
-            <a
-              key={social.label}
-              href={social.href}
-              aria-label={social.label}
-              className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition"
-            >
-              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
-                {social.icon}
-              </svg>
-            </a>
-          ))}
+        <div>
+          <p className="text-sm font-semibold text-gray-900 mb-3">ลิงก์ด่วน</p>
+          <ul className="space-y-2">
+            {quickLinks.map((link) => (
+              <li key={link.label}>
+                <Link href={link.href} className="text-sm text-gray-500 hover:text-blue-600 transition">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-gray-900 mb-3">ติดต่อเรา</p>
+          <ul className="space-y-2.5 text-sm text-gray-500">
+            {contactItems.map((item) => (
+              <li key={item.text} className="flex items-start gap-2.5">
+                <svg viewBox="0 0 24 24" className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  {item.icon}
+                </svg>
+                {item.href ? (
+                  <a href={item.href} className="hover:text-blue-600 transition">{item.text}</a>
+                ) : (
+                  <span>{item.text}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 py-5">
+          <p className="text-xs text-gray-400 text-center md:text-left">© 2569 DentSoft Clinic. All rights reserved.</p>
         </div>
       </div>
     </footer>
