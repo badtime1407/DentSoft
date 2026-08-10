@@ -23,7 +23,6 @@ import { focusRing } from '@/lib/admin/focus-ring'
 
 type AppointmentStatus = 'CONFIRMED' | 'WAITING' | 'IN_TREATMENT' | 'COMPLETED' | 'CANCELLED'
 type DentistStatus = 'AVAILABLE' | 'WITH_PATIENT' | 'BREAK'
-type UrgencyLevel = 'NORMAL' | 'ATTENTION' | 'URGENT'
 
 type Appointment = {
   id: string
@@ -98,12 +97,6 @@ const dentistStatusConfig: Record<DentistStatus, { label: string; dot: string; t
   BREAK: { label: 'พัก', dot: 'bg-slate-400', text: 'text-slate-500' },
 }
 
-const urgencyConfig: Record<UrgencyLevel, { label: string; badge: string; border: string; text: string }> = {
-  NORMAL: { label: 'ปกติ', badge: 'bg-slate-100 text-slate-600', border: 'border-l-slate-200', text: 'text-slate-500' },
-  ATTENTION: { label: 'ควรดูแล', badge: 'bg-amber-50 text-amber-700', border: 'border-l-amber-400', text: 'text-amber-700' },
-  URGENT: { label: 'รอนาน', badge: 'bg-rose-50 text-rose-700', border: 'border-l-rose-400', text: 'text-rose-700' },
-}
-
 const activityIcon = {
   checkin: IconUserCheck,
   payment: IconCreditCard,
@@ -122,12 +115,6 @@ const filterTabs: { id: 'ALL' | AppointmentStatus; label: string }[] = [
   { id: 'CANCELLED', label: 'ยกเลิก' },
 ]
 
-function urgencyOf(waitMinutes: number): UrgencyLevel {
-  if (waitMinutes >= 11) return 'URGENT'
-  if (waitMinutes >= 6) return 'ATTENTION'
-  return 'NORMAL'
-}
-
 export default function AdminDashboard() {
   const [filter, setFilter] = useState<'ALL' | AppointmentStatus>('ALL')
   const [searchTerm, setSearchTerm] = useState('')
@@ -136,20 +123,6 @@ export default function AdminDashboard() {
 
   function logActivity(text: string, kind: Activity['kind']) {
     setActivities((prev) => [{ time: MOCK_NOW, text, kind }, ...prev])
-  }
-
-  function callPatient(id: string) {
-    const target = appointments.find((a) => a.id === id)
-    if (!target) return
-    setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'IN_TREATMENT', waitMinutes: undefined } : a)))
-    logActivity(`เรียกคิว ${target.patient} เข้ารับการรักษากับ ${target.dentist}`, 'treatment')
-  }
-
-  function completeTreatment(id: string) {
-    const target = appointments.find((a) => a.id === id)
-    if (!target) return
-    setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'COMPLETED' } : a)))
-    logActivity(`เสร็จสิ้นการรักษา ${target.patient}`, 'complete')
   }
 
   function cancelAppointment(id: string) {
@@ -185,9 +158,6 @@ export default function AdminDashboard() {
     .sort((a, b) => (b.waitMinutes ?? 0) - (a.waitMinutes ?? 0))
 
   const nextPatient = waitingQueue[0]
-  const restQueue = waitingQueue.slice(1)
-  const nextUrgency = nextPatient ? urgencyOf(nextPatient.waitMinutes ?? 0) : 'NORMAL'
-  const currentTreatment = appointments.filter((a) => a.status === 'IN_TREATMENT')
 
   const filteredAppointments = filter === 'ALL' ? appointments : appointments.filter((a) => a.status === filter)
   const visibleAppointments = filteredAppointments.filter(
@@ -239,122 +209,6 @@ export default function AdminDashboard() {
           </>
         }
       />
-
-      {/* Above the fold: live queue + current treatment */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
-
-        {/* Waiting queue */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-gray-900">คิวรอ</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Waiting queue</p>
-            </div>
-            <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full ring-1 ring-inset ring-amber-200">
-              {waitingQueue.length} คนกำลังรอ
-            </span>
-          </div>
-
-          {nextPatient ? (
-            <div className={`px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${nextUrgency === 'URGENT' ? 'bg-rose-50/60' : 'bg-blue-50/40'}`}>
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg font-semibold shrink-0">
-                  {nextPatient.patient.charAt(0)}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-gray-900 truncate">{nextPatient.patient}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${urgencyConfig[nextUrgency].badge}`}>
-                      {urgencyConfig[nextUrgency].label}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-0.5 truncate">{nextPatient.service} · {nextPatient.dentist}</p>
-                  <p className={`text-xs font-medium mt-1 ${urgencyConfig[nextUrgency].text}`}>คิวถัดไป · รอมาแล้ว {nextPatient.waitMinutes} นาที</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => callPatient(nextPatient.id)}
-                className={`px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 shrink-0 ${focusRing}`}
-              >
-                เรียกคิว
-              </button>
-            </div>
-          ) : (
-            <div className="px-6 py-10 text-center">
-              <p className="text-sm text-gray-400">ไม่มีคนไข้รอคิวในขณะนี้</p>
-            </div>
-          )}
-
-          {restQueue.length > 0 && (
-            <ul className="divide-y divide-gray-50">
-              {restQueue.map((p) => {
-                const level = urgencyOf(p.waitMinutes ?? 0)
-                return (
-                  <li key={p.id} className={`px-6 py-3 flex items-center justify-between gap-3 hover:bg-slate-50 transition border-l-4 ${urgencyConfig[level].border}`}>
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center text-xs font-semibold shrink-0">
-                        {p.patient.charAt(0)}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm text-gray-800 truncate">{p.patient}</p>
-                        <p className="text-xs text-gray-400 truncate">{p.service}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${urgencyConfig[level].badge}`}>{urgencyConfig[level].label}</span>
-                      <span className="text-xs text-gray-400">{p.waitMinutes} นาที</span>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </div>
-
-        {/* Current treatment */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-gray-900">กำลังรักษา</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Current treatment</p>
-            </div>
-            <span className="text-xs font-medium text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-full ring-1 ring-inset ring-cyan-200">
-              {currentTreatment.length} ห้องตรวจ
-            </span>
-          </div>
-
-          {currentTreatment.length > 0 ? (
-            <ul className="divide-y divide-gray-50">
-              {currentTreatment.map((a) => (
-                <li key={a.id} className="px-6 py-4 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center text-sm font-semibold shrink-0">
-                      {a.patient.charAt(0)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{a.patient}</p>
-                      <p className="text-xs text-gray-400 truncate">{a.service} · {a.dentist}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">เริ่ม {a.time} น.</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => completeTreatment(a.id)}
-                    className={`shrink-0 px-3.5 py-2 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all ${focusRing}`}
-                  >
-                    เสร็จสิ้น
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="px-6 py-10 text-center">
-              <p className="text-sm text-gray-400">ไม่มีคนไข้ในห้องตรวจขณะนี้</p>
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Operational summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
