@@ -54,32 +54,34 @@ export default function PatientDashboard() {
 
       {/* Main Body Content */}
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* 1. Hero Banner Section */}
-        <section className="bg-gradient-to-r from-[#eaf4ff] via-[#f0f7ff] to-[#e3f0ff] rounded-3xl p-8 sm:p-10 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border border-sky-100/60 shadow-sm">
-          <div className="max-w-lg z-10">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              สวัสดีค่ะ, พิมพ์ชนก <span className="text-[#0066ff]"></span>
+        {/* 1. Hero Banner Section (Using /44.jpg) */}
+        <section className="relative rounded-3xl overflow-hidden border border-sky-100/60 shadow-sm bg-[#eaf4ff] min-h-[260px] sm:min-h-[300px] flex items-center">
+          {/* Background Image 44.jpg */}
+          <img
+            src="/44.jpg"
+            alt="DentSoft Hero Banner"
+            className="absolute inset-0 w-full h-full object-cover object-right select-none pointer-events-none"
+          />
+
+          {/* Left Text & CTA Content */}
+          <div className="relative z-10 p-8 sm:p-12 max-w-xl space-y-3">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+              สวัสดีค่ะ, พิมพ์ชนก <span className="text-[#0066ff]">💙</span>
             </h1>
-            <p className="text-slate-500 text-sm sm:text-base mt-3 leading-relaxed">
+            <p className="text-slate-600 text-sm sm:text-base font-medium leading-relaxed pt-1">
               ดูแลสุขภาพช่องปากของคุณ
               <br />
               ให้รอยยิ้มของคุณสดใสในทุกวัน
             </p>
-            <Link
-              href="/patient/booking"
-              className={`inline-flex items-center gap-2.5 bg-[#0066ff] hover:bg-[#0052cc] text-white px-6 py-3.5 rounded-2xl font-bold text-sm shadow-md shadow-blue-500/20 transition-all mt-6 ${focusRing}`}
-            >
-              <IconCalendarPlus className="w-5 h-5" />
-              นัดหมายใหม่
-            </Link>
-          </div>
-
-          {/* 3D Tooth Illustration Image */}
-          <div className="relative shrink-0">
-            <img
-              alt="3D Tooth Illustration"
-              className="w-56 h-56 sm:w-64 sm:h-64 object-cover rounded-2xl shadow-xl border-4 border-white/80"
-            />
+            <div className="pt-3">
+              <Link
+                href="/patient/booking"
+                className={`inline-flex items-center gap-2.5 bg-[#0066ff] hover:bg-[#0052cc] text-white px-6 py-3.5 rounded-2xl font-bold text-sm shadow-md shadow-blue-500/20 transition-all ${focusRing}`}
+              >
+                <IconCalendarPlus className="w-5 h-5" />
+                นัดหมายใหม่
+              </Link>
+            </div>
           </div>
         </section>
 
