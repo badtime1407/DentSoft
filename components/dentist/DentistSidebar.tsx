@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { IconGrid, IconCalendar, IconClipboardList, IconTooth } from '@/components/shared/icons'
+import { IconGrid, IconCalendar, IconClipboardList, IconTooth, IconSettings, IconLogout } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 
 const navItems = [
   { href: '/dentist/dashboard', label: 'Dashboard', icon: IconGrid },
-  { href: '/dentist/appointments', label: 'นัดหมายวันนี้', icon: IconCalendar },
+  { href: '/dentist/appointments', label: 'ตารางนัดหมาย', icon: IconCalendar },
   { href: '/dentist/treatment', label: 'บันทึกการรักษา', icon: IconClipboardList },
 ]
 
@@ -15,18 +15,20 @@ export function DentistSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-60 bg-white border-r border-gray-100 flex flex-col fixed top-0 left-0 h-full z-40">
-      <div className="flex items-center gap-2.5 px-6 py-5 border-b border-gray-100">
-        <div className="w-8 h-8 bg-teal-600 rounded-xl flex items-center justify-center text-white">
-          <IconTooth className="w-4.5 h-4.5" />
+    <aside className="w-60 bg-white border-r border-slate-100 flex flex-col fixed top-0 left-0 h-full z-40">
+      {/* DentSoft Brand Header */}
+      <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100">
+        <div className="w-9 h-9 bg-teal-600 rounded-xl flex items-center justify-center text-white shadow-sm shadow-teal-200">
+          <IconTooth className="w-5 h-5" />
         </div>
         <div>
-          <p className="font-bold text-gray-900 text-sm leading-none">DentSoft</p>
-          <p className="text-xs text-gray-400 mt-0.5">Dentist Panel</p>
+          <p className="font-extrabold text-slate-900 text-base leading-none">DentSoft</p>
+          <p className="text-xs text-slate-400 mt-1 font-medium">Dentist Panel</p>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      {/* Main Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map((item) => {
           const ItemIcon = item.icon
           const active = pathname === item.href || pathname?.startsWith(`${item.href}/`)
@@ -34,18 +36,39 @@ export function DentistSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${focusRing}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${focusRing}
                 ${active
-                  ? 'bg-teal-600 text-white font-medium shadow-sm shadow-teal-200'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+                  ? 'bg-teal-600 text-white font-bold shadow-sm shadow-teal-200'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
                 }`}
             >
-              <ItemIcon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-gray-400'}`} />
+              <ItemIcon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
               {item.label}
             </Link>
           )
         })}
       </nav>
+
+      {/* Bottom Menu Actions (Settings & Logout) */}
+      <div className="p-3 border-t border-slate-100 space-y-1">
+        <Link
+          href="/dentist/settings"
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-all ${focusRing}`}
+        >
+          <IconSettings className="w-4.5 h-4.5 text-slate-400" />
+          ตั้งค่า
+        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = '/login'
+          }}
+          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-rose-600 hover:bg-rose-50 font-medium transition-all text-left ${focusRing}`}
+        >
+          <IconLogout className="w-4.5 h-4.5 text-rose-500" />
+          ออกจากระบบ
+        </button>
+      </div>
     </aside>
   )
 }

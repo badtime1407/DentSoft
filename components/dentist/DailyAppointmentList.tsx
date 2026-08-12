@@ -4,11 +4,11 @@ import type { DentistAppointment } from '@/app/dentist/_mock/appointments'
 import { statusConfig } from '@/app/dentist/_mock/status'
 
 const actionLabel: Record<DentistAppointment['status'], string> = {
-  WAITING: 'เริ่มรักษา',
-  IN_TREATMENT: 'บันทึกการรักษา',
-  COMPLETED: 'ดูบันทึก',
-  CONFIRMED: 'ดูรายละเอียด',
-  CANCELLED: 'ดูรายละเอียด',
+  WAITING: 'ดูรายละเอียดทั้งหมด',
+  IN_TREATMENT: 'ดูรายละเอียดทั้งหมด',
+  COMPLETED: 'ดูรายละเอียดทั้งหมด',
+  CONFIRMED: 'ดูรายละเอียดทั้งหมด',
+  CANCELLED: 'ดูรายละเอียดทั้งหมด',
 }
 
 export function DailyAppointmentList({
@@ -63,13 +63,7 @@ export function DailyAppointmentList({
                 <button
                   type="button"
                   onClick={() => onOpen(a)}
-                  className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all ${focusRing} ${
-                    a.status === 'WAITING'
-                      ? 'bg-teal-600 text-white hover:bg-teal-700'
-                      : a.status === 'IN_TREATMENT'
-                        ? 'bg-white border border-teal-200 text-teal-700 hover:bg-teal-50'
-                        : 'text-gray-500 hover:bg-gray-50'
-                  }`}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-teal-200 text-teal-700 hover:bg-teal-50 transition-all ${focusRing}`}
                 >
                   {actionLabel[a.status]}
                 </button>

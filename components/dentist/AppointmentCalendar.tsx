@@ -61,6 +61,7 @@ export function AppointmentCalendar({
   onPrevMonth,
   onNextMonth,
   onToday,
+  className = '',
 }: {
   viewYear: number
   viewMonth: number
@@ -71,24 +72,37 @@ export function AppointmentCalendar({
   onPrevMonth: () => void
   onNextMonth: () => void
   onToday: () => void
+  className?: string
 }) {
   const cells = buildMonthGrid(viewYear, viewMonth)
   const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 ${className}`}>
+      {/* Month Header */}
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-gray-900">{monthLabel}</h2>
+        <h2 className="text-base font-bold text-gray-900">{monthLabel}</h2>
         <div className="flex items-center gap-1">
-          <button type="button" onClick={onPrevMonth} aria-label="เดือนก่อนหน้า" className={`p-1.5 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition ${focusRing}`}>
+          <button
+            type="button"
+            onClick={onPrevMonth}
+            aria-label="เดือนก่อนหน้า"
+            className={`p-1.5 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition ${focusRing}`}
+          >
             <IconChevronLeft className="w-4 h-4" />
           </button>
-          <button type="button" onClick={onNextMonth} aria-label="เดือนถัดไป" className={`p-1.5 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition ${focusRing}`}>
+          <button
+            type="button"
+            onClick={onNextMonth}
+            aria-label="เดือนถัดไป"
+            className={`p-1.5 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-700 transition ${focusRing}`}
+          >
             <IconChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
+      {/* Today Button */}
       <button
         type="button"
         onClick={onToday}
@@ -97,14 +111,16 @@ export function AppointmentCalendar({
         วันนี้
       </button>
 
+      {/* Weekday Headers */}
       <div className="grid grid-cols-7 gap-1 mb-1">
         {weekdayLabels.map((label) => (
-          <div key={label} className="text-center text-xs font-medium text-gray-400 py-1">
+          <div key={label} className="text-center text-xs font-semibold text-gray-400 py-1">
             {label}
           </div>
         ))}
       </div>
 
+      {/* Days Grid */}
       <div className="grid grid-cols-7 gap-1">
         {cells.map((cell) => {
           const isToday = cell.iso === todayDate
@@ -116,17 +132,17 @@ export function AppointmentCalendar({
               key={cell.iso}
               type="button"
               onClick={() => onSelectDate(cell.iso)}
-              className={`relative aspect-square rounded-lg text-sm transition-all ${focusRing} ${
+              className={`relative aspect-square flex items-center justify-center rounded-lg text-xs sm:text-sm transition-all ${focusRing} ${
                 isSelected
-                  ? 'bg-teal-600 text-white font-semibold'
+                  ? 'bg-teal-600 text-white font-semibold shadow-sm'
                   : isToday
-                    ? 'ring-2 ring-inset ring-teal-500 text-gray-900 font-medium'
+                    ? 'ring-2 ring-inset ring-teal-500 text-gray-900 font-medium bg-teal-50/50'
                     : cell.inCurrentMonth
-                      ? 'text-gray-700 hover:bg-gray-50'
+                      ? 'text-gray-700 hover:bg-gray-50 font-medium'
                       : 'text-gray-300 hover:bg-gray-50'
               }`}
             >
-              {cell.day}
+              <span>{cell.day}</span>
               {hasAppointments && (
                 <span
                   className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${

@@ -5,6 +5,7 @@ export type TreatmentNote = {
   diagnosis: string
   treatmentNote: string
   nextVisit: string
+  images?: string[]
 }
 
 export type DentistAppointment = {
@@ -29,6 +30,7 @@ export type PastVisit = {
   toothNumber?: string
   diagnosis?: string
   treatmentNote?: string
+  images?: string[]
 }
 
 // เวลาปัจจุบันจำลอง สำหรับคำนวณเวลารอคิว

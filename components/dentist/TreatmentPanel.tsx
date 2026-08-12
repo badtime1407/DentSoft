@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useState } from 'react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { IconPhone, IconFileText } from '@/components/shared/icons'
+import { IconPhone, IconFileText, IconImageIcon, IconUpload } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 import type { DentistAppointment, PastVisit, TreatmentNote } from '@/app/dentist/_mock/appointments'
 import { statusConfig } from '@/app/dentist/_mock/status'
@@ -10,25 +11,54 @@ import { statusConfig } from '@/app/dentist/_mock/status'
 const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-teal-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 
-const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', treatmentNote: '', nextVisit: '' }
+const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', treatmentNote: '', nextVisit: '', images: [] }
 
 export function TreatmentPanel({
   appointment,
   history,
-  onStart,
-  onComplete,
   onSaveTreatment,
 }: {
   appointment: DentistAppointment
   history: PastVisit[]
-  onStart: () => void
-  onComplete: () => void
+  onStart?: () => void
+  onComplete?: () => void
   onSaveTreatment: (note: TreatmentNote) => void
 }) {
-  const [form, setForm] = useState<TreatmentNote>(() => appointment.treatment ?? emptyNote)
+  const [form, setForm] = useState<TreatmentNote>(() => ({
+    images: [],
+    ...(appointment.treatment ?? emptyNote),
+  }))
+
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   function updateForm<K extends keyof TreatmentNote>(key: K, value: TreatmentNote[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const result = event.target?.result as string
+        if (result) {
+          setForm((prev) => ({
+            ...prev,
+            images: [...(prev.images || []), result],
+          }))
+        }
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  function removeImage(index: number) {
+    setForm((prev) => ({
+      ...prev,
+      images: (prev.images || []).filter((_, i) => i !== index),
+    }))
   }
 
   const isCancelled = appointment.status === 'CANCELLED'
@@ -76,31 +106,13 @@ export function TreatmentPanel({
 
         {!isCancelled && (
           <div className="flex flex-wrap gap-2 mt-5">
-            {(appointment.status === 'WAITING' || appointment.status === 'CONFIRMED') && (
-              <button
-                type="button"
-                onClick={onStart}
-                className={`px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-medium hover:bg-teal-700 transition-all shadow-sm shadow-teal-200 ${focusRing}`}
-              >
-                เริ่มรักษา
-              </button>
-            )}
             <button
               type="button"
               onClick={() => onSaveTreatment(form)}
-              className={`px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:border-teal-300 transition-all ${focusRing}`}
+              className={`px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-all shadow-sm shadow-teal-200 ${focusRing}`}
             >
               บันทึกการรักษา
             </button>
-            {appointment.status === 'IN_TREATMENT' && (
-              <button
-                type="button"
-                onClick={onComplete}
-                className={`px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-all ${focusRing}`}
-              >
-                เสร็จสิ้น
-              </button>
-            )}
           </div>
         )}
       </div>
@@ -129,6 +141,70 @@ export function TreatmentPanel({
               <label className={labelClass}>นัดครั้งถัดไป</label>
               <input type="date" className={inputClass} value={form.nextVisit} onChange={(e) => updateForm('nextVisit', e.target.value)} />
             </div>
+
+            {/* Image Upload & Attachment Section */}
+            <div className="pt-2 border-t border-slate-100">
+              <label className={labelClass + ' flex items-center justify-between'}>
+                <span className="flex items-center gap-1.5 font-semibold text-slate-700">
+                  <IconImageIcon className="w-4 h-4 text-teal-600" />
+                  รูปภาพการรักษา / X-Ray
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  {form.images?.length || 0} รูป
+                </span>
+              </label>
+
+              <div className="space-y-3 mt-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className={`cursor-pointer px-3.5 py-2 bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${focusRing}`}>
+                    <IconUpload className="w-4 h-4" />
+                    เพิ่มรูปภาพ / X-Ray
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      disabled={isCancelled}
+                    />
+                  </label>
+                </div>
+
+                {/* Images Preview Grid */}
+                {form.images && form.images.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1">
+                    {form.images.map((imgUrl, idx) => (
+                      <div
+                        key={idx}
+                        className="group relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm"
+                      >
+                        <img
+                          src={imgUrl}
+                          alt={`รูปการรักษา ${idx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                          onClick={() => setPreviewImage(imgUrl)}
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center pointer-events-none">
+                          <span className="opacity-0 group-hover:opacity-100 text-white text-[10px] font-bold bg-black/60 px-2 py-0.5 rounded-full transition-opacity">
+                            ขยายดู
+                          </span>
+                        </div>
+                        {!isCancelled && (
+                          <button
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="absolute top-1 right-1 w-5 h-5 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center text-[10px] font-bold shadow-md transition"
+                            title="ลบรูปนี้"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </fieldset>
         </div>
 
@@ -149,6 +225,19 @@ export function TreatmentPanel({
                   {v.toothNumber && <p className="text-xs text-gray-500 mt-1">ฟันที่รักษา: {v.toothNumber}</p>}
                   {v.diagnosis && <p className="text-xs text-gray-500 mt-0.5">ปัญหา: {v.diagnosis}</p>}
                   {v.treatmentNote && <p className="text-xs text-gray-400 mt-0.5">{v.treatmentNote}</p>}
+                  {v.images && v.images.length > 0 && (
+                    <div className="flex gap-1.5 mt-2 overflow-x-auto pb-1">
+                      {v.images.map((img, imgIdx) => (
+                        <img
+                          key={imgIdx}
+                          src={img}
+                          alt="Past visit photo"
+                          className="w-12 h-12 rounded-lg object-cover border border-slate-200 cursor-pointer hover:opacity-80 transition shrink-0"
+                          onClick={() => setPreviewImage(img)}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -159,6 +248,29 @@ export function TreatmentPanel({
           )}
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl">
+            <img
+              src={previewImage}
+              alt="Treatment Image Lightbox"
+              className="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+            />
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-4 right-4 bg-black/60 hover:bg-black text-white px-3 py-1.5 rounded-full backdrop-blur-sm transition-colors text-xs font-bold"
+            >
+              ✕ ปิด
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
