@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { IconGrid, IconCalendar, IconUsers, IconBadge, IconChartBar } from './icons'
 import { focusRing } from '@/lib/admin/focus-ring'
@@ -19,7 +20,9 @@ export function AdminSidebar() {
   return (
     <aside className="w-60 bg-white border-r border-gray-100 flex flex-col fixed top-0 left-0 h-full z-40">
       <div className="flex items-center gap-2.5 px-6 py-5 border-b border-gray-100">
-        <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white text-sm font-bold">D</div>
+        <div className="relative w-8 h-8 shrink-0">
+          <Image src="/DentSoftIcon.png" alt="DentSoft" fill className="object-contain" />
+        </div>
         <div>
           <p className="font-bold text-gray-900 text-sm leading-none">DentSoft</p>
           <p className="text-xs text-gray-400 mt-0.5">Admin Panel</p>
