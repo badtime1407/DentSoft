@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { IconGrid, IconCalendar, IconClipboardList, IconTooth, IconSettings, IconLogout } from '@/components/shared/icons'
+import { IconGrid, IconCalendar, IconClipboardList, IconTooth, IconLogout } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 
 const navItems = [
@@ -49,15 +49,8 @@ export function DentistSidebar() {
         })}
       </nav>
 
-      {/* Bottom Menu Actions (Settings & Logout) */}
-      <div className="p-3 border-t border-slate-100 space-y-1">
-        <Link
-          href="/dentist/settings"
-          className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-all ${focusRing}`}
-        >
-          <IconSettings className="w-4.5 h-4.5 text-slate-400" />
-          ตั้งค่า
-        </Link>
+      {/* Bottom Menu Action (Logout only) */}
+      <div className="p-3 border-t border-slate-100">
         <button
           type="button"
           onClick={() => {

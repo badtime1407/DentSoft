@@ -1,27 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { IconSearch, IconBell, IconSettings } from '@/components/shared/icons'
+import { useState } from 'react'
+import { IconSearch } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 import { currentDentist } from '@/app/dentist/_mock/reference'
 
-function formatNow(date: Date) {
-  const day = date.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-  const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-  return `${day} · ${time} น.`
-}
-
 export function DentistHeader() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [now, setNow] = useState<Date | null>(null)
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNow(new Date())
-    const timer = setInterval(() => setNow(new Date()), 30_000)
-    return () => clearInterval(timer)
-  }, [])
-
   const initial = currentDentist.name.replace(/^ทพญ\.|^ทพ\./, '').trim().charAt(0)
 
   return (
@@ -38,37 +23,14 @@ export function DentistHeader() {
         />
       </div>
 
-      {/* Date, Notifications, Settings, Profile */}
-      <div className="flex items-center gap-4">
-        <p className="text-xs text-slate-400 hidden md:block font-medium">
-          {now ? formatNow(now) : ''}
-        </p>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="การแจ้งเตือน"
-            className="p-2 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition"
-          >
-            <IconBell className="w-5 h-5" />
-          </button>
-          <button
-            type="button"
-            aria-label="ตั้งค่า"
-            className="p-2 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition"
-          >
-            <IconSettings className="w-5 h-5" />
-          </button>
-
-          <div className="flex items-center gap-2.5 pl-2">
-            <div className="w-9 h-9 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 text-sm font-bold shadow-sm">
-              {initial}
-            </div>
-            <div className="hidden lg:block min-w-0">
-              <p className="text-xs font-bold text-slate-800 leading-none truncate">{currentDentist.name}</p>
-              <p className="text-[11px] text-slate-400 mt-0.5 truncate">{currentDentist.specialty}</p>
-            </div>
-          </div>
+      {/* Profile */}
+      <div className="flex items-center gap-2.5">
+        <div className="w-9 h-9 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 text-sm font-bold shadow-sm">
+          {initial}
+        </div>
+        <div className="hidden sm:block min-w-0">
+          <p className="text-xs font-bold text-slate-800 leading-none truncate">{currentDentist.name}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5 truncate">{currentDentist.specialty}</p>
         </div>
       </div>
     </header>
