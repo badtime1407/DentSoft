@@ -66,7 +66,7 @@ export default function PatientDashboard() {
           {/* Left Text & CTA Content */}
           <div className="relative z-10 p-8 sm:p-12 max-w-xl space-y-3">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              สวัสดีค่ะ, พิมพ์ชนก <span className="text-[#0066ff]">💙</span>
+              สวัสดีค่ะ, พิมพ์ชนก 
             </h1>
             <p className="text-slate-600 text-sm sm:text-base font-medium leading-relaxed pt-1">
               ดูแลสุขภาพช่องปากของคุณ
