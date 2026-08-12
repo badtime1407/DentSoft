@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { IconGrid, IconCalendar, IconClipboardList, IconTooth, IconLogout } from '@/components/shared/icons'
+import { IconGrid, IconCalendar, IconClipboardList, IconLogout } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 
 const navItems = [
@@ -18,8 +19,8 @@ export function DentistSidebar() {
     <aside className="w-60 bg-white border-r border-slate-100 flex flex-col fixed top-0 left-0 h-full z-40">
       {/* DentSoft Brand Header */}
       <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100">
-        <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-sm shadow-blue-200">
-          <IconTooth className="w-5 h-5" />
+        <div className="relative w-9 h-9 shrink-0">
+          <Image src="/DentSoftIcon.png" alt="DentSoft" fill className="object-contain" />
         </div>
         <div>
           <p className="font-extrabold text-slate-900 text-base leading-none">DentSoft</p>
