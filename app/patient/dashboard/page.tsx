@@ -18,24 +18,28 @@ const RECOMMENDED_SERVICES = [
     title: 'ตรวจสุขภาพช่องปาก',
     description: 'ตรวจเช็คฟันและเหงือกอย่างละเอียด',
     price: '900',
+    image: '/1.jpg',
   },
   {
     id: '2',
     title: 'อุดฟัน',
     description: 'รักษาฟันผุด้วยวัสดุคุณภาพ',
     price: '1,200',
+    image: '/2.jpg',
   },
   {
     id: '3',
     title: 'จัดฟัน',
     description: 'ปรับสภาพฟันให้สวยงามและเรียงตัวดี',
     price: '35,000',
+    image: '/3.jpg',
   },
   {
     id: '4',
     title: 'ฟอกสีฟัน',
     description: 'ฟันขาวใส มั่นใจในรอยยิ้มของคุณ',
     price: '4,500',
+    image: '/4.jpg',
   },
 ]
 
@@ -205,20 +209,33 @@ export default function PatientDashboard() {
             {RECOMMENDED_SERVICES.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
               >
-                <div className="space-y-2">
-                  <h3 className="font-bold text-slate-900 text-sm sm:text-base">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-slate-400 line-clamp-2">{item.description}</p>
-                  <p className="text-sm font-extrabold text-[#0066ff] pt-2">
-                    ฿{item.price}{' '}
-                    <span className="text-xs font-normal text-slate-400">เริ่มต้น</span>
-                  </p>
+                <div>
+                  {/* Service Card Image */}
+                  <div className="h-40 overflow-hidden relative bg-slate-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-4 space-y-1.5">
+                    <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-slate-400 line-clamp-2">{item.description}</p>
+                    <p className="text-sm font-extrabold text-[#0066ff] pt-2">
+                      ฿{item.price}{' '}
+                      <span className="text-xs font-normal text-slate-400">เริ่มต้น</span>
+                    </p>
+                  </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="p-4 pt-0">
                   <Link
                     href="/patient/booking"
                     className={`w-full block text-center py-2 border border-blue-200 text-[#0066ff] hover:bg-blue-50 rounded-xl text-xs font-semibold transition ${focusRing}`}
