@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { IconLogout, IconBell, IconAlertTriangle } from './icons'
+import { IconLogout, IconBell, IconAlertTriangle, IconRotate } from './icons'
 import { focusRing } from '@/lib/admin/focus-ring'
 import { useCancelRequests } from './CancelRequestsProvider'
 import { services, dentists } from '@/app/admin/_mock/reference'
@@ -53,38 +53,54 @@ export function AdminHeader() {
               <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
               <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl border border-gray-100 shadow-lg z-50 overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-gray-100">
-                  <p className="text-sm font-semibold text-gray-900">คำขอยกเลิกนัดหมาย</p>
-                  <p className="text-xs text-gray-400 mt-0.5">จากคนไข้ · รอการพิจารณา</p>
+                  <p className="text-sm font-semibold text-gray-900">คำขอจากคนไข้</p>
+                  <p className="text-xs text-gray-400 mt-0.5">ขอยกเลิก / ขอเลื่อนนัด · รอการพิจารณา</p>
                 </div>
 
                 {requests.length > 0 ? (
                   <ul className="divide-y divide-gray-50 max-h-96 overflow-y-auto">
-                    {requests.map((r) => (
-                      <li key={r.id} className="px-5 py-4">
-                        <div className="flex items-start justify-between gap-2 mb-1.5">
-                          <p className="text-sm font-medium text-gray-900">{r.patientName}</p>
-                          <p className="text-[11px] text-gray-400 shrink-0">{r.requestedAt}</p>
-                        </div>
-                        <p className="text-xs text-gray-500 mb-2">
-                          {new Date(r.date + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} · {r.startTime} น. ·{' '}
-                          {services.find((s) => s.id === r.serviceId)?.name} · {dentists.find((d) => d.id === r.dentistId)?.name}
-                        </p>
-                        <div className="flex items-start gap-1.5 bg-rose-50 border border-rose-100 rounded-lg px-2.5 py-2 mb-3">
-                          <IconAlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
-                          <p className="text-xs text-rose-700">{r.reason}</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => goToRequest(r.appointmentId)}
-                          className={`w-full px-3 py-2 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition ${focusRing}`}
-                        >
-                          พิจารณาคำขอ
-                        </button>
-                      </li>
-                    ))}
+                    {requests.map((r) => {
+                      const isReschedule = r.type === 'RESCHEDULE'
+                      return (
+                        <li key={r.id} className="px-5 py-4">
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <p className="text-sm font-medium text-gray-900">{r.patientName}</p>
+                            <p className="text-[11px] text-gray-400 shrink-0">{r.requestedAt}</p>
+                          </div>
+                          <p className="text-xs text-gray-500 mb-2">
+                            {new Date(r.date + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} · {r.startTime} น. ·{' '}
+                            {services.find((s) => s.id === r.serviceId)?.name} · {dentists.find((d) => d.id === r.dentistId)?.name}
+                          </p>
+                          <div
+                            className={`flex items-start gap-1.5 rounded-lg px-2.5 py-2 mb-3 border ${
+                              isReschedule ? 'bg-amber-50 border-amber-100' : 'bg-rose-50 border-rose-100'
+                            }`}
+                          >
+                            {isReschedule ? (
+                              <IconRotate className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                            ) : (
+                              <IconAlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
+                            )}
+                            <div>
+                              <p className={`text-[11px] font-semibold mb-0.5 ${isReschedule ? 'text-amber-700' : 'text-rose-700'}`}>
+                                {isReschedule ? 'ขอเลื่อนนัด' : 'ขอยกเลิกนัดหมาย'}
+                              </p>
+                              <p className={`text-xs ${isReschedule ? 'text-amber-700' : 'text-rose-700'}`}>{r.reason}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => goToRequest(r.appointmentId)}
+                            className={`w-full px-3 py-2 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition ${focusRing}`}
+                          >
+                            พิจารณาคำขอ
+                          </button>
+                        </li>
+                      )
+                    })}
                   </ul>
                 ) : (
-                  <p className="px-5 py-8 text-center text-sm text-gray-400">ไม่มีคำขอยกเลิกในขณะนี้</p>
+                  <p className="px-5 py-8 text-center text-sm text-gray-400">ไม่มีคำขอในขณะนี้</p>
                 )}
               </div>
             </>

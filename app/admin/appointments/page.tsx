@@ -71,9 +71,9 @@ export default function AdminAppointments() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
-  const activeCancelReason =
+  const activeCancelRequest =
     drawer.open && drawer.mode === 'edit'
-      ? requests.find((r) => r.appointmentId === drawer.appointment.id)?.reason
+      ? requests.find((r) => r.appointmentId === drawer.appointment.id)
       : undefined
 
   const weekDates = useMemo(() => {
@@ -408,7 +408,7 @@ export default function AdminAppointments() {
         appointment={drawer.open && drawer.mode === 'edit' ? drawer.appointment : undefined}
         defaults={drawer.open && drawer.mode === 'create' ? drawer.defaults : { date: selectedDate }}
         allDentists={dentists}
-        cancelRequestReason={activeCancelReason}
+        cancelRequest={activeCancelRequest}
         onClose={() => setDrawer({ open: false })}
         onSubmit={handleSubmit}
         onConfirm={

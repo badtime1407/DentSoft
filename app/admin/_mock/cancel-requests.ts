@@ -1,3 +1,5 @@
+export type CancelRequestType = 'CANCEL' | 'RESCHEDULE'
+
 export type CancelRequest = {
   id: string
   appointmentId: string
@@ -6,6 +8,7 @@ export type CancelRequest = {
   startTime: string
   serviceId: string
   dentistId: string
+  type: CancelRequestType
   reason: string
   requestedAt: string
 }
@@ -29,6 +32,7 @@ export function buildMockCancelRequests(referenceDate: Date = new Date()): Cance
       startTime: '09:30',
       serviceId: 'sv4',
       dentistId: 'dt2',
+      type: 'CANCEL',
       reason: 'ติดธุระด่วนที่ทำงาน ไม่สามารถมาตามนัดได้',
       requestedAt: '08:12 น.',
     },
@@ -40,6 +44,7 @@ export function buildMockCancelRequests(referenceDate: Date = new Date()): Cance
       startTime: '09:30',
       serviceId: 'sv6',
       dentistId: 'dt1',
+      type: 'RESCHEDULE',
       reason: 'ไม่สบาย มีไข้ ขอเลื่อนออกไปก่อน',
       requestedAt: 'เมื่อวาน 19:40 น.',
     },

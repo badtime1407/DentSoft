@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { dentistsForService, services, type ReferenceDentist } from '@/app/admin/_mock/reference'
 import type { ScheduleAppointment } from '@/app/admin/appointments/mock-appointments'
-import { IconX, IconAlertTriangle } from './icons'
+import type { CancelRequestType } from '@/app/admin/_mock/cancel-requests'
+import { IconX, IconAlertTriangle, IconRotate } from './icons'
 import { focusRing } from '@/lib/admin/focus-ring'
 
 export type AppointmentFormValues = {
@@ -25,7 +26,7 @@ export function AppointmentDrawer({
   appointment,
   defaults,
   allDentists,
-  cancelRequestReason,
+  cancelRequest,
   onClose,
   onSubmit,
   onConfirm,
@@ -36,7 +37,7 @@ export function AppointmentDrawer({
   appointment?: ScheduleAppointment
   defaults?: { date: string; dentistId?: string; startTime?: string }
   allDentists: ReferenceDentist[]
-  cancelRequestReason?: string
+  cancelRequest?: { type: CancelRequestType; reason: string }
   onClose: () => void
   onSubmit: (values: AppointmentFormValues) => void
   onConfirm?: () => void
@@ -107,12 +108,24 @@ export function AppointmentDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-          {cancelRequestReason && (
-            <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 rounded-xl px-3.5 py-3">
-              <IconAlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+          {cancelRequest && (
+            <div
+              className={`flex items-start gap-2 rounded-xl px-3.5 py-3 border ${
+                cancelRequest.type === 'RESCHEDULE' ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'
+              }`}
+            >
+              {cancelRequest.type === 'RESCHEDULE' ? (
+                <IconRotate className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              ) : (
+                <IconAlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+              )}
               <div>
-                <p className="text-sm font-medium text-rose-800">คนไข้ขอยกเลิกนัดหมายนี้</p>
-                <p className="text-xs text-rose-600 mt-0.5">เหตุผล: {cancelRequestReason}</p>
+                <p className={`text-sm font-medium ${cancelRequest.type === 'RESCHEDULE' ? 'text-amber-800' : 'text-rose-800'}`}>
+                  {cancelRequest.type === 'RESCHEDULE' ? 'คนไข้ขอเลื่อนนัดหมายนี้' : 'คนไข้ขอยกเลิกนัดหมายนี้'}
+                </p>
+                <p className={`text-xs mt-0.5 ${cancelRequest.type === 'RESCHEDULE' ? 'text-amber-600' : 'text-rose-600'}`}>
+                  เหตุผล: {cancelRequest.reason}
+                </p>
               </div>
             </div>
           )}
