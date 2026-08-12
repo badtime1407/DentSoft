@@ -12,6 +12,7 @@ import {
   IconLocationPin,
   IconChevronRight,
   IconClock,
+  IconHeadset,
 } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 
@@ -54,19 +55,19 @@ export default function PatientDashboard() {
 
       {/* Main Body Content */}
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* 1. Hero Banner Section (Using /44.jpg) */}
-        <section className="relative rounded-3xl overflow-hidden border border-sky-100/60 shadow-sm bg-[#eaf4ff] min-h-[260px] sm:min-h-[300px] flex items-center">
-          {/* Background Image 44.jpg */}
+        {/* 1. Hero Banner Section (Full Bleed Image 44.jpg) */}
+        <section className="relative rounded-2xl overflow-hidden border border-slate-100/90 shadow-sm bg-[#eaf4ff] min-h-[260px] sm:min-h-[300px] flex items-center">
+          {/* Background Image 44.jpg - Full Bleed Edge */}
           <img
             src="/44.jpg"
             alt="DentSoft Hero Banner"
-            className="absolute inset-0 w-full h-full object-cover object-right select-none pointer-events-none"
+            className="absolute -inset-2 w-[calc(100%+16px)] h-[calc(100%+16px)] object-cover object-center scale-[1.05] select-none pointer-events-none"
           />
 
           {/* Left Text & CTA Content */}
-          <div className="relative z-10 p-8 sm:p-12 max-w-xl space-y-3">
+          <div className="relative z-10 p-8 sm:p-10 max-w-xl space-y-3">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              สวัสดีค่ะ, พิมพ์ชนก 
+              สวัสดีค่ะ, พิมพ์ชนก <span className="text-[#0066ff]">💙</span>
             </h1>
             <p className="text-slate-600 text-sm sm:text-base font-medium leading-relaxed pt-1">
               ดูแลสุขภาพช่องปากของคุณ
@@ -85,51 +86,56 @@ export default function PatientDashboard() {
           </div>
         </section>
 
-        {/* 2. Next Appointment Card */}
-        <section className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-sm space-y-6">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2.5">
-              <span className="text-[#0066ff]">
-                <IconCalendar className="w-5 h-5" />
-              </span>
+        {/* 2. Next Appointment Card (Matching Screenshot) */}
+        <section className="bg-white rounded-2xl border border-slate-100/90 p-6 sm:p-7 shadow-sm space-y-5">
+          {/* Top Title & Badge */}
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-base font-bold text-[#1e293b] flex items-center gap-2">
+              <IconCalendar className="w-5 h-5 text-[#0055ff]" />
               นัดหมายครั้งถัดไป
             </h2>
-            <span className="bg-sky-50 text-[#0066ff] border border-sky-100 px-3 py-1 rounded-xl text-xs font-bold">
+            <span className="bg-[#edf4ff] text-[#0055ff] px-3.5 py-1.5 rounded-lg text-xs font-bold">
               อีก 2 วัน
             </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-2">
-            <div className="flex items-center gap-5">
+          {/* Main Appointment Body */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pt-1">
+            <div className="flex items-center gap-6">
               {/* Date Box */}
-              <div className="bg-[#edf5ff] rounded-2xl p-4 text-center min-w-[115px] flex flex-col justify-center items-center shrink-0 border border-sky-100/50">
-                <span className="text-xs font-semibold text-slate-500">พฤหัสบดี</span>
-                <span className="text-3xl font-extrabold text-slate-900 my-0.5">24</span>
-                <span className="text-xs font-bold text-[#0066ff]">พฤษภาคม 2567</span>
+              <div className="bg-[#eff5ff] rounded-2xl py-4 px-5 text-center min-w-[125px] flex flex-col justify-center items-center shrink-0 border border-slate-100/60 shadow-sm">
+                <span className="text-xs font-medium text-slate-500">พฤหัสบดี</span>
+                <span className="text-4xl font-extrabold text-[#1e293b] my-1">24</span>
+                <div className="text-xs font-bold text-[#0055ff] leading-tight">
+                  <p>พฤษภาคม</p>
+                  <p>2567</p>
+                </div>
               </div>
 
               {/* Appointment Info */}
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-[#0066ff] flex items-center gap-1.5">
-                  <IconClock className="w-4 h-4" /> 10:00 น.
+              <div className="space-y-1.5">
+                <p className="text-sm font-bold text-[#0055ff] flex items-center gap-2">
+                  <IconClock className="w-4.5 h-4.5" /> 10:00 น.
                 </p>
-                <p className="text-lg font-extrabold text-slate-900">ขูดหินปูน</p>
-                <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                <p className="text-base font-bold text-[#1e293b]">ขูดหินปูน</p>
+                <p className="text-xs text-slate-400 font-medium">
                   กับ ทพ. อนวัช ศรีประเสริฐ
                 </p>
-                <p className="text-xs text-slate-400 flex items-center gap-1 pt-0.5">
-                  <span>📍</span> สาขา รัชดาภิเษก
+                <p className="text-xs text-slate-500 font-medium flex items-center gap-2 pt-1">
+                  <IconLocationPin className="w-4 h-4 text-[#0055ff]" /> สาขา รัชดาภิเษก
                 </p>
               </div>
             </div>
 
-            {/* Action Button */}
-            <Link
-              href="/patient/booking"
-              className={`w-full sm:w-auto text-center px-5 py-2.5 border border-blue-200 text-[#0066ff] hover:bg-blue-50 rounded-xl text-sm font-semibold transition ${focusRing}`}
-            >
-              ดูรายละเอียด
-            </Link>
+            {/* Action Button (Bottom Right) */}
+            <div className="w-full sm:w-auto text-right">
+              <Link
+                href="/patient/booking"
+                className={`inline-block w-full sm:w-auto text-center px-5 py-2 border border-[#0055ff] text-[#0055ff] bg-white hover:bg-[#0055ff] hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
+              >
+                ดูรายละเอียด
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -259,58 +265,83 @@ export default function PatientDashboard() {
           </div>
         </section>
 
-        {/* 5. Dental Care Tip Banner */}
-        <section className="bg-gradient-to-r from-[#eaf4ff] via-[#f0f7ff] to-[#e3f0ff] rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-sky-100/60 shadow-sm">
-          <div className="space-y-2 max-w-lg">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-base sm:text-lg">
-              <div className="w-8 h-8 rounded-full bg-[#0066ff] text-white flex items-center justify-center text-xs">
-                🛡️
-              </div>
-              <span>เคล็ดลับดูแลสุขภาพช่องปาก</span>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1">
-              แปรงฟันอย่างน้อยวันละ 2 ครั้ง ครั้งละ 2 นาที
-              <br />
-              และใช้ไหมขัดฟันเป็นประจำทุกวัน
-            </p>
-            <button
-              type="button"
-              className={`px-4 py-2 border border-blue-300 text-[#0066ff] hover:bg-white bg-white/80 rounded-xl text-xs font-semibold transition mt-3 ${focusRing}`}
-            >
-              อ่านเพิ่มเติม
-            </button>
-          </div>
+        {/* 5. Dental Care Tip Banner (Matching Screenshot with 33.png & 11.jpg) */}
+        <section className="relative rounded-2xl overflow-hidden border border-slate-100/90 shadow-sm bg-[#eaf3ff] min-h-[190px] sm:min-h-[220px] flex items-center">
+          {/* Background / Right Side Image 11.jpg */}
+          <img
+            src="/11.jpg"
+            alt="Dental Care Tip Background"
+            className="absolute inset-0 w-full h-full object-cover object-right select-none pointer-events-none"
+          />
 
-          <div className="shrink-0">
-            <img
-              alt="Toothbrush Care"
-              className="w-48 h-36 sm:w-56 sm:h-40 object-cover rounded-2xl shadow-md border-2 border-white"
-            />
+          {/* Left Shield Graphic & Text Content */}
+          <div className="relative z-10 p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 max-w-3xl">
+            {/* Tooth Shield Badge 33.png - Larger Size */}
+            <div className="w-28 h-28 sm:w-36 sm:h-36 shrink-0 relative">
+              <img
+                src="/33.png"
+                alt="Tooth Shield Graphic"
+                className="w-full h-full object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+
+            {/* Text Content */}
+            <div className="space-y-2.5 text-left">
+              <h3 className="text-[#0055ff] font-extrabold text-xl sm:text-2xl tracking-tight">
+                เคล็ดลับดูแลสุขภาพช่องปาก
+              </h3>
+              <p className="text-slate-600 text-xs sm:text-sm font-medium leading-relaxed">
+                แปรงฟันอย่างน้อยวันละ 2 ครั้ง ครั้งละ 2 นาที
+                <br />
+                และใช้ไหมขัดฟันเป็นประจำทุกวัน
+              </p>
+              <div className="pt-1.5">
+                <button
+                  type="button"
+                  className={`px-5 py-2 border border-[#0055ff] text-[#0055ff] bg-[#eaf3ff]/90 hover:bg-[#0055ff] hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
+                >
+                  อ่านเพิ่มเติม
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* 6. Need Help Section */}
-        <section className="bg-[#f4f8fc] rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-100 shadow-sm relative overflow-hidden">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#edf5ff] text-[#0066ff] flex items-center justify-center text-xl shrink-0 shadow-sm">
-              🎧
+        {/* 6. Need Help Section (Matching Screenshot with 99.png) */}
+        <section className="bg-[#f8fafc] rounded-2xl p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-100/90 shadow-sm relative overflow-hidden min-h-[140px]">
+          {/* Left Content: Headset Icon + Text + Button */}
+          <div className="flex items-center gap-6 z-10">
+            {/* Soft Blue Headset Icon Container - Larger Icon */}
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#edf4ff] text-[#0055ff] flex items-center justify-center shrink-0 shadow-sm hover:scale-105 transition-transform duration-300">
+              <IconHeadset className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <div className="space-y-1">
-              <h3 className="font-bold text-slate-900 text-base sm:text-lg">
+
+            {/* Text & Button */}
+            <div className="space-y-1.5">
+              <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">
                 ต้องการความช่วยเหลือ?
               </h3>
-              <p className="text-xs sm:text-sm text-slate-500">ติดต่อเราได้ทุกช่องทาง</p>
-              <button
-                type="button"
-                className={`px-4 py-2 border border-blue-200 text-[#0066ff] hover:bg-white bg-white/80 rounded-xl text-xs font-semibold transition mt-3 ${focusRing}`}
-              >
-                ติดต่อคลินิก
-              </button>
+              <p className="text-xs sm:text-sm text-slate-400 font-medium">
+                ติดต่อเราได้ทุกช่องทาง
+              </p>
+              <div className="pt-1">
+                <button
+                  type="button"
+                  className={`px-5 py-1.5 border border-[#0055ff] text-[#0055ff] bg-white hover:bg-[#0055ff] hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
+                >
+                  ติดต่อคลินิก
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* 3D Chat Bubbles Graphic */}
-          <div className="relative shrink-0 text-6xl opacity-90 select-none">
+          {/* Right Side 3D Chat Bubble Graphic (99.png) */}
+          <div className="relative shrink-0 z-10">
+            <img
+              src="/99.png"
+              alt="Need Help Graphic"
+              className="w-32 h-28 sm:w-40 sm:h-36 object-contain pointer-events-none select-none drop-shadow-sm"
+            />
           </div>
         </section>
       </main>
