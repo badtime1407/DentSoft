@@ -14,7 +14,7 @@ export function PageHeader({
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-8">
       <div>
-        {eyebrow && <p className="text-sm font-medium text-emerald-600 mb-1">{eyebrow}</p>}
+        {eyebrow && <p className="text-sm font-medium text-blue-600 mb-1">{eyebrow}</p>}
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{title}</h1>
         {subtitle && <p className="text-sm text-gray-400 mt-1">{subtitle}</p>}
       </div>

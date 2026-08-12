@@ -18,7 +18,7 @@ export function DentistSidebar() {
     <aside className="w-60 bg-white border-r border-slate-100 flex flex-col fixed top-0 left-0 h-full z-40">
       {/* DentSoft Brand Header */}
       <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100">
-        <div className="w-9 h-9 bg-teal-600 rounded-xl flex items-center justify-center text-white shadow-sm shadow-teal-200">
+        <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-sm shadow-blue-200">
           <IconTooth className="w-5 h-5" />
         </div>
         <div>
@@ -38,11 +38,11 @@ export function DentistSidebar() {
               href={item.href}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${focusRing}
                 ${active
-                  ? 'bg-teal-600 text-white font-bold shadow-sm shadow-teal-200'
+                  ? 'bg-blue-50 text-blue-700 font-bold'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
                 }`}
             >
-              <ItemIcon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
+              <ItemIcon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-blue-600' : 'text-slate-400'}`} />
               {item.label}
             </Link>
           )

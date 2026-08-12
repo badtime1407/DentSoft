@@ -106,7 +106,7 @@ export function AppointmentCalendar({
       <button
         type="button"
         onClick={onToday}
-        className={`w-full mb-3 px-3 py-1.5 rounded-lg text-xs font-medium bg-teal-50 text-teal-700 hover:bg-teal-100 transition ${focusRing}`}
+        className={`w-full mb-3 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition ${focusRing}`}
       >
         วันนี้
       </button>
@@ -134,9 +134,9 @@ export function AppointmentCalendar({
               onClick={() => onSelectDate(cell.iso)}
               className={`relative aspect-square flex items-center justify-center rounded-lg text-xs sm:text-sm transition-all ${focusRing} ${
                 isSelected
-                  ? 'bg-teal-600 text-white font-semibold shadow-sm'
+                  ? 'bg-blue-600 text-white font-semibold shadow-sm'
                   : isToday
-                    ? 'ring-2 ring-inset ring-teal-500 text-gray-900 font-medium bg-teal-50/50'
+                    ? 'ring-2 ring-inset ring-blue-500 text-gray-900 font-medium bg-blue-50/50'
                     : cell.inCurrentMonth
                       ? 'text-gray-700 hover:bg-gray-50 font-medium'
                       : 'text-gray-300 hover:bg-gray-50'
@@ -146,7 +146,7 @@ export function AppointmentCalendar({
               {hasAppointments && (
                 <span
                   className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${
-                    isSelected ? 'bg-white' : 'bg-teal-500'
+                    isSelected ? 'bg-white' : 'bg-blue-500'
                   }`}
                 />
               )}

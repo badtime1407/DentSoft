@@ -19,13 +19,13 @@ export function DentistHeader() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="ค้นหารายชื่อคนไข้..."
-          className={`w-full bg-slate-50 border border-slate-200/60 rounded-full pl-10 pr-4 py-2 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:bg-white focus:border-teal-400 transition-all ${focusRing}`}
+          className={`w-full bg-slate-50 border border-slate-200/60 rounded-full pl-10 pr-4 py-2 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:bg-white focus:border-blue-400 transition-all ${focusRing}`}
         />
       </div>
 
       {/* Profile */}
       <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 text-sm font-bold shadow-sm">
+        <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 text-sm font-bold shadow-sm">
           {initial}
         </div>
         <div className="hidden sm:block min-w-0">

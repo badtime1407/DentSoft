@@ -34,7 +34,15 @@ export default function DentistDashboard() {
         .sort((a, b) => (b.waitMinutes ?? 0) - (a.waitMinutes ?? 0)),
     [todaysAppointments]
   )
-  const nextPatient = waitingQueue[0]
+
+  // ยังไม่นับว่า "ถัดไป" เปลี่ยน จนกว่าคิวที่กำลังรักษาอยู่จะบันทึกการรักษาสำเร็จ (สถานะกลายเป็น COMPLETED)
+  const nextPatient = useMemo(
+    () =>
+      [...todaysAppointments]
+        .filter((a) => a.status === 'WAITING' || a.status === 'IN_TREATMENT')
+        .sort((a, b) => a.time.localeCompare(b.time))[0],
+    [todaysAppointments]
+  )
 
   const totalFormatted = String(todaysAppointments.length).padStart(2, '0')
   const waitingFormatted = String(waitingQueue.length).padStart(2, '0')
@@ -56,7 +64,7 @@ export default function DentistDashboard() {
         {/* Card 1: Today Appointments */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="flex items-center">
-            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <IconCalendar className="w-5 h-5" />
             </div>
             <span className="text-sm font-semibold text-slate-600 ml-3">วันนี้</span>
@@ -81,18 +89,8 @@ export default function DentistDashboard() {
           </div>
         </div>
 
-        {/* Card 3: Featured Dark Blue Next Queue */}
-        <div
-          onClick={() => {
-            if (nextPatient) {
-              startTreatment(nextPatient.id)
-              router.push(`/dentist/treatment?id=${nextPatient.id}`)
-            }
-          }}
-          className={`bg-[#0268a7] text-white rounded-2xl p-6 shadow-md flex flex-col justify-between transition-transform ${
-            nextPatient ? 'cursor-pointer hover:scale-[1.01]' : ''
-          }`}
-        >
+        {/* Card 3: Featured Dark Blue Next Queue (display-only, not clickable) */}
+        <div className="bg-blue-600 text-white rounded-2xl p-6 shadow-md flex flex-col justify-between">
           <div className="flex items-center">
             <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
               <IconRotate className="w-4.5 h-4.5" />
@@ -117,7 +115,7 @@ export default function DentistDashboard() {
           <h2 className="text-xl font-bold text-slate-900">ตารางนัดหมายวันนี้</h2>
           <Link
             href="/dentist/appointments"
-            className={`text-sm font-bold text-[#0268a7] hover:underline ${focusRing}`}
+            className={`text-sm font-bold text-blue-600 hover:underline ${focusRing}`}
           >
             ดูปฏิทินทั้งหมด
           </Link>
@@ -139,14 +137,14 @@ export default function DentistDashboard() {
               {todaysAppointments.map((a) => (
                 <tr key={a.id} className="hover:bg-slate-50/60 transition-colors">
                   {/* เวลา */}
-                  <td className="py-4 px-6 text-center font-bold text-[#0268a7] whitespace-nowrap">
+                  <td className="py-4 px-6 text-center font-bold text-blue-700 whitespace-nowrap">
                     {a.time} น.
                   </td>
 
                   {/* คนไข้ */}
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-teal-50 border border-teal-200 text-teal-700 font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
+                      <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
                         {a.patientName.charAt(0)}
                       </div>
                       <span className="font-bold text-slate-800">{a.patientName}</span>
@@ -176,7 +174,7 @@ export default function DentistDashboard() {
                         }
                         router.push(`/dentist/treatment?id=${a.id}`)
                       }}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-teal-200 text-teal-700 hover:bg-teal-50 transition-all ${focusRing}`}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 transition-all ${focusRing}`}
                     >
                       ดูบันทึกการรักษา
                     </button>

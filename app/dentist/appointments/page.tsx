@@ -104,7 +104,7 @@ export default function DentistAppointments() {
         <div className="lg:col-span-7 xl:col-span-7 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col h-[520px]">
           <div className="mb-4 pb-3 border-b border-gray-100 shrink-0">
             <h2 className="text-base font-bold text-gray-900">
-              {selectedDateLabel} {isToday && <span className="text-teal-600 font-semibold ml-1">· วันนี้</span>}
+              {selectedDateLabel} {isToday && <span className="text-blue-600 font-semibold ml-1">· วันนี้</span>}
             </h2>
             <p className="text-xs text-gray-400 mt-0.5">
               รายชื่อคนไข้ที่นัดหมาย ({dayAppointments.length} รายการ)

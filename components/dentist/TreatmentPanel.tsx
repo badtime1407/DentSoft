@@ -6,9 +6,9 @@ import { StatusBadge } from '@/components/shared/StatusBadge'
 import { IconPhone, IconFileText, IconImageIcon, IconUpload } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 import type { DentistAppointment, PastVisit, TreatmentNote } from '@/app/dentist/_mock/appointments'
-import { statusConfig } from '@/app/dentist/_mock/status'
+import { queueStatusConfig } from '@/app/dentist/_mock/status'
 
-const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-teal-400 transition-all ${focusRing}`
+const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 
 const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', treatmentNote: '', nextVisit: '', images: [] }
@@ -16,6 +16,7 @@ const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', treatmentNote
 export function TreatmentPanel({
   appointment,
   history,
+  onComplete,
   onSaveTreatment,
 }: {
   appointment: DentistAppointment
@@ -69,7 +70,7 @@ export function TreatmentPanel({
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-xl font-semibold shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-semibold shrink-0">
               {appointment.patientName.charAt(0)}
             </div>
             <div>
@@ -80,7 +81,7 @@ export function TreatmentPanel({
               </p>
             </div>
           </div>
-          <StatusBadge label={statusConfig[appointment.status].label} tone={statusConfig[appointment.status].tone} />
+          <StatusBadge label={queueStatusConfig[appointment.status].label} tone={queueStatusConfig[appointment.status].tone} />
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
@@ -108,8 +109,11 @@ export function TreatmentPanel({
           <div className="flex flex-wrap gap-2 mt-5">
             <button
               type="button"
-              onClick={() => onSaveTreatment(form)}
-              className={`px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 transition-all shadow-sm shadow-teal-200 ${focusRing}`}
+              onClick={() => {
+                onSaveTreatment(form)
+                onComplete?.()
+              }}
+              className={`px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
             >
               บันทึกการรักษา
             </button>
@@ -146,7 +150,7 @@ export function TreatmentPanel({
             <div className="pt-2 border-t border-slate-100">
               <label className={labelClass + ' flex items-center justify-between'}>
                 <span className="flex items-center gap-1.5 font-semibold text-slate-700">
-                  <IconImageIcon className="w-4 h-4 text-teal-600" />
+                  <IconImageIcon className="w-4 h-4 text-gray-400" />
                   รูปภาพการรักษา / X-Ray
                 </span>
                 <span className="text-[11px] text-slate-400">
@@ -156,7 +160,7 @@ export function TreatmentPanel({
 
               <div className="space-y-3 mt-1.5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <label className={`cursor-pointer px-3.5 py-2 bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${focusRing}`}>
+                  <label className={`cursor-pointer px-3.5 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${focusRing}`}>
                     <IconUpload className="w-4 h-4" />
                     เพิ่มรูปภาพ / X-Ray
                     <input
