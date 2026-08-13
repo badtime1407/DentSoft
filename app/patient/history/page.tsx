@@ -13,7 +13,7 @@ const MOCK_PATIENT_HISTORY = [
     dentist: 'ทพ. อนวัช ศรีประเสริฐ',
     branch: 'สาขา รัชดาภิเษก',
     status: 'นัดหมายสำเร็จ',
-    statusBadge: 'bg-[#edf5ff] text-[#0066ff]',
+    statusBadge: 'bg-blue-50 text-blue-600',
     details: 'ทำความสะอาดคราบหินปูนทั่วปาก สภาพเหงือกปกติ',
   },
   {
@@ -68,7 +68,7 @@ export default function PatientHistoryPage() {
               className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm space-y-3"
             >
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <span className="text-xs font-bold text-[#0066ff]">{item.date}</span>
+                <span className="text-xs font-bold text-blue-600">{item.date}</span>
                 <span
                   className={`px-3 py-1 rounded-xl text-xs font-bold ${item.statusBadge}`}
                 >

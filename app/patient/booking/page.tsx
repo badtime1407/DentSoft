@@ -72,7 +72,7 @@ export default function PatientBookingPage() {
           <button
             type="button"
             onClick={() => alert('ยืนยันการจองนัดหมายเรียบร้อยแล้ว')}
-            className={`w-full py-3.5 bg-[#0066ff] hover:bg-[#0052cc] text-white font-bold text-sm rounded-2xl shadow-md transition ${focusRing}`}
+            className={`w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-2xl shadow-md transition ${focusRing}`}
           >
             ยืนยันการจองนัดหมาย
           </button>
