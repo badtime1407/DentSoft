@@ -312,6 +312,15 @@ export function IconHeadset({ className = '' }: { className?: string }) {
   )
 }
 
+export function IconSparkle({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.5 2.5M15.2 15.2l2.5 2.5M6.3 17.7l2.5-2.5M15.2 8.8l2.5-2.5" />
+      <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export function IconTrash({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...stroke}>

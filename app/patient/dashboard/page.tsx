@@ -8,7 +8,7 @@ import {
   IconCalendarPlus,
   IconCalendar,
   IconTooth,
-  IconChatDots,
+  IconSparkle,
   IconLocationPin,
   IconChevronRight,
   IconClock,
@@ -56,7 +56,7 @@ export default function PatientDashboard() {
       {/* Main Body Content */}
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* 1. Hero Banner Section (Full Bleed Image 44.jpg) */}
-        <section className="relative rounded-2xl overflow-hidden border border-slate-100/90 shadow-sm bg-[#eaf4ff] min-h-[260px] sm:min-h-[300px] flex items-center">
+        <section className="relative rounded-2xl overflow-hidden border border-slate-100/90 shadow-sm bg-blue-50 min-h-[260px] sm:min-h-[300px] flex items-center">
           {/* Background Image 44.jpg - Full Bleed Edge */}
           <img
             src="/44.jpg"
@@ -67,7 +67,7 @@ export default function PatientDashboard() {
           {/* Left Text & CTA Content */}
           <div className="relative z-10 p-8 sm:p-10 max-w-xl space-y-3">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              สวัสดีค่ะ, พิมพ์ชนก <span className="text-[#0066ff]">💙</span>
+              สวัสดีค่ะ, พิมพ์ชนก <span className="text-blue-600">💙</span>
             </h1>
             <p className="text-slate-600 text-sm sm:text-base font-medium leading-relaxed pt-1">
               ดูแลสุขภาพช่องปากของคุณ
@@ -77,7 +77,7 @@ export default function PatientDashboard() {
             <div className="pt-3">
               <Link
                 href="/patient/booking"
-                className={`inline-flex items-center gap-2.5 bg-[#0066ff] hover:bg-[#0052cc] text-white px-6 py-3.5 rounded-2xl font-bold text-sm shadow-md shadow-blue-500/20 transition-all ${focusRing}`}
+                className={`inline-flex items-center gap-2.5 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3.5 rounded-2xl font-bold text-sm shadow-md shadow-blue-500/20 transition-all ${focusRing}`}
               >
                 <IconCalendarPlus className="w-5 h-5" />
                 นัดหมายใหม่
@@ -91,10 +91,10 @@ export default function PatientDashboard() {
           {/* Top Title & Badge */}
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-base font-bold text-[#1e293b] flex items-center gap-2">
-              <IconCalendar className="w-5 h-5 text-[#0055ff]" />
+              <IconCalendar className="w-5 h-5 text-blue-600" />
               นัดหมายครั้งถัดไป
             </h2>
-            <span className="bg-[#edf4ff] text-[#0055ff] px-3.5 py-1.5 rounded-lg text-xs font-bold">
+            <span className="bg-blue-50 text-blue-600 px-3.5 py-1.5 rounded-lg text-xs font-bold">
               อีก 2 วัน
             </span>
           </div>
@@ -103,10 +103,10 @@ export default function PatientDashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pt-1">
             <div className="flex items-center gap-6">
               {/* Date Box */}
-              <div className="bg-[#eff5ff] rounded-2xl py-4 px-5 text-center min-w-[125px] flex flex-col justify-center items-center shrink-0 border border-slate-100/60 shadow-sm">
+              <div className="bg-blue-50 rounded-2xl py-4 px-5 text-center min-w-[125px] flex flex-col justify-center items-center shrink-0 border border-slate-100/60 shadow-sm">
                 <span className="text-xs font-medium text-slate-500">พฤหัสบดี</span>
                 <span className="text-4xl font-extrabold text-[#1e293b] my-1">24</span>
-                <div className="text-xs font-bold text-[#0055ff] leading-tight">
+                <div className="text-xs font-bold text-blue-600 leading-tight">
                   <p>พฤษภาคม</p>
                   <p>2567</p>
                 </div>
@@ -114,7 +114,7 @@ export default function PatientDashboard() {
 
               {/* Appointment Info */}
               <div className="space-y-1.5">
-                <p className="text-sm font-bold text-[#0055ff] flex items-center gap-2">
+                <p className="text-sm font-bold text-blue-600 flex items-center gap-2">
                   <IconClock className="w-4.5 h-4.5" /> 10:00 น.
                 </p>
                 <p className="text-base font-bold text-[#1e293b]">ขูดหินปูน</p>
@@ -122,7 +122,7 @@ export default function PatientDashboard() {
                   กับ ทพ. อนวัช ศรีประเสริฐ
                 </p>
                 <p className="text-xs text-slate-500 font-medium flex items-center gap-2 pt-1">
-                  <IconLocationPin className="w-4 h-4 text-[#0055ff]" /> สาขา รัชดาภิเษก
+                  <IconLocationPin className="w-4 h-4 text-blue-600" /> สาขา รัชดาภิเษก
                 </p>
               </div>
             </div>
@@ -131,7 +131,7 @@ export default function PatientDashboard() {
             <div className="w-full sm:w-auto text-right">
               <Link
                 href="/patient/booking"
-                className={`inline-block w-full sm:w-auto text-center px-5 py-2 border border-[#0055ff] text-[#0055ff] bg-white hover:bg-[#0055ff] hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
+                className={`inline-block w-full sm:w-auto text-center px-5 py-2 border border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
               >
                 ดูรายละเอียด
               </Link>
@@ -151,11 +151,11 @@ export default function PatientDashboard() {
               className={`bg-white rounded-2xl p-5 border border-slate-100/90 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-blue-200 transition-all flex items-center justify-between gap-4 group ${focusRing}`}
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="w-16 h-16 rounded-2xl bg-[#edf4ff] text-[#0055ff] flex items-center justify-center shrink-0">
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                   <IconTooth className="w-8 h-8" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-slate-900 text-base group-hover:text-[#0055ff] transition truncate">
+                  <p className="font-bold text-slate-900 text-base group-hover:text-blue-600 transition truncate">
                     ประวัติการรักษา
                   </p>
                   <p className="text-xs text-slate-400 font-normal mt-1 truncate">
@@ -163,7 +163,7 @@ export default function PatientDashboard() {
                   </p>
                 </div>
               </div>
-              <IconChevronRight className="w-5 h-5 text-slate-400 group-hover:text-[#0055ff] transition shrink-0 ml-1" />
+              <IconChevronRight className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition shrink-0 ml-1" />
             </Link>
 
             {/* Card 2: ปรึกษาออนไลน์ */}
@@ -172,19 +172,19 @@ export default function PatientDashboard() {
               className={`bg-white rounded-2xl p-5 border border-slate-100/90 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-blue-200 transition-all flex items-center justify-between gap-4 group ${focusRing}`}
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="w-16 h-16 rounded-2xl bg-[#edf4ff] text-[#0055ff] flex items-center justify-center shrink-0">
-                  <IconChatDots className="w-8 h-8" />
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <IconSparkle className="w-8 h-8" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-slate-900 text-base group-hover:text-[#0055ff] transition truncate">
-                    ปรึกษาออนไลน์
+                  <p className="font-bold text-slate-900 text-base group-hover:text-blue-600 transition truncate">
+                    ปรึกษา AI ผู้ช่วย
                   </p>
                   <p className="text-xs text-slate-400 font-normal mt-1 truncate">
-                    สอบถามกับทีมทันตแพทย์
+                    สอบถามอาการเบื้องต้นได้ทันที
                   </p>
                 </div>
               </div>
-              <IconChevronRight className="w-5 h-5 text-slate-400 group-hover:text-[#0055ff] transition shrink-0 ml-1" />
+              <IconChevronRight className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition shrink-0 ml-1" />
             </Link>
 
             {/* Card 3: แผนที่การเดินทาง */}
@@ -193,11 +193,11 @@ export default function PatientDashboard() {
               className={`bg-white rounded-2xl p-5 border border-slate-100/90 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-blue-200 transition-all flex items-center justify-between gap-4 group ${focusRing}`}
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="w-16 h-16 rounded-2xl bg-[#edf4ff] text-[#0055ff] flex items-center justify-center shrink-0">
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                   <IconLocationPin className="w-8 h-8" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-slate-900 text-base group-hover:text-[#0055ff] transition truncate">
+                  <p className="font-bold text-slate-900 text-base group-hover:text-blue-600 transition truncate">
                     แผนที่การเดินทาง
                   </p>
                   <p className="text-xs text-slate-400 font-normal mt-1 truncate">
@@ -205,7 +205,7 @@ export default function PatientDashboard() {
                   </p>
                 </div>
               </div>
-              <IconChevronRight className="w-5 h-5 text-slate-400 group-hover:text-[#0055ff] transition shrink-0 ml-1" />
+              <IconChevronRight className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition shrink-0 ml-1" />
             </a>
           </div>
         </section>
@@ -218,7 +218,7 @@ export default function PatientDashboard() {
             </h2>
             <Link
               href="/patient/booking"
-              className={`text-sm font-bold text-[#0066ff] hover:underline flex items-center gap-1 ${focusRing}`}
+              className={`text-sm font-bold text-blue-600 hover:underline flex items-center gap-1 ${focusRing}`}
             >
               ดูทั้งหมด <IconChevronRight className="w-4 h-4" />
             </Link>
@@ -245,7 +245,7 @@ export default function PatientDashboard() {
                       {item.title}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-2">{item.description}</p>
-                    <p className="text-sm font-extrabold text-[#0066ff] pt-2">
+                    <p className="text-sm font-extrabold text-blue-600 pt-2">
                       {item.price}{' '}
                       <span className="text-xs font-normal text-slate-400">เริ่มต้น</span>
                     </p>
@@ -255,7 +255,7 @@ export default function PatientDashboard() {
                 <div className="p-4 pt-0">
                   <Link
                     href="/patient/booking"
-                    className={`w-full block text-center py-2 border border-blue-200 text-[#0066ff] hover:bg-blue-50 rounded-xl text-xs font-semibold transition ${focusRing}`}
+                    className={`w-full block text-center py-2 border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl text-xs font-semibold transition ${focusRing}`}
                   >
                     ดูรายละเอียด
                   </Link>
@@ -266,7 +266,7 @@ export default function PatientDashboard() {
         </section>
 
         {/* 5. Dental Care Tip Banner (Matching Screenshot with 33.png & 11.jpg) */}
-        <section className="relative rounded-2xl overflow-hidden border border-slate-100/90 shadow-sm bg-[#eaf3ff] min-h-[190px] sm:min-h-[220px] flex items-center">
+        <section className="relative rounded-2xl overflow-hidden border border-slate-100/90 shadow-sm bg-blue-50 min-h-[190px] sm:min-h-[220px] flex items-center">
           {/* Background / Right Side Image 11.jpg */}
           <img
             src="/11.jpg"
@@ -287,7 +287,7 @@ export default function PatientDashboard() {
 
             {/* Text Content */}
             <div className="space-y-2.5 text-left">
-              <h3 className="text-[#0055ff] font-extrabold text-xl sm:text-2xl tracking-tight">
+              <h3 className="text-blue-600 font-extrabold text-xl sm:text-2xl tracking-tight">
                 เคล็ดลับดูแลสุขภาพช่องปาก
               </h3>
               <p className="text-slate-600 text-xs sm:text-sm font-medium leading-relaxed">
@@ -298,7 +298,7 @@ export default function PatientDashboard() {
               <div className="pt-1.5">
                 <button
                   type="button"
-                  className={`px-5 py-2 border border-[#0055ff] text-[#0055ff] bg-[#eaf3ff]/90 hover:bg-[#0055ff] hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
+                  className={`px-5 py-2 border border-blue-600 text-blue-600 bg-blue-50/90 hover:bg-blue-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
                 >
                   อ่านเพิ่มเติม
                 </button>
@@ -312,7 +312,7 @@ export default function PatientDashboard() {
           {/* Left Content: Headset Icon + Text + Button */}
           <div className="flex items-center gap-6 z-10">
             {/* Soft Blue Headset Icon Container - Larger Icon */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#edf4ff] text-[#0055ff] flex items-center justify-center shrink-0 shadow-sm hover:scale-105 transition-transform duration-300">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-sm hover:scale-105 transition-transform duration-300">
               <IconHeadset className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
 
@@ -327,7 +327,7 @@ export default function PatientDashboard() {
               <div className="pt-1">
                 <button
                   type="button"
-                  className={`px-5 py-1.5 border border-[#0055ff] text-[#0055ff] bg-white hover:bg-[#0055ff] hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
+                  className={`px-5 py-1.5 border border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
                 >
                   ติดต่อคลินิก
                 </button>
