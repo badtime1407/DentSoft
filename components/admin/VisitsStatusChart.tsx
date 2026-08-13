@@ -7,7 +7,7 @@ const BAR_GAP = 6
 const SEGMENT_GAP = 2
 const CHART_HEIGHT = 160
 
-const COMPLETED_COLOR = '#1d4ed8' // blue-700
+const COMPLETED_COLOR = '#3e82bd' // blue-700
 const CANCELLED_COLOR = '#fb7185' // rose-400
 
 function formatShortDate(iso: string): string {
