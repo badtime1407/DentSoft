@@ -57,9 +57,9 @@ npm run dev
 DENTSOFT/
 ├── app/
 │   ├── (auth)/          ← หน้า Login, Register, Forgot/Reset Password (ห้ามแก้ Logic)
-│   ├── (admin)/         ← หน้าสำหรับ Admin (แก้ได้)
-│   ├── (dentist)/       ← หน้าสำหรับ Dentist (แก้ได้)
-│   ├── (patient)/       ← หน้าสำหรับ Patient (แก้ได้)
+│   ├── admin/           ← หน้าสำหรับ Admin (แก้ได้)
+│   ├── dentist/         ← หน้าสำหรับ Dentist (แก้ได้)
+│   ├── patient/         ← หน้าสำหรับ Patient (แก้ได้)
 │   ├── api/             ← API Routes (ห้ามแก้)
 │   ├── layout.tsx       ← Root Layout (ห้ามแก้)
 │   └── page.tsx         ← Landing Page (แก้ได้)
@@ -86,28 +86,30 @@ DENTSOFT/
 - [x] Middleware ควบคุมสิทธิ์ (ปิดชั่วคราวเพื่อทำ Frontend)
 - [x] Landing Page (Demo) — ยังต้องปรับแต่งเพิ่ม
 - [x] หน้า Login, Register, Forgot Password, Reset Password
+- [x] Admin Frontend ครบทุกหน้า (Mock Data) — Dashboard, Appointments, Patients, Dentists, Reports (branch `ui/admin`)
+- [x] Dentist Frontend ครบทุกหน้า (Mock Data) — Dashboard, Appointments (ปฏิทิน), Treatment (branch `ui/dentist`)
 
 ---
 
 ## 🔲 สิ่งที่ต้องทำต่อ (Frontend)
 
-### Admin
-- [ ] `app/(admin)/dashboard/page.tsx` — ภาพรวมระบบ สถิติ
-- [ ] `app/(admin)/dentists/page.tsx` — จัดการทันตแพทย์
-- [ ] `app/(admin)/patients/page.tsx` — รายชื่อคนไข้
-- [ ] `app/(admin)/appointments/page.tsx` — จัดการนัดหมาย
-- [ ] `app/(admin)/reports/page.tsx` — รายงานสถิติ
+### Admin — branch `ui/admin` (เสร็จแล้วทั้งหมด ✅)
+- [x] `app/admin/dashboard/page.tsx` — ภาพรวมระบบ สถิติ
+- [x] `app/admin/appointments/page.tsx` — จัดการนัดหมาย
+- [x] `app/admin/patients/page.tsx` — รายชื่อคนไข้
+- [x] `app/admin/dentists/page.tsx` — จัดการทันตแพทย์
+- [x] `app/admin/reports/page.tsx` — รายงานสถิติ
 
-### Dentist
-- [ ] `app/(dentist)/dashboard/page.tsx` — ภาพรวมนัดหมายวันนี้
-- [ ] `app/(dentist)/appointments/page.tsx` — รายการนัดหมาย
-- [ ] `app/(dentist)/treatment/page.tsx` — บันทึกการรักษา
+### Dentist — branch `ui/dentist` (เสร็จแล้วทั้งหมด ✅)
+- [x] `app/dentist/dashboard/page.tsx` — ภาพรวมนัดหมายวันนี้
+- [x] `app/dentist/appointments/page.tsx` — ปฏิทินนัดหมาย + ตารางรายวัน
+- [x] `app/dentist/treatment/page.tsx` — บันทึกการรักษา
 
-### Patient
-- [ ] `app/(patient)/dashboard/page.tsx` — หน้าหลักคนไข้
-- [ ] `app/(patient)/booking/page.tsx` — จองนัดหมาย
-- [ ] `app/(patient)/history/page.tsx` — ประวัติการรักษา
-- [ ] `app/(patient)/chat/page.tsx` — AI Chatbot
+### Patient — branch `ui/patient`
+- [ ] `app/patient/dashboard/page.tsx` — หน้าหลักคนไข้
+- [ ] `app/patient/booking/page.tsx` — จองนัดหมาย
+- [ ] `app/patient/history/page.tsx` — ประวัติการรักษา
+- [ ] `app/patient/chat/page.tsx` — AI Chatbot
 
 ---
 
@@ -120,6 +122,7 @@ DENTSOFT/
 - `middleware.ts`
 - `app/layout.tsx`
 - `app/api/` — ทั้งโฟลเดอร์
+- `app/(auth)/` — ทั้งโฟลเดอร์
 
 ---
 
@@ -163,21 +166,6 @@ fetch('/api/users', { ... })
 // ห้ามแก้ชื่อ field: firstName, lastName, username, email, password, phone
 ```
 
-**Forgot Password Page**
-```tsx
-// ❌ ห้ามแก้
-const handleSubmit = async () => { ... }
-fetch('/api/auth/reset-password', { ... })
-```
-
-**Reset Password Page**
-```tsx
-// ❌ ห้ามแก้
-const handleSubmit = async () => { ... }
-fetch('/api/auth/new-password', { ... })
-const token = searchParams.get('token')
-```
-
 ### ⚠️ ข้อควรระวัง
 - อย่าลบ `useState`, `useRouter`, `signIn` ออก
 - อย่าเปลี่ยนชื่อ `name` ของ input field
@@ -214,10 +202,17 @@ const { data } = await fetch('/api/appointments')
 ```
 
 ### Branch
-ให้สร้าง branch แยกสำหรับแต่ละ feature
+| Branch | หน้าที่รับผิดชอบ |
+|---|---|
+| `ui/admin` | หน้า Admin ทั้งหมด |
+| `ui/dentist` | หน้า Dentist ทั้งหมด |
+| `ui/patient` | หน้า Patient ทั้งหมด |
+
 ```bash
-git checkout -b ui/admin-dashboard
-git checkout -b ui/patient-booking
+# สลับ branch
+git checkout ui/admin
+git checkout ui/dentist
+git checkout ui/patient
 ```
 
 ---
@@ -239,3 +234,6 @@ git checkout -b ui/patient-booking
 ## 🔗 Links
 - GitHub: `github.com/badtime1407/DentSoft`
 - Local: `http://localhost:3000`
+- Admin: `http://localhost:3000/admin/dashboard`
+- Dentist: `http://localhost:3000/dentist/dashboard`
+- Patient: `http://localhost:3000/patient/dashboard`
