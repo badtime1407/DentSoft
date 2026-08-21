@@ -8,7 +8,7 @@ import HelpSection from '@/components/ui/HelpSection'
 
 export default function HomePage() {
   return (
-    <div id="top" className="min-h-screen bg-white font-sans">
+    <div id="top" className="min-h-screen bg-slate-50 font-sans">
       <Navbar />
       <HeroSection />
       <QuickLinksSection />
