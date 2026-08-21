@@ -3,7 +3,7 @@ export type AppointmentStatus = 'CONFIRMED' | 'WAITING' | 'IN_TREATMENT' | 'COMP
 export type TreatmentNote = {
   toothNumber: string
   diagnosis: string
-  treatmentNote: string
+  treatmentItems: string[]
   nextVisit: string
   images?: string[]
 }

@@ -3,15 +3,47 @@
 
 import { useState } from 'react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { IconPhone, IconFileText, IconImageIcon, IconUpload } from '@/components/shared/icons'
+import { IconPhone, IconFileText, IconImageIcon, IconUpload, IconX } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 import type { DentistAppointment, PastVisit, TreatmentNote } from '@/app/dentist/_mock/appointments'
 import { queueStatusConfig } from '@/app/dentist/_mock/status'
 
 const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
+const chipClass = `px-2.5 py-1 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 text-slate-600 text-[11px] font-medium rounded-full border border-slate-200 transition ${focusRing}`
 
-const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', treatmentNote: '', nextVisit: '', images: [] }
+const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', treatmentItems: [], nextVisit: '', images: [] }
+
+const serviceTemplates: Record<string, { diagnosis: string; treatmentItems: string[] }> = {
+  'ตรวจสุขภาพฟัน': { diagnosis: 'ตรวจสุขภาพฟันและเหงือกโดยรวม ไม่พบความผิดปกติ', treatmentItems: ['ตรวจสุขภาพฟันประจำปี', 'แนะนำการดูแลสุขภาพช่องปาก'] },
+  'ขูดหินปูน': { diagnosis: 'หินปูนสะสมปานกลาง', treatmentItems: ['ขูดหินปูนทั่วปาก', 'แนะนำแปรงฟันเช้า-เย็น'] },
+  'อุดฟัน': { diagnosis: 'ฟันผุระยะเริ่มต้น', treatmentItems: ['อุดฟันด้วยวัสดุเรซินสีเหมือนฟัน'] },
+  'จัดฟัน (ปรับลวด)': { diagnosis: 'ปรับลวดประจำเดือน', treatmentItems: ['ปรับแรงดึงลวดบนล่าง', 'นัดครั้งถัดไปตามกำหนด'] },
+  'รักษารากฟัน': { diagnosis: 'เนื้อเยื่อในโพรงประสาทฟันอักเสบ', treatmentItems: ['รักษารากฟัน', 'ทำความสะอาดคลองรากฟัน'] },
+  'ครอบฟัน': { diagnosis: 'ฟันแตก/บิ่น ต้องการครอบฟันเพื่อป้องกันการแตกเพิ่ม', treatmentItems: ['พิมพ์ปากเพื่อทำครอบฟัน'] },
+}
+
+const diagnosisChips = ['ฟันผุ', 'หินปูนสะสม', 'เหงือกอักเสบ', 'ปกติดี']
+const treatmentChips = ['อุดฟันด้วยเรซิน', 'ขูดหินปูนทั่วปาก', 'ถอนฟัน', 'นัดติดตามอาการ']
+
+function toDateInputValue(d: Date) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function addDays(dateStr: string, days: number) {
+  const d = new Date(dateStr + 'T00:00:00')
+  d.setDate(d.getDate() + days)
+  return toDateInputValue(d)
+}
+
+function addMonths(dateStr: string, months: number) {
+  const d = new Date(dateStr + 'T00:00:00')
+  d.setMonth(d.getMonth() + months)
+  return toDateInputValue(d)
+}
 
 export function TreatmentPanel({
   appointment,
@@ -25,15 +57,32 @@ export function TreatmentPanel({
   onComplete?: () => void
   onSaveTreatment: (note: TreatmentNote) => void
 }) {
-  const [form, setForm] = useState<TreatmentNote>(() => ({
-    images: [],
-    ...(appointment.treatment ?? emptyNote),
-  }))
+  const [form, setForm] = useState<TreatmentNote>(() => {
+    if (appointment.treatment) return { images: [], ...appointment.treatment }
+    const template = serviceTemplates[appointment.serviceName]
+    return template ? { ...emptyNote, diagnosis: template.diagnosis, treatmentItems: template.treatmentItems } : emptyNote
+  })
 
   const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   function updateForm<K extends keyof TreatmentNote>(key: K, value: TreatmentNote[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function appendDiagnosisChip(text: string) {
+    setForm((prev) => ({ ...prev, diagnosis: prev.diagnosis ? `${prev.diagnosis} ${text}` : text }))
+  }
+
+  function addTreatmentItem(text = '') {
+    setForm((prev) => ({ ...prev, treatmentItems: [...prev.treatmentItems, text] }))
+  }
+
+  function updateTreatmentItem(index: number, text: string) {
+    setForm((prev) => ({ ...prev, treatmentItems: prev.treatmentItems.map((item, i) => (i === index ? text : item)) }))
+  }
+
+  function removeTreatmentItem(index: number) {
+    setForm((prev) => ({ ...prev, treatmentItems: prev.treatmentItems.filter((_, i) => i !== index) }))
   }
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -99,14 +148,15 @@ export function TreatmentPanel({
           </div>
         </div>
 
-        {appointment.note && (
-          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-3">
-            หมายเหตุ: {appointment.note}
-          </p>
-        )}
-
         {!isCancelled && (
           <div className="flex flex-wrap gap-2 mt-5">
+            <button
+              type="button"
+              onClick={() => onSaveTreatment(form)}
+              className={`px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all ${focusRing}`}
+            >
+              บันทึกร่าง
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -115,7 +165,7 @@ export function TreatmentPanel({
               }}
               className={`px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
             >
-              บันทึกการรักษา
+              เสร็จสิ้นการรักษา
             </button>
           </div>
         )}
@@ -128,6 +178,13 @@ export function TreatmentPanel({
             <IconFileText className="w-4 h-4 text-gray-400" />
             <h2 className="font-semibold text-gray-900">บันทึกการรักษา</h2>
           </div>
+
+          <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-4">
+            <p className="text-[11px] font-semibold text-blue-700 mb-0.5">สิ่งที่คนไข้จองมา</p>
+            <p className="text-sm font-medium text-slate-800">{appointment.serviceName}</p>
+            {appointment.note && <p className="text-xs text-slate-500 mt-1">หมายเหตุจากคนไข้: {appointment.note}</p>}
+          </div>
+
           <fieldset disabled={isCancelled} className="space-y-4 disabled:opacity-50">
             <div>
               <label className={labelClass}>ฟันที่รักษา</label>
@@ -136,14 +193,64 @@ export function TreatmentPanel({
             <div>
               <label className={labelClass}>ปัญหาที่พบ</label>
               <textarea className={`${inputClass} min-h-20 resize-none`} value={form.diagnosis} onChange={(e) => updateForm('diagnosis', e.target.value)} placeholder="อาการ/ปัญหาที่ตรวจพบ" />
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {diagnosisChips.map((chip) => (
+                  <button key={chip} type="button" onClick={() => appendDiagnosisChip(chip)} className={chipClass}>
+                    + {chip}
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
-              <label className={labelClass}>แนวทางการรักษา</label>
-              <textarea className={`${inputClass} min-h-20 resize-none`} value={form.treatmentNote} onChange={(e) => updateForm('treatmentNote', e.target.value)} placeholder="สิ่งที่ทำการรักษาในครั้งนี้" />
+              <label className={labelClass}>สิ่งที่ทำวันนี้</label>
+              <div className="space-y-2">
+                {form.treatmentItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input
+                      className={inputClass}
+                      value={item}
+                      onChange={(e) => updateTreatmentItem(idx, e.target.value)}
+                      placeholder="เช่น ขูดหินปูนทั่วปาก"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeTreatmentItem(idx)}
+                      className={`shrink-0 p-2 rounded-lg text-gray-400 hover:bg-rose-50 hover:text-rose-600 transition ${focusRing}`}
+                      title="ลบรายการนี้"
+                    >
+                      <IconX className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                {form.treatmentItems.length === 0 && (
+                  <p className="text-xs text-gray-400">ยังไม่มีรายการที่ทำ กด &quot;เพิ่มรายการ&quot; หรือเลือกจากด้านล่าง</p>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                <button type="button" onClick={() => addTreatmentItem()} className={chipClass}>
+                  + เพิ่มรายการ
+                </button>
+                {treatmentChips.map((chip) => (
+                  <button key={chip} type="button" onClick={() => addTreatmentItem(chip)} className={chipClass}>
+                    + {chip}
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <label className={labelClass}>นัดครั้งถัดไป</label>
               <input type="date" className={inputClass} value={form.nextVisit} onChange={(e) => updateForm('nextVisit', e.target.value)} />
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                <button type="button" onClick={() => updateForm('nextVisit', addDays(appointment.date, 7))} className={chipClass}>
+                  +1 สัปดาห์
+                </button>
+                <button type="button" onClick={() => updateForm('nextVisit', addDays(appointment.date, 14))} className={chipClass}>
+                  +2 สัปดาห์
+                </button>
+                <button type="button" onClick={() => updateForm('nextVisit', addMonths(appointment.date, 1))} className={chipClass}>
+                  +1 เดือน
+                </button>
+              </div>
             </div>
 
             {/* Image Upload & Attachment Section */}
