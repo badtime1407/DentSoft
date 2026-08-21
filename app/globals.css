@@ -5,6 +5,10 @@
   --color-blue-700: #3e82bd;
 }
 
+body {
+  font-family: var(--font-geist), var(--font-thai), sans-serif;
+}
+
 @keyframes breathe {
   0%, 100% {
     opacity: 1;
