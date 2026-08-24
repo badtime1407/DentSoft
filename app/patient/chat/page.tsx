@@ -19,30 +19,15 @@ const INITIAL_MESSAGES: ChatMessage[] = [
     from: 'ai',
     text: 'สวัสดีค่ะ ดิฉันเป็นผู้ช่วย AI ของ DentSoft สอบถามอาการหรือข้อสงสัยเกี่ยวกับสุขภาพช่องปากเบื้องต้นได้เลยค่ะ',
   },
-  {
-    id: 'm2',
-    from: 'patient',
-    text: 'อยากสอบถามขั้นตอนการเตรียมตัวก่อนขูดหินปูนค่ะ',
-  },
-  {
-    id: 'm3',
-    from: 'ai',
-    text: 'รับประทานอาหารได้ตามปกติค่ะ และแนะนำให้แปรงฟันให้สะอาดก่อนเข้ารับบริการ หากมีอาการเสียวฟันหรือเหงือกอักเสบ แนะนำให้แจ้งทันตแพทย์ก่อนเริ่มการรักษาค่ะ',
-  },
-]
-
-const AI_REPLIES = [
-  'ขอบคุณสำหรับคำถามค่ะ เบื้องต้นแนะนำให้ดูแลรักษาความสะอาดช่องปากและสังเกตอาการต่อเนื่อง หากไม่ดีขึ้นแนะนำให้นัดหมายพบทันตแพทย์เพื่อตรวจวินิจฉัยเพิ่มเติมค่ะ',
-  'จากข้อมูลเบื้องต้น อาการนี้พบได้ทั่วไปค่ะ แต่เพื่อความแม่นยำ แนะนำให้จองนัดหมายเข้ามาให้ทันตแพทย์ตรวจดูอาการโดยตรงค่ะ',
-  'สามารถบรรเทาอาการเบื้องต้นได้ด้วยการดูแลสุขอนามัยช่องปาก หากมีอาการปวดหรือบวมควรรีบนัดหมายเข้ามาพบทันตแพทย์นะคะ',
 ]
 
 export default function PatientChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES)
   const [draft, setDraft] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [interactionId, setInteractionId] = useState<string | null>(null)
 
-  function handleSend() {
+  async function handleSend() {
     const text = draft.trim()
     if (!text || isTyping) return
 
@@ -51,11 +36,26 @@ export default function PatientChatPage() {
     setDraft('')
     setIsTyping(true)
 
-    setTimeout(() => {
-      const reply = AI_REPLIES[Math.floor(Math.random() * AI_REPLIES.length)]
-      setMessages((prev) => [...prev, { id: crypto.randomUUID(), from: 'ai', text: reply }])
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, previousInteractionId: interactionId }),
+      })
+
+      if (!res.ok) throw new Error('chat request failed')
+
+      const data = await res.json()
+      setMessages((prev) => [...prev, { id: crypto.randomUUID(), from: 'ai', text: data.reply }])
+      setInteractionId(data.interactionId)
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), from: 'ai', text: 'ขออภัยค่ะ ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง' },
+      ])
+    } finally {
       setIsTyping(false)
-    }, 900)
+    }
   }
 
   return (
