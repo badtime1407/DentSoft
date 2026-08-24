@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PatientHeader } from '@/components/patient/PatientHeader'
 import { PatientFooter } from '@/components/patient/PatientFooter'
@@ -16,38 +17,88 @@ import {
 } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 
-const RECOMMENDED_SERVICES = [
-  {
-    id: '1',
-    title: 'ตรวจสุขภาพช่องปาก',
-    description: 'ตรวจเช็คฟันและเหงือกอย่างละเอียด',
-    price: '฿900',
-    image: '/2.jpg',
-},
-  {
-    id: '2',
-    title: 'อุดฟัน',
-    description: 'รักษาฟันผุด้วยวัสดุคุณภาพ',
-    price: '฿1,200',
-    image: '/3.jpg',
-},
-  {
-    id: '3',
-    title: 'จัดฟัน',
-    description: 'ปรับสภาพฟันให้สวยงามและเรียงตัวดี',
-    price: '฿35,000',
-    image: '/4.jpg',
-  },
-  {
-    id: '4',
-    title: 'ฟอกสีฟัน',
-    description: 'ฟันขาวใส มั่นใจในรอยยิ้มของคุณ',
-    price: '฿4,500',
-    image: '/1.jpg',
-  },
+type Service = {
+  id: string
+  name: string
+  description: string | null
+  minPrice: number
+  maxPrice: number
+}
+
+type Appointment = {
+  id: string
+  date: string
+  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
+  service: { name: string }
+  dentist: { firstName: string; lastName: string } | null
+}
+
+const THAI_DAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์']
+const THAI_MONTHS = [
+  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
 ]
 
+function formatTime(date: Date) {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+function daysUntilLabel(date: Date) {
+  const startOfToday = new Date()
+  startOfToday.setHours(0, 0, 0, 0)
+  const target = new Date(date)
+  target.setHours(0, 0, 0, 0)
+  const diffDays = Math.round((target.getTime() - startOfToday.getTime()) / 86400000)
+  if (diffDays <= 0) return 'วันนี้'
+  if (diffDays === 1) return 'พรุ่งนี้'
+  return `อีก ${diffDays} วัน`
+}
+
+const FEATURED_SERVICE_IMAGES: Record<string, string> = {
+  ตรวจฟันทั่วไป: '/2.jpg',
+  อุดฟันสีเหมือนฟัน: '/3.jpg',
+  ขูดหินปูน: '/4.jpg',
+  ฟอกสีฟัน: '/1.jpg',
+}
+
+function formatPrice(service: Service) {
+  const min = service.minPrice.toLocaleString('th-TH')
+  if (service.minPrice === service.maxPrice) return `฿${min}`
+  return `฿${min} - ฿${service.maxPrice.toLocaleString('th-TH')}`
+}
+
 export default function PatientDashboard() {
+  const [featuredServices, setFeaturedServices] = useState<Service[]>([])
+  const [firstName, setFirstName] = useState('')
+  const [nextAppointment, setNextAppointment] = useState<Appointment | null>(null)
+  const [isLoadingAppointment, setIsLoadingAppointment] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/services')
+      .then((res) => res.json())
+      .then((data: { services: Service[] }) => {
+        const services = data.services ?? []
+        const featured = Object.keys(FEATURED_SERVICE_IMAGES)
+          .map((name) => services.find((s) => s.name === name))
+          .filter((s): s is Service => Boolean(s))
+        setFeaturedServices(featured)
+      })
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/appointments')
+      .then((res) => res.json())
+      .then((data: { patient?: { firstName: string }; appointments?: Appointment[] }) => {
+        setFirstName(data.patient?.firstName ?? '')
+        const now = new Date()
+        const upcoming = (data.appointments ?? []).find(
+          (a) => a.status !== 'CANCELLED' && new Date(a.date) >= now
+        )
+        setNextAppointment(upcoming ?? null)
+      })
+      .finally(() => setIsLoadingAppointment(false))
+  }, [])
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* Top Navbar */}
@@ -67,7 +118,7 @@ export default function PatientDashboard() {
           {/* Left Text & CTA Content */}
           <div className="relative z-10 p-8 sm:p-10 max-w-xl space-y-3">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              สวัสดีค่ะ, พิมพ์ชนก <span className="text-blue-600">💙</span>
+              สวัสดีค่ะ{firstName ? `, ${firstName}` : ''} <span className="text-blue-600">💙</span>
             </h1>
             <p className="text-slate-600 text-sm sm:text-base font-medium leading-relaxed pt-1">
               ดูแลสุขภาพช่องปากของคุณ
@@ -86,7 +137,7 @@ export default function PatientDashboard() {
           </div>
         </section>
 
-        {/* 2. Next Appointment Card (Matching Screenshot) */}
+        {/* 2. Next Appointment Card */}
         <section className="bg-white rounded-2xl border border-slate-100/90 p-6 sm:p-7 shadow-sm space-y-5">
           {/* Top Title & Badge */}
           <div className="flex items-center justify-between gap-2">
@@ -94,49 +145,69 @@ export default function PatientDashboard() {
               <IconCalendar className="w-5 h-5 text-blue-600" />
               นัดหมายครั้งถัดไป
             </h2>
-            <span className="bg-blue-50 text-blue-600 px-3.5 py-1.5 rounded-lg text-xs font-bold">
-              อีก 2 วัน
-            </span>
+            {nextAppointment && (
+              <span className="bg-blue-50 text-blue-600 px-3.5 py-1.5 rounded-lg text-xs font-bold">
+                {daysUntilLabel(new Date(nextAppointment.date))}
+              </span>
+            )}
           </div>
 
-          {/* Main Appointment Body */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pt-1">
-            <div className="flex items-center gap-6">
-              {/* Date Box */}
-              <div className="bg-blue-50 rounded-2xl py-4 px-5 text-center min-w-[125px] flex flex-col justify-center items-center shrink-0 border border-slate-100/60 shadow-sm">
-                <span className="text-xs font-medium text-slate-500">พฤหัสบดี</span>
-                <span className="text-4xl font-extrabold text-[#1e293b] my-1">24</span>
-                <div className="text-xs font-bold text-blue-600 leading-tight">
-                  <p>พฤษภาคม</p>
-                  <p>2567</p>
+          {isLoadingAppointment ? (
+            <p className="text-sm text-slate-400 py-4">กำลังโหลดข้อมูลนัดหมาย...</p>
+          ) : !nextAppointment ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-1">
+              <p className="text-sm text-slate-500 font-medium">
+                คุณยังไม่มีนัดหมายที่กำลังจะถึง
+              </p>
+              <Link
+                href="/patient/booking"
+                className={`inline-block px-5 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
+              >
+                จองนัดหมายใหม่
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pt-1">
+              <div className="flex items-center gap-6">
+                {/* Date Box */}
+                <div className="bg-blue-50 rounded-2xl py-4 px-5 text-center min-w-[125px] flex flex-col justify-center items-center shrink-0 border border-slate-100/60 shadow-sm">
+                  <span className="text-xs font-medium text-slate-500">
+                    {THAI_DAYS[new Date(nextAppointment.date).getDay()]}
+                  </span>
+                  <span className="text-4xl font-extrabold text-[#1e293b] my-1">
+                    {new Date(nextAppointment.date).getDate()}
+                  </span>
+                  <div className="text-xs font-bold text-blue-600 leading-tight">
+                    <p>{THAI_MONTHS[new Date(nextAppointment.date).getMonth()]}</p>
+                    <p>{new Date(nextAppointment.date).getFullYear() + 543}</p>
+                  </div>
+                </div>
+
+                {/* Appointment Info */}
+                <div className="space-y-1.5">
+                  <p className="text-sm font-bold text-blue-600 flex items-center gap-2">
+                    <IconClock className="w-4.5 h-4.5" /> {formatTime(new Date(nextAppointment.date))} น.
+                  </p>
+                  <p className="text-base font-bold text-[#1e293b]">{nextAppointment.service.name}</p>
+                  <p className="text-xs text-slate-400 font-medium">
+                    {nextAppointment.dentist
+                      ? `กับ ทพ. ${nextAppointment.dentist.firstName} ${nextAppointment.dentist.lastName}`
+                      : 'รอคลินิกจัดทันตแพทย์ให้'}
+                  </p>
                 </div>
               </div>
 
-              {/* Appointment Info */}
-              <div className="space-y-1.5">
-                <p className="text-sm font-bold text-blue-600 flex items-center gap-2">
-                  <IconClock className="w-4.5 h-4.5" /> 10:00 น.
-                </p>
-                <p className="text-base font-bold text-[#1e293b]">ขูดหินปูน</p>
-                <p className="text-xs text-slate-400 font-medium">
-                  กับ ทพ. อนวัช ศรีประเสริฐ
-                </p>
-                <p className="text-xs text-slate-500 font-medium flex items-center gap-2 pt-1">
-                  <IconLocationPin className="w-4 h-4 text-blue-600" /> สาขา รัชดาภิเษก
-                </p>
+              {/* Action Button (Bottom Right) */}
+              <div className="w-full sm:w-auto text-right">
+                <Link
+                  href="/patient/history"
+                  className={`inline-block w-full sm:w-auto text-center px-5 py-2 border border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
+                >
+                  ดูรายละเอียด
+                </Link>
               </div>
             </div>
-
-            {/* Action Button (Bottom Right) */}
-            <div className="w-full sm:w-auto text-right">
-              <Link
-                href="/patient/booking"
-                className={`inline-block w-full sm:w-auto text-center px-5 py-2 border border-blue-600 text-blue-600 bg-white hover:bg-blue-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm ${focusRing}`}
-              >
-                ดูรายละเอียด
-              </Link>
-            </div>
-          </div>
+          )}
         </section>
 
         {/* 3. Frequently Used Services (บริการที่คุณใช้บ่อย - Matching Screenshot) */}
@@ -217,7 +288,7 @@ export default function PatientDashboard() {
               บริการแนะนำสำหรับคุณ
             </h2>
             <Link
-              href="/patient/booking"
+              href="/patient/services"
               className={`text-sm font-bold text-blue-600 hover:underline flex items-center gap-1 ${focusRing}`}
             >
               ดูทั้งหมด <IconChevronRight className="w-4 h-4" />
@@ -225,28 +296,30 @@ export default function PatientDashboard() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {RECOMMENDED_SERVICES.map((item) => (
+            {featuredServices.map((service) => (
               <div
-                key={item.id}
+                key={service.id}
                 className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
                   {/* Card Thumbnail */}
                   <div className="h-40 overflow-hidden relative bg-slate-100">
                     <img
-                      src={item.image}
-                      alt={item.title}
+                      src={FEATURED_SERVICE_IMAGES[service.name]}
+                      alt={service.name}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                   {/* Card Content */}
                   <div className="p-4 space-y-1.5">
                     <h3 className="font-bold text-slate-900 text-sm sm:text-base">
-                      {item.title}
+                      {service.name}
                     </h3>
-                    <p className="text-xs text-slate-400 line-clamp-2">{item.description}</p>
+                    {service.description && (
+                      <p className="text-xs text-slate-400 line-clamp-2">{service.description}</p>
+                    )}
                     <p className="text-sm font-extrabold text-blue-600 pt-2">
-                      {item.price}{' '}
+                      {formatPrice(service)}{' '}
                       <span className="text-xs font-normal text-slate-400">เริ่มต้น</span>
                     </p>
                   </div>
@@ -254,7 +327,7 @@ export default function PatientDashboard() {
                 {/* Button */}
                 <div className="p-4 pt-0">
                   <Link
-                    href="/patient/booking"
+                    href={`/patient/booking?serviceId=${service.id}`}
                     className={`w-full block text-center py-2 border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl text-xs font-semibold transition ${focusRing}`}
                   >
                     ดูรายละเอียด

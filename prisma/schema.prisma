@@ -71,21 +71,30 @@ model Schedule {
 
 // บริการทันตกรรม
 model Service {
-  id          String   @id @default(cuid())
-  name        String
+  id          String      @id @default(cuid())
+  name        String      @unique
   description String?
-  duration    Int      // นาที
-  price       Float
-  isActive    Boolean  @default(true)
+  category    String      // หมวดหมู่ เช่น "ศัลยกรรมภายในช่องปาก"
+  type        ServiceType @default(MAIN)
+  duration    Int?        // นาที โดยประมาณ (ไม่มีสำหรับ ADD_ON บางรายการ)
+  minPrice    Float
+  maxPrice    Float
+  isActive    Boolean     @default(true)
 
   appointments Appointment[]
+}
+
+enum ServiceType {
+  MAIN    // บริการหลักที่คนไข้เลือกจองได้เอง
+  ADD_ON  // รายการเสริมที่ผูกกับบริการหลักตอนบันทึกการรักษา
+  PACKAGE // ชุดบริการที่รวมหลายหัตถการไว้ในราคาเดียว
 }
 
 // การนัดหมาย
 model Appointment {
   id          String            @id @default(cuid())
   patientId   String
-  dentistId   String
+  dentistId   String?
   serviceId   String
   date        DateTime
   status      AppointmentStatus @default(PENDING)
@@ -94,7 +103,7 @@ model Appointment {
   updatedAt   DateTime          @updatedAt
 
   patient   Patient    @relation(fields: [patientId], references: [id])
-  dentist   Dentist    @relation(fields: [dentistId], references: [id])
+  dentist   Dentist?   @relation(fields: [dentistId], references: [id])
   service   Service    @relation(fields: [serviceId], references: [id])
   treatment Treatment?
 }
