@@ -46,6 +46,7 @@ model Patient {
 model Dentist {
   id          String   @id @default(cuid())
   userId      String   @unique
+  title       String   @default("ทพ.")
   firstName   String
   lastName    String
   specialty   String?
