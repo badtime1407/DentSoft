@@ -100,15 +100,18 @@ enum ServiceType {
 
 // การนัดหมาย
 model Appointment {
-  id          String            @id @default(cuid())
-  patientId   String
-  dentistId   String?
-  serviceId   String
-  date        DateTime
-  status      AppointmentStatus @default(PENDING)
-  note        String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id            String            @id @default(cuid())
+  patientId     String
+  dentistId     String?
+  serviceId     String
+  date          DateTime
+  status        AppointmentStatus @default(PENDING)
+  note          String?
+  requestType   RequestType?      // คนไข้ขอยกเลิก/ขอเลื่อนนัด รอแอดมินพิจารณา
+  requestReason String?
+  requestedAt   DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   patient   Patient    @relation(fields: [patientId], references: [id])
   dentist   Dentist?   @relation(fields: [dentistId], references: [id])
@@ -121,6 +124,11 @@ enum AppointmentStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+}
+
+enum RequestType {
+  CANCEL
+  RESCHEDULE
 }
 
 // บันทึกการรักษา

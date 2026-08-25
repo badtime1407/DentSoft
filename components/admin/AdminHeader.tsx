@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signOut, useSession } from 'next-auth/react'
 import { IconLogout, IconBell, IconAlertTriangle, IconRotate } from './icons'
 import { focusRing } from '@/lib/admin/focus-ring'
 import { useCancelRequests } from './CancelRequestsProvider'
-import { services, dentists } from '@/app/admin/_mock/reference'
 
 function formatNow(date: Date) {
   const day = date.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -18,6 +18,8 @@ export function AdminHeader() {
   const [notifOpen, setNotifOpen] = useState(false)
   const { requests } = useCancelRequests()
   const router = useRouter()
+  const { data: session } = useSession()
+  const adminLabel = session?.user?.email ?? 'ผู้ดูแลระบบ'
 
   useEffect(() => {
     setNow(new Date())
@@ -69,7 +71,7 @@ export function AdminHeader() {
                           </div>
                           <p className="text-xs text-gray-500 mb-2">
                             {new Date(r.date + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} · {r.startTime} น. ·{' '}
-                            {services.find((s) => s.id === r.serviceId)?.name} · {dentists.find((d) => d.id === r.dentistId)?.name}
+                            {r.serviceName} · {r.dentistName}
                           </p>
                           <div
                             className={`flex items-start gap-1.5 rounded-lg px-2.5 py-2 mb-3 border ${
@@ -108,14 +110,17 @@ export function AdminHeader() {
         </div>
 
         <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer">
-          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-sm font-semibold">A</div>
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-sm font-semibold">
+            {adminLabel.charAt(0).toUpperCase()}
+          </div>
           <div className="hidden sm:block min-w-0">
-            <p className="text-sm font-medium text-gray-900 leading-none truncate">Admin</p>
+            <p className="text-sm font-medium text-gray-900 leading-none truncate">{adminLabel}</p>
             <p className="text-xs text-gray-400 mt-0.5 truncate">ผู้ดูแลระบบ</p>
           </div>
         </div>
         <button
           type="button"
+          onClick={() => signOut({ callbackUrl: '/login' })}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-rose-400 hover:bg-rose-50 transition ${focusRing}`}
         >
           <IconLogout className="w-4 h-4" /> ออกจากระบบ

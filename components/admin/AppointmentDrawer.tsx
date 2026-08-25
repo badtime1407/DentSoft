@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { dentistsForService, services, type ReferenceDentist } from '@/app/admin/_mock/reference'
 import type { ScheduleAppointment } from '@/app/admin/appointments/mock-appointments'
-import type { CancelRequestType } from '@/app/admin/_mock/cancel-requests'
+import type { CancelRequestType } from './CancelRequestsProvider'
 import { IconX, IconAlertTriangle, IconRotate } from './icons'
 import { focusRing } from '@/lib/admin/focus-ring'
 

@@ -1,7 +1,21 @@
 'use client'
 
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
-import { buildMockCancelRequests, type CancelRequest } from '@/app/admin/_mock/cancel-requests'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+
+export type CancelRequestType = 'CANCEL' | 'RESCHEDULE'
+
+export type CancelRequest = {
+  id: string
+  appointmentId: string
+  patientName: string
+  date: string
+  startTime: string
+  serviceName: string
+  dentistName: string
+  type: CancelRequestType
+  reason: string
+  requestedAt: string
+}
 
 type CancelRequestsContextValue = {
   requests: CancelRequest[]
@@ -11,7 +25,13 @@ type CancelRequestsContextValue = {
 const CancelRequestsContext = createContext<CancelRequestsContextValue | null>(null)
 
 export function CancelRequestsProvider({ children }: { children: ReactNode }) {
-  const [requests, setRequests] = useState<CancelRequest[]>(() => buildMockCancelRequests())
+  const [requests, setRequests] = useState<CancelRequest[]>([])
+
+  useEffect(() => {
+    fetch('/api/appointments/requests')
+      .then((res) => res.json())
+      .then((data: { requests?: CancelRequest[] }) => setRequests(data.requests ?? []))
+  }, [])
 
   const resolveRequestByAppointment = useCallback((appointmentId: string) => {
     setRequests((prev) => prev.filter((r) => r.appointmentId !== appointmentId))
