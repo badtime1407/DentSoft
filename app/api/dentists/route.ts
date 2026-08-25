@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
 
 type DaySchedule = { active: boolean; startTime: string; endTime: string }
 
@@ -57,38 +58,47 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'ต้องเข้าสู่ระบบด้วยบัญชีแอดมิน' }, { status: 401 })
   }
 
-  const { userId, title, firstName, lastName, specialty, phone, schedule } = await req.json()
+  const { title, firstName, lastName, specialty, phone, email, username, password, schedule } = await req.json()
 
-  if (!userId || !firstName || !lastName || !Array.isArray(schedule) || schedule.length !== 7) {
+  if (!firstName || !lastName || !email || !username || !password || !Array.isArray(schedule) || schedule.length !== 7) {
     return NextResponse.json({ error: 'ข้อมูลไม่ครบถ้วน' }, { status: 400 })
   }
 
-  const targetUser = await prisma.user.findUnique({ where: { id: userId }, include: { dentist: true } })
-  if (!targetUser || targetUser.role !== 'PATIENT' || targetUser.dentist) {
-    return NextResponse.json({ error: 'บัญชีนี้ไม่สามารถตั้งเป็นทันตแพทย์ได้' }, { status: 400 })
+  const existing = await prisma.user.findFirst({ where: { OR: [{ email }, { username }] } })
+  if (existing) {
+    return NextResponse.json({ error: 'Email หรือ Username นี้ถูกใช้งานแล้ว' }, { status: 400 })
   }
 
-  await prisma.user.update({ where: { id: userId }, data: { role: 'DENTIST' } })
+  const hashedPassword = await bcrypt.hash(password, 10)
 
-  const dentist = await prisma.dentist.create({
+  const user = await prisma.user.create({
     data: {
-      userId,
-      title: title || 'ทพ.',
-      firstName,
-      lastName,
-      specialty: specialty || null,
-      phone: phone || null,
-      schedules: {
-        create: (schedule as DaySchedule[]).map((d, dayOfWeek) => ({
-          dayOfWeek,
-          startTime: d.startTime,
-          endTime: d.endTime,
-          isActive: d.active,
-        })),
+      username,
+      email,
+      password: hashedPassword,
+      role: 'DENTIST',
+      dentist: {
+        create: {
+          title: title || 'ทพ.',
+          firstName,
+          lastName,
+          specialty: specialty || null,
+          phone: phone || null,
+          schedules: {
+            create: (schedule as DaySchedule[]).map((d, dayOfWeek) => ({
+              dayOfWeek,
+              startTime: d.startTime,
+              endTime: d.endTime,
+              isActive: d.active,
+            })),
+          },
+        },
       },
     },
-    include: { schedules: true },
+    include: { dentist: { include: { schedules: true } } },
   })
+
+  const dentist = user.dentist!
   return NextResponse.json({
     dentist: {
       id: dentist.id,

@@ -7,16 +7,16 @@ import { IconX } from './icons'
 import { focusRing } from '@/lib/admin/focus-ring'
 
 export type DentistFormValues = {
-  userId: string
   title: string
   firstName: string
   lastName: string
   specialty: Specialty
   phone: string
   schedule: WeeklySchedule
+  email: string
+  username: string
+  password: string
 }
-
-type PromotableUser = { id: string; email: string; firstName: string; lastName: string }
 
 const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
@@ -35,13 +35,15 @@ function defaultSchedule(): WeeklySchedule {
 
 function emptyValues(): DentistFormValues {
   return {
-    userId: '',
     title: 'ทพ.',
     firstName: '',
     lastName: '',
     specialty: 'ทันตกรรมทั่วไป',
     phone: '',
     schedule: defaultSchedule(),
+    email: '',
+    username: '',
+    password: '',
   }
 }
 
@@ -61,7 +63,6 @@ export function DentistDrawer({
   onSubmit: (values: DentistFormValues) => void
 }) {
   const [values, setValues] = useState<DentistFormValues>(emptyValues())
-  const [promotableUsers, setPromotableUsers] = useState<PromotableUser[]>([])
 
   useEffect(() => {
     if (!open) return
@@ -77,9 +78,6 @@ export function DentistDrawer({
       })
     } else {
       setValues(emptyValues())
-      fetch('/api/users/promotable')
-        .then((res) => res.json())
-        .then((data: { users?: PromotableUser[] }) => setPromotableUsers(data.users ?? []))
     }
   }, [open, mode, dentist?.id])
 
@@ -89,16 +87,6 @@ export function DentistDrawer({
     setValues((prev) => ({
       ...prev,
       schedule: prev.schedule.map((d, i) => (i === index ? { ...d, ...patch } : d)),
-    }))
-  }
-
-  function handleSelectUser(userId: string) {
-    const user = promotableUsers.find((u) => u.id === userId)
-    setValues((prev) => ({
-      ...prev,
-      userId,
-      firstName: user?.firstName || prev.firstName,
-      lastName: user?.lastName || prev.lastName,
     }))
   }
 
@@ -160,23 +148,20 @@ export function DentistDrawer({
           </div>
 
           {mode === 'create' && (
-            <div className="space-y-2 border-t border-gray-100 pt-4">
-              <label className={labelClass}>บัญชีทันตแพทย์ (เลือกจากผู้ที่สมัครสมาชิกไว้แล้ว)</label>
-              <select
-                className={inputClass}
-                value={values.userId}
-                onChange={(e) => handleSelectUser(e.target.value)}
-              >
-                <option value="">-- เลือกอีเมลบัญชี --</option>
-                {promotableUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.firstName || u.lastName ? `${u.firstName} ${u.lastName} — ${u.email}` : u.email}
-                  </option>
-                ))}
-              </select>
-              <p className="text-[11px] text-gray-400">
-                ให้ทันตแพทย์สมัครสมาชิกด้วยตัวเองที่หน้าสมัครก่อน แล้วเลือกอีเมลของเขาที่นี่ ระบบจะไม่เห็นหรือตั้งรหัสผ่านให้
-              </p>
+            <div className="space-y-4 border-t border-gray-100 pt-4">
+              <p className="text-xs font-semibold text-gray-500">บัญชีสำหรับเข้าสู่ระบบ</p>
+              <div>
+                <label className={labelClass}>Email</label>
+                <input type="email" className={inputClass} value={values.email} onChange={(e) => setValues((p) => ({ ...p, email: e.target.value }))} placeholder="name@clinic.com" />
+              </div>
+              <div>
+                <label className={labelClass}>Username</label>
+                <input className={inputClass} value={values.username} onChange={(e) => setValues((p) => ({ ...p, username: e.target.value }))} placeholder="username" />
+              </div>
+              <div>
+                <label className={labelClass}>รหัสผ่านตั้งต้น</label>
+                <input type="text" className={inputClass} value={values.password} onChange={(e) => setValues((p) => ({ ...p, password: e.target.value }))} placeholder="ตั้งรหัสผ่านให้ทันตแพทย์" />
+              </div>
             </div>
           )}
 
@@ -223,9 +208,8 @@ export function DentistDrawer({
           {error && <p className="text-xs text-rose-600 font-medium">{error}</p>}
           <button
             type="button"
-            disabled={mode === 'create' && !values.userId}
             onClick={() => onSubmit(values)}
-            className={`w-full px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${focusRing}`}
+            className={`w-full px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-all ${focusRing}`}
           >
             {mode === 'create' ? 'บันทึกทันตแพทย์' : 'บันทึกการแก้ไข'}
           </button>
