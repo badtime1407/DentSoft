@@ -172,12 +172,6 @@ export default function AdminDashboard() {
     { label: 'ยกเลิก', value: counts.cancelled, sub: counts.cancelled > 0 ? 'ต้องติดตามจัดคิวใหม่' : 'ไม่มีนัดที่ยกเลิก', icon: IconXCircle },
   ]
 
-  const quickActions = [
-    { label: 'เช็คอินคนไข้', icon: IconUserCheck },
-    { label: 'เพิ่มนัดหมาย', icon: IconCalendarPlus },
-    { label: 'บันทึกการชำระเงิน', icon: IconCreditCard },
-  ]
-
   return (
     <>
       <PageHeader
@@ -185,28 +179,13 @@ export default function AdminDashboard() {
         title="ภาพรวมคลินิกวันนี้"
         subtitle={today}
         actions={
-          <>
-            {quickActions.map((action) => {
-              const ActionIcon = action.icon
-              return (
-                <button
-                  key={action.label}
-                  type="button"
-                  className={`flex items-center gap-2 px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50/50 transition-all ${focusRing}`}
-                >
-                  <ActionIcon className="w-4 h-4" />
-                  {action.label}
-                </button>
-              )
-            })}
-            <Link
-              href="/admin/appointments"
-              className={`flex items-center gap-2 px-3.5 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
-            >
-              <IconClipboardList className="w-4 h-4" />
-              ดูตารางทั้งหมด
-            </Link>
-          </>
+          <Link
+            href="/admin/appointments"
+            className={`flex items-center gap-2 px-3.5 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
+          >
+            <IconClipboardList className="w-4 h-4" />
+            ดูตารางทั้งหมด
+          </Link>
         }
       />
 
