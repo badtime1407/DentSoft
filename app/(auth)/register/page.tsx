@@ -29,6 +29,8 @@ const lockIcon = (
   </svg>
 )
 
+type PatientCandidate = { id: string; firstName: string; lastName: string; birthDate: string | null }
+
 export default function RegisterPage() {
   const router = useRouter()
   const [form, setForm] = useState({
@@ -41,19 +43,20 @@ export default function RegisterPage() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [candidates, setCandidates] = useState<PatientCandidate[] | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleRegister = async () => {
+  const submitRegistration = async (linkPatientId?: string) => {
     setLoading(true)
     setError('')
 
     const res = await fetch('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, linkPatientId }),
     })
 
     const data = await res.json()
@@ -64,6 +67,68 @@ export default function RegisterPage() {
     } else {
       router.push('/login')
     }
+  }
+
+  const handleRegister = async () => {
+    setLoading(true)
+    setError('')
+
+    const lookupRes = await fetch('/api/patients/lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: form.phone }),
+    })
+    const lookupData = await lookupRes.json()
+    setLoading(false)
+
+    if (lookupData.candidates?.length > 0) {
+      setCandidates(lookupData.candidates)
+      return
+    }
+
+    await submitRegistration()
+  }
+
+  function formatBirthDate(birthDate: string | null) {
+    if (!birthDate) return 'ไม่ระบุวันเกิด'
+    return new Date(birthDate + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
+  }
+
+  if (candidates) {
+    return (
+      <AuthLayout>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">พบข้อมูลคนไข้เดิม</h1>
+        <p className="text-sm text-gray-400 mb-6">
+          เราพบประวัติคนไข้ที่เคยมาที่คลินิกด้วยเบอร์โทรนี้ ใช่คุณหรือไม่?
+        </p>
+
+        {error && (
+          <p className="bg-red-50 text-red-600 text-sm text-center rounded-lg py-2 mb-4">{error}</p>
+        )}
+
+        <div className="space-y-3">
+          {candidates.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => submitRegistration(c.id)}
+              disabled={loading}
+              className="w-full text-left px-4 py-3 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition disabled:opacity-50"
+            >
+              <p className="font-medium text-gray-900">{c.firstName} {c.lastName}</p>
+              <p className="text-xs text-gray-400 mt-0.5">เกิด {formatBirthDate(c.birthDate)}</p>
+            </button>
+          ))}
+
+          <button
+            onClick={() => submitRegistration()}
+            disabled={loading}
+            className="w-full text-center px-4 py-3 border border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition disabled:opacity-50"
+          >
+            {loading ? 'กำลังสมัครสมาชิก...' : 'ไม่ใช่ ฉันเป็นคนไข้ใหม่'}
+          </button>
+        </div>
+      </AuthLayout>
+    )
   }
 
   return (

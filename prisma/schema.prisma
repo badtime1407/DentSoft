@@ -30,16 +30,23 @@ enum Role {
 
 // ข้อมูลคนไข้
 model Patient {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  firstName String
-  lastName  String
-  phone     String?
-  birthDate DateTime?
-  createdAt DateTime @default(now())
+  id          String        @id @default(cuid())
+  userId      String?       @unique
+  firstName   String
+  lastName    String
+  phone       String?
+  birthDate   DateTime?
+  source      PatientSource @default(ONLINE)
+  allergyNote String?
+  createdAt   DateTime      @default(now())
 
-  user         User          @relation(fields: [userId], references: [id])
+  user         User?         @relation(fields: [userId], references: [id])
   appointments Appointment[]
+}
+
+enum PatientSource {
+  ONLINE  // สมัครสมาชิกเองผ่านเว็บไซต์
+  WALK_IN // แอดมินเพิ่มให้ที่คลินิก ไม่มีบัญชีเข้าสู่ระบบ
 }
 
 // ข้อมูลทันตแพทย์

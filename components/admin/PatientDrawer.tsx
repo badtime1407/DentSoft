@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import type { MockPatient } from '@/app/admin/patients/mock-patients'
+import type { AdminPatient } from '@/app/admin/patients/types'
 import { IconX, IconCalendarPlus } from './icons'
 import { focusRing } from '@/lib/admin/focus-ring'
 
@@ -19,16 +19,23 @@ const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 
 const emptyValues: PatientFormValues = { firstName: '', lastName: '', phone: '', birthDate: '', allergyNote: '' }
 
+const sourceLabel: Record<AdminPatient['source'], string> = {
+  ONLINE: 'สมัครออนไลน์',
+  WALK_IN: 'Walk-in',
+}
+
 export function PatientDrawer({
   open,
   mode,
   patient,
+  error,
   onClose,
   onSubmit,
 }: {
   open: boolean
   mode: 'create' | 'edit'
-  patient?: MockPatient
+  patient?: AdminPatient
+  error?: string
   onClose: () => void
   onSubmit: (values: PatientFormValues) => void
 }) {
@@ -40,8 +47,8 @@ export function PatientDrawer({
       setValues({
         firstName: patient.firstName,
         lastName: patient.lastName,
-        phone: patient.phone,
-        birthDate: patient.birthDate,
+        phone: patient.phone ?? '',
+        birthDate: patient.birthDate ?? '',
         allergyNote: patient.allergyNote ?? '',
       })
     } else {
@@ -62,8 +69,8 @@ export function PatientDrawer({
       <div className="relative w-full max-w-md bg-white h-full shadow-xl flex flex-col">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
           <div>
-            <h2 className="font-semibold text-gray-900">{mode === 'create' ? 'เพิ่มคนไข้ใหม่' : 'ข้อมูลคนไข้'}</h2>
-            <p className="text-xs text-gray-400 mt-0.5">{mode === 'create' ? 'New patient' : 'Patient profile'}</p>
+            <h2 className="font-semibold text-gray-900">{mode === 'create' ? 'เพิ่มคนไข้ Walk-in' : 'ข้อมูลคนไข้'}</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{mode === 'create' ? 'New walk-in patient' : 'Patient profile'}</p>
           </div>
           <button type="button" onClick={onClose} className={`p-2 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition ${focusRing}`}>
             <IconX className="w-4 h-4" />
@@ -71,8 +78,20 @@ export function PatientDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          {mode === 'create' && (
+            <p className="text-[11px] text-gray-400 bg-slate-50 rounded-lg px-3 py-2.5">
+              ใช้สำหรับคนไข้ที่มาที่คลินิกโดยตรง ไม่ได้สมัครสมาชิกผ่านเว็บไซต์ จึงไม่มีบัญชีเข้าสู่ระบบ
+            </p>
+          )}
+
           {mode === 'edit' && patient && (
             <div className="bg-slate-50 rounded-xl p-4 space-y-2.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">ประเภทบัญชี</span>
+                <span className={`font-medium ${patient.source === 'ONLINE' ? 'text-blue-600' : 'text-gray-700'}`}>
+                  {sourceLabel[patient.source]}
+                </span>
+              </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500">นัดครั้งล่าสุด</span>
                 <span className="font-medium text-gray-800">
@@ -85,12 +104,6 @@ export function PatientDrawer({
                   {patient.nextAppointmentDate
                     ? `${new Date(patient.nextAppointmentDate + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} · ${patient.nextAppointmentLabel}`
                     : 'ยังไม่มีนัด'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">ยอดค้างชำระ</span>
-                <span className={`font-medium ${patient.balance > 0 ? 'text-rose-600' : 'text-gray-800'}`}>
-                  {patient.balance > 0 ? `฿${patient.balance.toLocaleString()}` : 'ไม่มี'}
                 </span>
               </div>
               <Link
@@ -135,7 +148,8 @@ export function PatientDrawer({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-100 shrink-0">
+        <div className="px-6 py-4 border-t border-gray-100 shrink-0 space-y-3">
+          {error && <p className="text-xs text-rose-600 font-medium">{error}</p>}
           <button
             type="button"
             onClick={() => onSubmit(values)}
