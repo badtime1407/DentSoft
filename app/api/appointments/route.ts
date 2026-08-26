@@ -2,6 +2,29 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import type { Appointment, Dentist, Patient, Service } from '@prisma/client'
+
+type FullAppointment = Appointment & { patient: Patient; service: Service; dentist: Dentist | null }
+
+function serializeAdminAppointment(a: FullAppointment) {
+  return {
+    id: a.id,
+    date: a.date.toISOString(),
+    status: a.status,
+    note: a.note,
+    patientId: a.patientId,
+    patientName: `${a.patient.firstName} ${a.patient.lastName}`,
+    patientPhone: a.patient.phone,
+    serviceId: a.serviceId,
+    serviceName: a.service.name,
+    durationMin: a.service.duration ?? 30,
+    dentistId: a.dentistId,
+    dentistName: a.dentist ? `${a.dentist.title} ${a.dentist.firstName} ${a.dentist.lastName}` : null,
+    requestType: a.requestType,
+    requestReason: a.requestReason,
+    requestedAt: a.requestedAt ? a.requestedAt.toISOString() : null,
+  }
+}
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -9,8 +32,20 @@ export async function GET() {
   const userId = user?.id
   const role = user?.role
 
-  if (!session || role !== 'PATIENT' || !userId) {
-    return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบด้วยบัญชีคนไข้' }, { status: 401 })
+  if (!session || !userId) {
+    return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบ' }, { status: 401 })
+  }
+
+  if (role === 'ADMIN') {
+    const appointments = await prisma.appointment.findMany({
+      include: { patient: true, service: true, dentist: true },
+      orderBy: { date: 'asc' },
+    })
+    return NextResponse.json({ appointments: appointments.map(serializeAdminAppointment) })
+  }
+
+  if (role !== 'PATIENT') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const patient = await prisma.patient.findUnique({ where: { userId } })
@@ -36,11 +71,51 @@ export async function POST(req: Request) {
   const userId = user?.id
   const role = user?.role
 
-  if (!session || role !== 'PATIENT' || !userId) {
-    return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบด้วยบัญชีคนไข้' }, { status: 401 })
+  if (!session || !userId) {
+    return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบ' }, { status: 401 })
   }
 
-  const { serviceId, date } = await req.json()
+  const body = await req.json()
+
+  if (role === 'ADMIN') {
+    const { patientId, serviceId, dentistId, date, note } = body
+
+    if (!patientId || !serviceId || !date) {
+      return NextResponse.json({ error: 'ข้อมูลไม่ครบถ้วน' }, { status: 400 })
+    }
+
+    const appointmentDate = new Date(date)
+    if (Number.isNaN(appointmentDate.getTime())) {
+      return NextResponse.json({ error: 'วันเวลาที่เลือกไม่ถูกต้อง' }, { status: 400 })
+    }
+
+    const [patient, service] = await Promise.all([
+      prisma.patient.findUnique({ where: { id: patientId } }),
+      prisma.service.findUnique({ where: { id: serviceId } }),
+    ])
+    if (!patient) return NextResponse.json({ error: 'ไม่พบคนไข้ที่เลือก' }, { status: 404 })
+    if (!service) return NextResponse.json({ error: 'ไม่พบบริการที่เลือก' }, { status: 404 })
+
+    const appointment = await prisma.appointment.create({
+      data: {
+        patientId,
+        serviceId,
+        dentistId: dentistId || null,
+        date: appointmentDate,
+        status: 'CONFIRMED',
+        note: note || null,
+      },
+      include: { patient: true, service: true, dentist: true },
+    })
+
+    return NextResponse.json({ appointment: serializeAdminAppointment(appointment) })
+  }
+
+  if (role !== 'PATIENT') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const { serviceId, date } = body
 
   if (!serviceId || typeof serviceId !== 'string' || !date || typeof date !== 'string') {
     return NextResponse.json({ error: 'ข้อมูลการจองไม่ครบถ้วน' }, { status: 400 })

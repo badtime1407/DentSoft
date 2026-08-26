@@ -1,7 +1,6 @@
 'use client'
 
-import type { ReferenceDentist } from '@/app/admin/_mock/reference'
-import type { BookingStatus, ScheduleAppointment } from '@/app/admin/appointments/mock-appointments'
+import type { AdminAppointment, AdminDentistOption, BookingStatus } from '@/app/admin/appointments/types'
 
 const START_MIN = 8 * 60
 const END_MIN = 19 * 60
@@ -28,6 +27,11 @@ function timeToMinutes(time: string): number {
   return h * 60 + m
 }
 
+function dateToMinutes(iso: string): number {
+  const d = new Date(iso)
+  return d.getHours() * 60 + d.getMinutes()
+}
+
 export function AppointmentScheduleBoard({
   dentists,
   appointments,
@@ -35,11 +39,11 @@ export function AppointmentScheduleBoard({
   onSlotClick,
   onAppointmentClick,
 }: {
-  dentists: ReferenceDentist[]
-  appointments: ScheduleAppointment[]
+  dentists: AdminDentistOption[]
+  appointments: AdminAppointment[]
   serviceNameById: Record<string, string>
   onSlotClick: (dentistId: string, startTime: string) => void
-  onAppointmentClick: (appointment: ScheduleAppointment) => void
+  onAppointmentClick: (appointment: AdminAppointment) => void
 }) {
   const timeLabels = Array.from({ length: SLOT_COUNT }, (_, i) => minutesToLabel(START_MIN + i * SLOT_MIN))
 
@@ -102,7 +106,7 @@ export function AppointmentScheduleBoard({
                 )}
 
                 {columnAppointments.map((a) => {
-                  const top = ((timeToMinutes(a.startTime) - START_MIN) / SLOT_MIN) * ROW_HEIGHT
+                  const top = ((dateToMinutes(a.date) - START_MIN) / SLOT_MIN) * ROW_HEIGHT
                   const height = Math.max((a.durationMin / SLOT_MIN) * ROW_HEIGHT - 3, 26)
                   return (
                     <button
