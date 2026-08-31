@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 
 export async function POST(req: Request) {
   try {
-    const { username, email, password, firstName, lastName, phone, linkPatientId } = await req.json()
+    const { username, email, password, firstName, lastName, phone, birthDate, linkPatientId } = await req.json()
 
     const existing = await prisma.user.findFirst({
       where: {
@@ -38,7 +38,14 @@ export async function POST(req: Request) {
             email,
             password: hashedPassword,
             role: 'PATIENT',
-            patient: { create: { firstName, lastName, phone } },
+            patient: {
+              create: {
+                firstName,
+                lastName,
+                phone,
+                birthDate: birthDate ? new Date(birthDate) : null,
+              },
+            },
           },
         })
 

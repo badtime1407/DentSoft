@@ -28,6 +28,12 @@ const lockIcon = (
     <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
   </svg>
 )
+const calendarIcon = (
+  <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3.5" y="5.5" width="17" height="15" rx="2" />
+    <path d="M3.5 10h17M8 3.5v4M16 3.5v4" />
+  </svg>
+)
 
 type PatientCandidate = { id: string; firstName: string; lastName: string; birthDate: string | null }
 
@@ -40,6 +46,7 @@ export default function RegisterPage() {
     email: '',
     password: '',
     phone: '',
+    birthDate: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -76,7 +83,7 @@ export default function RegisterPage() {
     const lookupRes = await fetch('/api/patients/lookup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: form.phone }),
+      body: JSON.stringify({ phone: form.phone, birthDate: form.birthDate }),
     })
     const lookupData = await lookupRes.json()
     setLoading(false)
@@ -148,6 +155,7 @@ export default function RegisterPage() {
         <AuthField label="Username" name="username" value={form.username} onChange={handleChange} placeholder="username" icon={userIcon} />
         <AuthField label="Email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="name@clinic.com" icon={mailIcon} />
         <AuthField label="เบอร์โทรศัพท์" name="phone" value={form.phone} onChange={handleChange} placeholder="08X-XXX-XXXX" icon={phoneIcon} />
+        <AuthField label="วันเกิด" name="birthDate" type="date" value={form.birthDate} onChange={handleChange} icon={calendarIcon} />
         <PasswordField label="รหัสผ่าน" name="password" value={form.password} onChange={handleChange} placeholder="ตั้งรหัสผ่าน" icon={lockIcon} />
       </div>
 
