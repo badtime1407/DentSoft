@@ -5,8 +5,8 @@ import { useState } from 'react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { IconPhone, IconFileText, IconImageIcon, IconUpload, IconX } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
-import type { DentistAppointment, PastVisit, TreatmentNote } from '@/app/dentist/_mock/appointments'
-import { queueStatusConfig } from '@/app/dentist/_mock/status'
+import type { DentistAppointment, PastVisit, TreatmentNote } from '@/components/dentist/types'
+import { queueStatusConfig } from '@/lib/dentist/status-config'
 
 const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import type { DentistAppointment } from '@/app/dentist/_mock/appointments'
-import { queueStatusConfig } from '@/app/dentist/_mock/status'
+import type { DentistAppointment } from '@/components/dentist/types'
+import { queueStatusConfig } from '@/lib/dentist/status-config'
 
 export function PatientQueueList({
   appointments,

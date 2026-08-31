@@ -65,6 +65,28 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ appointment: serializeAdminAppointment(appointment) })
   }
 
+  if (role === 'DENTIST') {
+    const dentist = await prisma.dentist.findUnique({ where: { userId } })
+    if (!dentist || existing.dentistId !== dentist.id) {
+      return NextResponse.json({ error: 'ไม่พบนัดหมายนี้' }, { status: 404 })
+    }
+
+    const { status } = body
+    if (status !== 'IN_TREATMENT' && status !== 'COMPLETED') {
+      return NextResponse.json({ error: 'สถานะไม่ถูกต้อง' }, { status: 400 })
+    }
+    if (existing.status === 'CANCELLED' || existing.status === 'COMPLETED') {
+      return NextResponse.json({ error: 'ไม่สามารถเปลี่ยนสถานะนัดหมายนี้ได้' }, { status: 400 })
+    }
+
+    const appointment = await prisma.appointment.update({
+      where: { id },
+      data: { status },
+    })
+
+    return NextResponse.json({ appointment: { id: appointment.id, status: appointment.status } })
+  }
+
   if (role === 'PATIENT') {
     const patient = await prisma.patient.findUnique({ where: { userId } })
     if (!patient || existing.patientId !== patient.id) {

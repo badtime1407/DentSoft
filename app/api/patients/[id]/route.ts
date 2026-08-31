@@ -3,6 +3,38 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getServerSession(authOptions)
+  const role = (session?.user as { role?: string } | undefined)?.role
+  if (role !== 'DENTIST') {
+    return NextResponse.json({ error: 'ต้องเข้าสู่ระบบด้วยบัญชีทันตแพทย์' }, { status: 401 })
+  }
+
+  const { id } = await params
+  const { searchParams } = new URL(req.url)
+  const excludeAppointmentId = searchParams.get('excludeAppointmentId')
+
+  const pastAppointments = await prisma.appointment.findMany({
+    where: {
+      patientId: id,
+      status: 'COMPLETED',
+      ...(excludeAppointmentId ? { id: { not: excludeAppointmentId } } : {}),
+    },
+    include: { service: true, treatment: { include: { items: true } } },
+    orderBy: { date: 'desc' },
+  })
+
+  const history = pastAppointments.map((a) => ({
+    date: a.date.toISOString(),
+    serviceName: a.service.name,
+    toothNumber: a.treatment?.toothNumber || undefined,
+    diagnosis: a.treatment?.diagnosis || undefined,
+    treatmentNote: a.treatment && a.treatment.items.length > 0 ? a.treatment.items.map((i) => i.text).join(', ') : undefined,
+  }))
+
+  return NextResponse.json({ history })
+}
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   const role = (session?.user as { role?: string } | undefined)?.role

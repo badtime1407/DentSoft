@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import type { Appointment, Dentist, Patient, Service } from '@prisma/client'
+import type { Appointment, Dentist, Patient, Service, Treatment, TreatmentItem } from '@prisma/client'
 
 type FullAppointment = Appointment & { patient: Patient; service: Service; dentist: Dentist | null }
 
@@ -26,6 +26,57 @@ function serializeAdminAppointment(a: FullAppointment) {
   }
 }
 
+const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000
+
+function splitBangkok(date: Date) {
+  const shifted = new Date(date.getTime() + BANGKOK_OFFSET_MS)
+  const iso = shifted.toISOString()
+  return { date: iso.slice(0, 10), time: iso.slice(11, 16) }
+}
+
+function ageFromBirthDate(birthDate: Date | null) {
+  if (!birthDate) return 0
+  const now = new Date()
+  let age = now.getFullYear() - birthDate.getFullYear()
+  const beforeBirthdayThisYear =
+    now.getMonth() < birthDate.getMonth() ||
+    (now.getMonth() === birthDate.getMonth() && now.getDate() < birthDate.getDate())
+  if (beforeBirthdayThisYear) age -= 1
+  return age
+}
+
+type DentistFullAppointment = Appointment & {
+  patient: Patient
+  service: Service
+  treatment: (Treatment & { items: TreatmentItem[] }) | null
+}
+
+function serializeDentistAppointment(a: DentistFullAppointment) {
+  const { date, time } = splitBangkok(a.date)
+  return {
+    id: a.id,
+    date,
+    time,
+    patientId: a.patientId,
+    patientName: `${a.patient.firstName} ${a.patient.lastName}`,
+    patientAge: ageFromBirthDate(a.patient.birthDate),
+    patientPhone: a.patient.phone ?? '-',
+    serviceName: a.service.name,
+    durationMin: a.service.duration ?? 30,
+    status: a.status,
+    note: a.note,
+    treatment: a.treatment
+      ? {
+          toothNumber: a.treatment.toothNumber ?? '',
+          diagnosis: a.treatment.diagnosis ?? '',
+          treatmentItems: a.treatment.items.map((i) => i.text),
+          nextVisit: a.treatment.nextVisit ? splitBangkok(a.treatment.nextVisit).date : '',
+          images: [] as string[],
+        }
+      : undefined,
+  }
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions)
   const user = session?.user as { id?: string; role?: string } | undefined
@@ -42,6 +93,21 @@ export async function GET() {
       orderBy: { date: 'asc' },
     })
     return NextResponse.json({ appointments: appointments.map(serializeAdminAppointment) })
+  }
+
+  if (role === 'DENTIST') {
+    const dentist = await prisma.dentist.findUnique({ where: { userId } })
+    if (!dentist) {
+      return NextResponse.json({ error: 'ไม่พบข้อมูลทันตแพทย์ของบัญชีนี้' }, { status: 404 })
+    }
+
+    const appointments = await prisma.appointment.findMany({
+      where: { dentistId: dentist.id },
+      include: { patient: true, service: true, treatment: { include: { items: true } } },
+      orderBy: { date: 'asc' },
+    })
+
+    return NextResponse.json({ appointments: appointments.map(serializeDentistAppointment) })
   }
 
   if (role !== 'PATIENT') {

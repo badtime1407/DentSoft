@@ -1,7 +1,7 @@
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { focusRing } from '@/lib/shared/focus-ring'
-import type { DentistAppointment } from '@/app/dentist/_mock/appointments'
-import { statusConfig } from '@/app/dentist/_mock/status'
+import type { DentistAppointment } from '@/components/dentist/types'
+import { statusConfig } from '@/lib/dentist/status-config'
 
 const actionLabel: Record<DentistAppointment['status'], string> = {
   WAITING: 'ดูรายละเอียดทั้งหมด',

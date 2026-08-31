@@ -6,9 +6,14 @@ import { useQueue } from '@/components/dentist/QueueProvider'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { AppointmentCalendar } from '@/components/dentist/AppointmentCalendar'
 import { DailyAppointmentList } from '@/components/dentist/DailyAppointmentList'
-import { MOCK_TODAY, type DentistAppointment } from '@/app/dentist/_mock/appointments'
+import type { DentistAppointment } from '@/components/dentist/types'
 
-const [todayYearStr, todayMonthStr] = MOCK_TODAY.split('-')
+function todayInBangkok() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
+}
+
+const TODAY = todayInBangkok()
+const [todayYearStr, todayMonthStr] = TODAY.split('-')
 const todayYear = Number(todayYearStr)
 const todayMonth = Number(todayMonthStr) - 1
 
@@ -25,7 +30,7 @@ export default function DentistAppointments() {
 
   const [viewYear, setViewYear] = useState(todayYear)
   const [viewMonth, setViewMonth] = useState(todayMonth)
-  const [selectedDate, setSelectedDate] = useState(MOCK_TODAY)
+  const [selectedDate, setSelectedDate] = useState(TODAY)
 
   const appointmentDates = useMemo(() => new Set(appointments.map((a) => a.date)), [appointments])
 
@@ -34,12 +39,13 @@ export default function DentistAppointments() {
     [appointments, selectedDate]
   )
 
-  const isToday = selectedDate === MOCK_TODAY
+  const isToday = selectedDate === TODAY
   const highlightId = useMemo(() => {
     if (!isToday) return undefined
     return (
       dayAppointments.find((a) => a.status === 'IN_TREATMENT')?.id ??
-      dayAppointments.find((a) => a.status === 'WAITING')?.id
+      dayAppointments.find((a) => a.status === 'WAITING')?.id ??
+      dayAppointments.find((a) => a.status === 'CONFIRMED')?.id
     )
   }, [isToday, dayAppointments])
 
@@ -55,7 +61,7 @@ export default function DentistAppointments() {
   }
 
   function handleToday() {
-    setSelectedDate(MOCK_TODAY)
+    setSelectedDate(TODAY)
     setViewYear(todayYear)
     setViewMonth(todayMonth)
   }
@@ -73,7 +79,7 @@ export default function DentistAppointments() {
   }
 
   function handleOpen(appointment: DentistAppointment) {
-    if (appointment.status === 'WAITING') {
+    if (appointment.status === 'CONFIRMED' || appointment.status === 'WAITING') {
       startTreatment(appointment.id)
     }
     router.push(`/dentist/treatment?id=${appointment.id}`)
@@ -90,7 +96,7 @@ export default function DentistAppointments() {
             viewYear={viewYear}
             viewMonth={viewMonth}
             selectedDate={selectedDate}
-            todayDate={MOCK_TODAY}
+            todayDate={TODAY}
             appointmentDates={appointmentDates}
             onSelectDate={handleSelectDate}
             onPrevMonth={handlePrevMonth}

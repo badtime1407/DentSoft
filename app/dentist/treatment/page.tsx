@@ -1,28 +1,37 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useQueue } from '@/components/dentist/QueueProvider'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PatientQueueList } from '@/components/dentist/PatientQueueList'
 import { TreatmentPanel } from '@/components/dentist/TreatmentPanel'
-import { patientHistory, MOCK_TODAY } from '@/app/dentist/_mock/appointments'
+import type { PastVisit } from '@/components/dentist/types'
+
+function todayInBangkok() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
+}
 
 export default function DentistTreatment() {
   const { appointments, startTreatment, completeAppointment, saveTreatment } = useQueue()
   const searchParams = useSearchParams()
   const idParam = searchParams.get('id')
+  const today = useMemo(() => todayInBangkok(), [])
 
-  // รายการทางซ้ายแสดงเฉพาะคิววันนี้ — งานของทันตแพทย์ ณ ตอนนี้
+  // รายการทางซ้ายแสดงเฉพาะคิววันนี้ที่ยังไม่เสร็จสิ้น — งานของทันตแพทย์ ณ ตอนนี้
   const sorted = useMemo(
-    () => appointments.filter((a) => a.date === MOCK_TODAY).sort((a, b) => a.time.localeCompare(b.time)),
-    [appointments]
+    () =>
+      appointments
+        .filter((a) => a.date === today && a.status !== 'COMPLETED')
+        .sort((a, b) => a.time.localeCompare(b.time)),
+    [appointments, today]
   )
 
   const defaultId = useMemo(() => {
     return (
       sorted.find((a) => a.status === 'WAITING')?.id ??
       sorted.find((a) => a.status === 'IN_TREATMENT')?.id ??
+      sorted.find((a) => a.status === 'CONFIRMED')?.id ??
       sorted[0]?.id ??
       ''
     )
@@ -31,6 +40,19 @@ export default function DentistTreatment() {
   const selectedId = idParam ?? defaultId
   // ค้นหาจากทุกวัน เพื่อรองรับการเปิดนัดหมายวันอื่นจากปฏิทินในหน้านัดหมาย
   const selected = appointments.find((a) => a.id === selectedId)
+
+  const [history, setHistory] = useState<PastVisit[]>([])
+
+  useEffect(() => {
+    if (!selected) {
+      setHistory([])
+      return
+    }
+    fetch(`/api/patients/${selected.patientId}?excludeAppointmentId=${selected.id}`)
+      .then((res) => res.json())
+      .then((data: { history?: PastVisit[] }) => setHistory(data.history ?? []))
+      .catch(() => setHistory([]))
+  }, [selected])
 
   return (
     <>
@@ -48,7 +70,7 @@ export default function DentistTreatment() {
           <TreatmentPanel
             key={selected.id}
             appointment={selected}
-            history={patientHistory[selected.patientId] ?? []}
+            history={history}
             onStart={() => startTreatment(selected.id)}
             onComplete={() => completeAppointment(selected.id)}
             onSaveTreatment={(note) => saveTreatment(selected.id, note)}

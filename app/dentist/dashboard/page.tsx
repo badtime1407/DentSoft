@@ -2,36 +2,49 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQueue } from '@/components/dentist/QueueProvider'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { PageHeader } from '@/components/shared/PageHeader'
+import { StatCard } from '@/components/shared/StatCard'
 import {
   IconCalendar,
   IconClipboardList,
   IconRotate,
 } from '@/components/shared/icons'
-import { statusConfig } from '@/app/dentist/_mock/status'
-import { currentDentist } from '@/app/dentist/_mock/reference'
-import { MOCK_TODAY } from '@/app/dentist/_mock/appointments'
+import { statusConfig } from '@/lib/dentist/status-config'
 import { focusRing } from '@/lib/shared/focus-ring'
 
+function todayInBangkok() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
+}
+
 export default function DentistDashboard() {
-  const { appointments, startTreatment } = useQueue()
+  const { appointments, isLoading, startTreatment } = useQueue()
   const router = useRouter()
+  const [dentistName, setDentistName] = useState('')
+
+  useEffect(() => {
+    fetch('/api/dentist/me')
+      .then((res) => res.json())
+      .then((data: { name?: string }) => setDentistName(data.name ?? ''))
+  }, [])
+
+  const today = useMemo(() => todayInBangkok(), [])
 
   const todaysAppointments = useMemo(
-    () => appointments.filter((a) => a.date === MOCK_TODAY),
-    [appointments]
+    () => appointments.filter((a) => a.date === today),
+    [appointments, today]
   )
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'สวัสดีตอนเช้า' : hour < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น'
 
-  const waitingQueue = useMemo(
+  const pendingQueue = useMemo(
     () =>
       [...todaysAppointments]
-        .filter((a) => a.status === 'WAITING')
-        .sort((a, b) => (b.waitMinutes ?? 0) - (a.waitMinutes ?? 0)),
+        .filter((a) => a.status === 'CONFIRMED' || a.status === 'WAITING')
+        .sort((a, b) => a.time.localeCompare(b.time)),
     [todaysAppointments]
   )
 
@@ -39,152 +52,120 @@ export default function DentistDashboard() {
   const nextPatient = useMemo(
     () =>
       [...todaysAppointments]
-        .filter((a) => a.status === 'WAITING' || a.status === 'IN_TREATMENT')
+        .filter((a) => a.status === 'CONFIRMED' || a.status === 'WAITING' || a.status === 'IN_TREATMENT')
         .sort((a, b) => a.time.localeCompare(b.time))[0],
     [todaysAppointments]
   )
 
   const totalFormatted = String(todaysAppointments.length).padStart(2, '0')
-  const waitingFormatted = String(waitingQueue.length).padStart(2, '0')
+  const waitingFormatted = String(pendingQueue.length).padStart(2, '0')
 
   return (
-    <div className="space-y-8 max-w-[1240px] mx-auto">
-      {/* Greeting Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          {greeting} {currentDentist.name}
-        </h1>
-        <p className="text-sm text-slate-500 mt-1.5 font-medium">
-          วันนี้คุณมีการนัดหมายทั้งหมด {todaysAppointments.length} รายการ พร้อมเริ่มงานหรือยัง?
-        </p>
-      </div>
-
-      {/* Top 3 Stat Cards Grid (Layout Inspired by Mockup) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card 1: Today Appointments */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <IconCalendar className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-semibold text-slate-600 ml-3">วันนี้</span>
-          </div>
-          <div className="mt-5">
-            <p className="text-4xl font-extrabold text-slate-900">{totalFormatted}</p>
-            <p className="text-xs text-slate-400 mt-1 font-medium">รายการนัดหมาย</p>
-          </div>
-        </div>
-
-        {/* Card 2: Pending Action */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
-              <IconClipboardList className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-semibold text-slate-600 ml-3">รอดำเนินการ</span>
-          </div>
-          <div className="mt-5">
-            <p className="text-4xl font-extrabold text-slate-900">{waitingFormatted}</p>
-            <p className="text-xs text-slate-400 mt-1 font-medium">คนไข้กำลังรอคิว</p>
-          </div>
-        </div>
-
-        {/* Card 3: Featured Dark Blue Next Queue (display-only, not clickable) */}
-        <div className="bg-blue-600 text-white rounded-2xl p-6 shadow-md flex flex-col justify-between">
-          <div className="flex items-center">
-            <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
-              <IconRotate className="w-4.5 h-4.5" />
-            </div>
-            <span className="text-sm font-bold ml-3 text-white">คิวถัดไป</span>
-          </div>
-          <div className="mt-4">
-            <p className="text-3xl font-extrabold text-white">
-              {nextPatient ? `${nextPatient.time} น.` : 'ไม่มีคิวรอ'}
-            </p>
-            <p className="text-xs text-sky-100 mt-1 font-medium truncate">
-              {nextPatient ? `คนไข้: ${nextPatient.patientName}` : 'ไม่มีคนไข้ในขณะนี้'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Today's Appointment Table Section */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        {/* Table Title Header */}
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-slate-900">ตารางนัดหมายวันนี้</h2>
+    <>
+      <PageHeader
+        eyebrow={dentistName ? `${greeting} ${dentistName}` : greeting}
+        title="ภาพรวมงานวันนี้"
+        subtitle={`วันนี้คุณมีการนัดหมายทั้งหมด ${todaysAppointments.length} รายการ พร้อมเริ่มงานหรือยัง?`}
+        actions={
           <Link
             href="/dentist/appointments"
-            className={`text-sm font-bold text-blue-600 hover:underline ${focusRing}`}
+            className={`flex items-center gap-2 px-3.5 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
+          >
+            <IconClipboardList className="w-4 h-4" />
+            ดูปฏิทินทั้งหมด
+          </Link>
+        }
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <StatCard label="วันนี้" value={totalFormatted} sub="รายการนัดหมาย" icon={IconCalendar} />
+        <StatCard label="รอดำเนินการ" value={waitingFormatted} sub="คนไข้กำลังรอคิว" icon={IconClipboardList} />
+
+        {/* Featured card: next patient in queue — kept visually distinct since it has no admin equivalent */}
+        <div className="rounded-2xl p-5 bg-blue-600 text-white shadow-sm flex flex-col">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 bg-white/20 text-white">
+            <IconRotate className="w-5 h-5" />
+          </div>
+          <p className="text-2xl font-bold tabular-nums tracking-tight text-white">
+            {nextPatient ? `${nextPatient.time} น.` : 'ไม่มีคิวรอ'}
+          </p>
+          <p className="text-xs mt-1 font-medium text-sky-100">คิวถัดไป</p>
+          <p className="text-xs mt-0.5 text-sky-100 truncate">
+            {nextPatient ? `คนไข้: ${nextPatient.patientName}` : 'ไม่มีคนไข้ในขณะนี้'}
+          </p>
+        </div>
+      </div>
+
+      {/* Today's appointment table */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-gray-900">ตารางนัดหมายวันนี้</h2>
+            <p className="text-xs text-gray-400 mt-0.5">Today&apos;s schedule</p>
+          </div>
+          <Link
+            href="/dentist/appointments"
+            className={`text-xs font-medium text-blue-600 hover:underline ${focusRing}`}
           >
             ดูปฏิทินทั้งหมด
           </Link>
         </div>
 
-        {/* Table Body */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-50/70 border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                <th className="py-4 px-6 text-center w-28">เวลา</th>
-                <th className="py-4 px-6">คนไข้</th>
-                <th className="py-4 px-6">การรักษา</th>
-                <th className="py-4 px-6 text-center">สถานะ</th>
-                <th className="py-4 px-6 text-center w-28">การจัดการ</th>
+              <tr className="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-50">
+                <th className="px-6 py-3 font-medium">เวลา</th>
+                <th className="px-6 py-3 font-medium">คนไข้</th>
+                <th className="px-6 py-3 font-medium">การรักษา</th>
+                <th className="px-6 py-3 font-medium">สถานะ</th>
+                <th className="px-6 py-3 font-medium">จัดการ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody className="divide-y divide-gray-50">
               {todaysAppointments.map((a) => (
-                <tr key={a.id} className="hover:bg-slate-50/60 transition-colors">
-                  {/* เวลา */}
-                  <td className="py-4 px-6 text-center font-bold text-blue-700 whitespace-nowrap">
-                    {a.time} น.
-                  </td>
-
-                  {/* คนไข้ */}
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
+                <tr key={a.id} className="hover:bg-slate-50 transition">
+                  <td className="px-6 py-4 font-mono font-medium text-gray-900 tabular-nums">{a.time} น.</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-semibold">
                         {a.patientName.charAt(0)}
                       </div>
-                      <span className="font-bold text-slate-800">{a.patientName}</span>
+                      <span className="text-gray-800">{a.patientName}</span>
                     </div>
                   </td>
-
-                  {/* การรักษา */}
-                  <td className="py-4 px-6 text-slate-600 font-medium">
-                    {a.serviceName}
+                  <td className="px-6 py-4 text-gray-600">{a.serviceName}</td>
+                  <td className="px-6 py-4">
+                    <StatusBadge label={statusConfig[a.status].label} tone={statusConfig[a.status].tone} />
                   </td>
-
-                  {/* สถานะ */}
-                  <td className="py-4 px-6 text-center">
-                    <StatusBadge
-                      label={statusConfig[a.status].label}
-                      tone={statusConfig[a.status].tone}
-                    />
-                  </td>
-
-                  {/* การจัดการ */}
-                  <td className="py-4 px-6 text-center whitespace-nowrap">
+                  <td className="px-6 py-4">
                     <button
                       type="button"
                       onClick={() => {
-                        if (a.status === 'WAITING') {
+                        if (a.status === 'CONFIRMED' || a.status === 'WAITING') {
                           startTreatment(a.id)
                         }
                         router.push(`/dentist/treatment?id=${a.id}`)
                       }}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 transition-all ${focusRing}`}
+                      className={`inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
                     >
                       ดูบันทึกการรักษา
                     </button>
                   </td>
                 </tr>
               ))}
+
+              {!isLoading && todaysAppointments.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                    ไม่มีนัดหมายวันนี้
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
-    </div>
+    </>
   )
 }
