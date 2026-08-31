@@ -33,6 +33,7 @@ export async function GET() {
     include: {
       schedules: true,
       appointments: { where: { date: { gte: startOfToday, lt: endOfToday } } },
+      services: { include: { service: true } },
     },
     orderBy: { createdAt: 'asc' },
   })
@@ -46,6 +47,13 @@ export async function GET() {
     phone: d.phone,
     schedule: toWeeklySchedule(d.schedules),
     bookedToday: d.appointments.length,
+    services: d.services.map((ds) => ({
+      id: ds.service.id,
+      name: ds.service.name,
+      minPrice: ds.service.minPrice,
+      maxPrice: ds.service.maxPrice,
+      duration: ds.service.duration,
+    })),
   }))
 
   return NextResponse.json({ dentists: result })
@@ -58,11 +66,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'ต้องเข้าสู่ระบบด้วยบัญชีแอดมิน' }, { status: 401 })
   }
 
-  const { title, firstName, lastName, specialty, phone, email, username, password, schedule } = await req.json()
+  const { title, firstName, lastName, specialty, phone, email, username, password, schedule, serviceIds } = await req.json()
 
   if (!firstName || !lastName || !email || !username || !password || !Array.isArray(schedule) || schedule.length !== 7) {
     return NextResponse.json({ error: 'ข้อมูลไม่ครบถ้วน' }, { status: 400 })
   }
+
+  const validServiceIds: string[] = Array.isArray(serviceIds)
+    ? serviceIds.filter((id): id is string => typeof id === 'string')
+    : []
 
   const existing = await prisma.user.findFirst({ where: { OR: [{ email }, { username }] } })
   if (existing) {
@@ -92,10 +104,13 @@ export async function POST(req: Request) {
               isActive: d.active,
             })),
           },
+          services: {
+            create: validServiceIds.map((serviceId) => ({ serviceId })),
+          },
         },
       },
     },
-    include: { dentist: { include: { schedules: true } } },
+    include: { dentist: { include: { schedules: true, services: { include: { service: true } } } } },
   })
 
   const dentist = user.dentist!
@@ -109,6 +124,13 @@ export async function POST(req: Request) {
       phone: dentist.phone,
       schedule: toWeeklySchedule(dentist.schedules),
       bookedToday: 0,
+      services: dentist.services.map((ds) => ({
+        id: ds.service.id,
+        name: ds.service.name,
+        minPrice: ds.service.minPrice,
+        maxPrice: ds.service.maxPrice,
+        duration: ds.service.duration,
+      })),
     },
   })
 }

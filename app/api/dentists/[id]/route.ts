@@ -24,7 +24,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   const { id } = await params
-  const { title, firstName, lastName, specialty, phone, schedule } = await req.json()
+  const { title, firstName, lastName, specialty, phone, schedule, serviceIds } = await req.json()
 
   if (!firstName || !lastName || !Array.isArray(schedule) || schedule.length !== 7) {
     return NextResponse.json({ error: 'ข้อมูลไม่ครบถ้วน' }, { status: 400 })
@@ -35,7 +35,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: 'ไม่พบทันตแพทย์นี้' }, { status: 404 })
   }
 
+  const validServiceIds: string[] = Array.isArray(serviceIds)
+    ? serviceIds.filter((sid): sid is string => typeof sid === 'string')
+    : []
+
   await prisma.schedule.deleteMany({ where: { dentistId: id } })
+  await prisma.dentistService.deleteMany({ where: { dentistId: id } })
 
   const dentist = await prisma.dentist.update({
     where: { id },
@@ -53,8 +58,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           isActive: d.active,
         })),
       },
+      services: {
+        create: validServiceIds.map((serviceId) => ({ serviceId })),
+      },
     },
-    include: { schedules: true },
+    include: { schedules: true, services: { include: { service: true } } },
   })
 
   return NextResponse.json({
@@ -66,6 +74,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       specialty: dentist.specialty,
       phone: dentist.phone,
       schedule: toWeeklySchedule(dentist.schedules),
+      services: dentist.services.map((ds) => ({
+        id: ds.service.id,
+        name: ds.service.name,
+        minPrice: ds.service.minPrice,
+        maxPrice: ds.service.maxPrice,
+        duration: ds.service.duration,
+      })),
     },
   })
 }

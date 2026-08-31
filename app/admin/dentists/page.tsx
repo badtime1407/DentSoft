@@ -5,8 +5,8 @@ import { PageHeader } from '@/components/admin/PageHeader'
 import { StatCard } from '@/components/admin/StatCard'
 import { DentistDrawer, type DentistFormValues } from '@/components/admin/DentistDrawer'
 import { IconBadge, IconCalendar, IconUserCheck, IconPhone, IconPlus } from '@/components/admin/icons'
-import { services } from '@/app/admin/_mock/reference'
 import type { AdminDentist } from './types'
+import type { AdminServiceOption } from '@/app/admin/appointments/types'
 import { focusRing } from '@/lib/admin/focus-ring'
 
 const dayOrder = [1, 2, 3, 4, 5, 6, 0]
@@ -19,6 +19,7 @@ type DrawerState =
 
 export default function AdminDentists() {
   const [dentists, setDentists] = useState<AdminDentist[]>([])
+  const [services, setServices] = useState<AdminServiceOption[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [drawer, setDrawer] = useState<DrawerState>({ open: false })
   const [formError, setFormError] = useState('')
@@ -26,9 +27,14 @@ export default function AdminDentists() {
   const todayIndex = useMemo(() => new Date().getDay(), [])
 
   useEffect(() => {
-    fetch('/api/dentists')
-      .then((res) => res.json())
-      .then((data: { dentists?: AdminDentist[] }) => setDentists(data.dentists ?? []))
+    Promise.all([
+      fetch('/api/dentists').then((r) => r.json()),
+      fetch('/api/services').then((r) => r.json()),
+    ])
+      .then(([dentistData, serviceData]: [{ dentists?: AdminDentist[] }, { services?: AdminServiceOption[] }]) => {
+        setDentists(dentistData.dentists ?? [])
+        setServices(serviceData.services ?? [])
+      })
       .finally(() => setIsLoading(false))
   }, [])
 
@@ -103,7 +109,6 @@ export default function AdminDentists() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {dentists.map((d) => {
-            const dentistServices = services.filter((s) => s.specialties.includes(d.specialty))
             return (
               <div key={d.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-3">
@@ -147,9 +152,10 @@ export default function AdminDentists() {
                 <div>
                   <p className="text-xs text-gray-400 mb-1.5">บริการที่ให้</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {dentistServices.map((s) => (
+                    {d.services.map((s) => (
                       <span key={s.id} className="px-2 py-1 rounded-full text-xs text-slate-600 bg-slate-50">{s.name}</span>
                     ))}
+                    {d.services.length === 0 && <span className="text-xs text-gray-400">ยังไม่ได้กำหนดบริการ</span>}
                   </div>
                 </div>
 
@@ -170,6 +176,7 @@ export default function AdminDentists() {
         open={drawer.open}
         mode={drawer.open ? drawer.mode : 'create'}
         dentist={drawer.open && drawer.mode === 'edit' ? drawer.dentist : undefined}
+        services={services}
         error={formError}
         onClose={() => {
           setFormError('')

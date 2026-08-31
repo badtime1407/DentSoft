@@ -65,6 +65,7 @@ model Dentist {
   user         User          @relation(fields: [userId], references: [id])
   appointments Appointment[]
   schedules    Schedule[]
+  services     DentistService[]
 }
 
 // ตารางการทำงานทันตแพทย์
@@ -92,6 +93,22 @@ model Service {
   isActive    Boolean     @default(true)
 
   appointments Appointment[]
+  dentists     DentistService[]
+}
+
+// หมอคนไหนทำบริการไหนได้บ้าง (many-to-many)
+model DentistService {
+  id        String   @id @default(cuid())
+  dentistId String
+  serviceId String
+  createdAt DateTime @default(now())
+
+  dentist Dentist @relation(fields: [dentistId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@unique([dentistId, serviceId])
+  @@index([dentistId])
+  @@index([serviceId])
 }
 
 enum ServiceType {

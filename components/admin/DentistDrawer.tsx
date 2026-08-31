@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { Specialty } from '@/app/admin/_mock/reference'
 import type { AdminDentist, WeeklySchedule } from '@/app/admin/dentists/types'
+import type { AdminServiceOption } from '@/app/admin/appointments/types'
 import { IconX } from './icons'
 import { focusRing } from '@/lib/admin/focus-ring'
 
@@ -10,9 +10,10 @@ export type DentistFormValues = {
   title: string
   firstName: string
   lastName: string
-  specialty: Specialty
+  specialty: string
   phone: string
   schedule: WeeklySchedule
+  serviceIds: string[]
   email: string
   username: string
   password: string
@@ -23,7 +24,7 @@ const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 const dayLabels = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์']
 const titles = ['ทพ.', 'ทพญ.']
 
-const specialties: Specialty[] = ['ทันตกรรมทั่วไป', 'ทันตกรรมจัดฟัน', 'ศัลยกรรมช่องปาก']
+const specialties = ['ทันตกรรมทั่วไป', 'ทันตกรรมจัดฟัน', 'ศัลยกรรมช่องปาก']
 
 function defaultSchedule(): WeeklySchedule {
   return Array.from({ length: 7 }, (_, i) => ({
@@ -41,6 +42,7 @@ function emptyValues(): DentistFormValues {
     specialty: 'ทันตกรรมทั่วไป',
     phone: '',
     schedule: defaultSchedule(),
+    serviceIds: [],
     email: '',
     username: '',
     password: '',
@@ -51,6 +53,7 @@ export function DentistDrawer({
   open,
   mode,
   dentist,
+  services,
   error,
   onClose,
   onSubmit,
@@ -58,6 +61,7 @@ export function DentistDrawer({
   open: boolean
   mode: 'create' | 'edit'
   dentist?: AdminDentist
+  services: AdminServiceOption[]
   error?: string
   onClose: () => void
   onSubmit: (values: DentistFormValues) => void
@@ -72,14 +76,24 @@ export function DentistDrawer({
         title: dentist.title,
         firstName: dentist.firstName,
         lastName: dentist.lastName,
-        specialty: dentist.specialty,
+        specialty: dentist.specialty || 'ทันตกรรมทั่วไป',
         phone: dentist.phone,
         schedule: dentist.schedule,
+        serviceIds: dentist.services.map((s) => s.id),
       })
     } else {
       setValues(emptyValues())
     }
   }, [open, mode, dentist?.id])
+
+  function toggleService(serviceId: string) {
+    setValues((prev) => ({
+      ...prev,
+      serviceIds: prev.serviceIds.includes(serviceId)
+        ? prev.serviceIds.filter((id) => id !== serviceId)
+        : [...prev.serviceIds, serviceId],
+    }))
+  }
 
   if (!open) return null
 
@@ -134,12 +148,31 @@ export function DentistDrawer({
             <select
               className={inputClass}
               value={values.specialty}
-              onChange={(e) => setValues((p) => ({ ...p, specialty: e.target.value as Specialty }))}
+              onChange={(e) => setValues((p) => ({ ...p, specialty: e.target.value }))}
             >
               {specialties.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className={labelClass}>บริการที่ทำได้</label>
+            <div className="grid grid-cols-1 gap-1 max-h-40 overflow-y-auto border border-gray-100 rounded-lg p-2">
+              {services.map((s) => (
+                <label key={s.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 text-sm text-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={values.serviceIds.includes(s.id)}
+                    onChange={() => toggleService(s.id)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="flex-1">{s.name}</span>
+                  <span className="text-xs text-gray-400 tabular-nums">฿{s.minPrice.toLocaleString()}-{s.maxPrice.toLocaleString()}</span>
+                </label>
+              ))}
+              {services.length === 0 && <p className="text-xs text-gray-400 px-2 py-1.5">ยังไม่มีบริการในระบบ</p>}
+            </div>
           </div>
 
           <div>
