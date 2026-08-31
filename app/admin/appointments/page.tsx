@@ -18,6 +18,8 @@ import { focusRing } from '@/lib/admin/focus-ring'
 const statusConfig: Record<BookingStatus, { label: string; tone: StatusTone }> = {
   PENDING: { label: 'รอยืนยัน', tone: 'amber' },
   CONFIRMED: { label: 'ยืนยันแล้ว', tone: 'sky' },
+  WAITING: { label: 'รอคิว', tone: 'amber' },
+  IN_TREATMENT: { label: 'กำลังรักษา', tone: 'cyan' },
   COMPLETED: { label: 'เสร็จสิ้น', tone: 'blue' },
   CANCELLED: { label: 'ยกเลิก', tone: 'rose' },
 }
@@ -26,6 +28,8 @@ const statusFilterTabs: { id: 'ALL' | BookingStatus; label: string }[] = [
   { id: 'ALL', label: 'ทั้งหมด' },
   { id: 'PENDING', label: 'รอยืนยัน' },
   { id: 'CONFIRMED', label: 'ยืนยันแล้ว' },
+  { id: 'WAITING', label: 'รอคิว' },
+  { id: 'IN_TREATMENT', label: 'กำลังรักษา' },
   { id: 'COMPLETED', label: 'เสร็จสิ้น' },
   { id: 'CANCELLED', label: 'ยกเลิก' },
 ]

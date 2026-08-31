@@ -11,6 +11,7 @@ function serializeAdminAppointment(a: FullAppointment) {
     id: a.id,
     date: a.date.toISOString(),
     status: a.status,
+    updatedAt: a.updatedAt.toISOString(),
     note: a.note,
     patientId: a.patientId,
     patientName: `${a.patient.firstName} ${a.patient.lastName}`,

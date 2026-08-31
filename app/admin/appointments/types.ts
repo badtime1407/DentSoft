@@ -1,10 +1,11 @@
-export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'WAITING' | 'IN_TREATMENT' | 'COMPLETED' | 'CANCELLED'
 export type RequestType = 'CANCEL' | 'RESCHEDULE'
 
 export type AdminAppointment = {
   id: string
   date: string // ISO datetime
   status: BookingStatus
+  updatedAt: string
   note: string | null
   patientId: string
   patientName: string
