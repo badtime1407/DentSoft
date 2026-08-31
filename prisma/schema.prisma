@@ -108,6 +108,7 @@ model Appointment {
   serviceId     String
   date          DateTime
   status        AppointmentStatus @default(PENDING)
+  checkedInAt   DateTime?         // เวลาที่คนไข้มาถึงคลินิกและเริ่มรอคิว
   note          String?
   requestType   RequestType?      // คนไข้ขอยกเลิก/ขอเลื่อนนัด รอแอดมินพิจารณา
   requestReason String?
@@ -126,6 +127,8 @@ model Appointment {
 enum AppointmentStatus {
   PENDING
   CONFIRMED
+  WAITING       // คนไข้มาถึงคลินิกแล้ว รอคิวพบทันตแพทย์
+  IN_TREATMENT  // กำลังรักษาอยู่
   CANCELLED
   COMPLETED
 }
@@ -145,7 +148,20 @@ model Treatment {
   nextVisit     DateTime?
   createdAt     DateTime @default(now())
 
-  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  appointment Appointment     @relation(fields: [appointmentId], references: [id])
+  items       TreatmentItem[]
+}
+
+// รายการที่ทำระหว่างการรักษาครั้งนั้นๆ (พิมพ์อิสระโดยทันตแพทย์ ไม่ผูกกับ Service)
+model TreatmentItem {
+  id          String   @id @default(cuid())
+  treatmentId String
+  text        String
+  createdAt   DateTime @default(now())
+
+  treatment Treatment @relation(fields: [treatmentId], references: [id])
+
+  @@index([treatmentId])
 }
 
 // NextAuth Tables
