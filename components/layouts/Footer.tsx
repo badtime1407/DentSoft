@@ -14,8 +14,8 @@ const socialLinks = [
     href: 'https://instagram.com',
     icon: (
       <>
-        <rect x="4" y="4" width="16" height="16" rx="4.5" />
-        <circle cx="12" cy="12" r="3.2" />
+        <rect x="4" y="4" width="16" height="16" rx="4.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" strokeWidth="1.6" />
         <circle cx="16.3" cy="7.7" r="0.6" fill="currentColor" stroke="none" />
       </>
     ),
@@ -31,7 +31,7 @@ const socialLinks = [
 
 const quickLinks = [
   { label: 'หน้าหลัก', href: '/' },
-  { label: 'บริการ', href: '#services' },
+  { label: 'บริการ', href: '/services' },
   { label: 'เข้าสู่ระบบ', href: '/login' },
   { label: 'สมัครสมาชิก', href: '/register' },
 ]
@@ -75,15 +75,50 @@ const contactItems = [
 ]
 
 export default function Footer() {
+  const year = new Date().getFullYear() + 543
+
   return (
     <footer id="footer" className="bg-white border-t border-gray-100">
-      <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1.2fr] gap-10">
+      <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-[1.6fr_1fr] gap-10">
+        <div className="grid grid-cols-2 gap-8">
+          <div>
+            <p className="text-sm font-semibold text-gray-900 mb-3">ลิงก์ด่วน</p>
+            <ul className="space-y-2">
+              {quickLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="text-sm text-gray-500 hover:text-blue-600 transition">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold text-gray-900 mb-3">ติดต่อเรา</p>
+            <ul className="space-y-2.5 text-sm text-gray-500">
+              {contactItems.map((item) => (
+                <li key={item.text} className="flex items-start gap-2.5">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                    {item.icon}
+                  </svg>
+                  {item.href ? (
+                    <a href={item.href} className="hover:text-blue-600 transition">{item.text}</a>
+                  ) : (
+                    <span>{item.text}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
         <div>
           <Logo size="sm" className="mb-3" />
           <p className="text-sm text-gray-400 leading-relaxed mb-4">
             ดูแลสุขภาพช่องปากของคุณให้ครบวงจร ด้วยทีมทันตแพทย์และเทคโนโลยีที่ทันสมัย
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-5">
             {socialLinks.map((social) => (
               <a
                 key={social.label}
@@ -97,43 +132,7 @@ export default function Footer() {
               </a>
             ))}
           </div>
-        </div>
-
-        <div>
-          <p className="text-sm font-semibold text-gray-900 mb-3">ลิงก์ด่วน</p>
-          <ul className="space-y-2">
-            {quickLinks.map((link) => (
-              <li key={link.label}>
-                <Link href={link.href} className="text-sm text-gray-500 hover:text-blue-600 transition">
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <p className="text-sm font-semibold text-gray-900 mb-3">ติดต่อเรา</p>
-          <ul className="space-y-2.5 text-sm text-gray-500">
-            {contactItems.map((item) => (
-              <li key={item.text} className="flex items-start gap-2.5">
-                <svg viewBox="0 0 24 24" className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  {item.icon}
-                </svg>
-                {item.href ? (
-                  <a href={item.href} className="hover:text-blue-600 transition">{item.text}</a>
-                ) : (
-                  <span>{item.text}</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      <div className="border-t border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 py-5">
-          <p className="text-xs text-gray-400 text-center md:text-left">© 2569 DentSoft Clinic. All rights reserved.</p>
+          <p className="text-xs text-gray-400">© {year} DentSoft Clinic. All rights reserved.</p>
         </div>
       </div>
     </footer>

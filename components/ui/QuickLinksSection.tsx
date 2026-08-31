@@ -41,7 +41,7 @@ export default function QuickLinksSection() {
   const [contactOpen, setContactOpen] = useState(false)
 
   return (
-    <section id="services" className="max-w-6xl mx-auto px-6 py-10">
+    <section className="max-w-6xl mx-auto px-6 py-10">
       <h2 className="text-xl font-bold text-gray-900 mb-5">บริการที่คุณใช้บ่อย</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {quickLinks.map((item) => {
