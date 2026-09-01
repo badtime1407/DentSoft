@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { PageHeader } from '@/components/admin/PageHeader'
-import { StatCard } from '@/components/admin/StatCard'
+import { PageHeader } from '@/components/shared/PageHeader'
+import { StatCard } from '@/components/shared/StatCard'
 import { VisitsStatusChart } from '@/components/admin/VisitsStatusChart'
 import { IconCalendar, IconCheckCircle, IconXCircle } from '@/components/admin/icons'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 
 type DailyStat = { date: string; completed: number; cancelled: number }
 

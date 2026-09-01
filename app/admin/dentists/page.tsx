@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { PageHeader } from '@/components/admin/PageHeader'
-import { StatCard } from '@/components/admin/StatCard'
+import { PageHeader } from '@/components/shared/PageHeader'
+import { StatCard } from '@/components/shared/StatCard'
 import { DentistDrawer, type DentistFormValues } from '@/components/admin/DentistDrawer'
 import { IconBadge, IconCalendar, IconUserCheck, IconPhone, IconPlus } from '@/components/admin/icons'
 import type { AdminDentist } from './types'
 import type { AdminServiceOption } from '@/app/admin/appointments/types'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 
 const dayOrder = [1, 2, 3, 4, 5, 6, 0]
 const dayShortLabels = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา']

@@ -1,7 +1,7 @@
 'use client'
 
 import { IconSearch } from './icons'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 
 export function SearchBar({
   value,

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import type { AdminDentist, WeeklySchedule } from '@/app/admin/dentists/types'
 import type { AdminServiceOption } from '@/app/admin/appointments/types'
 import { IconX } from './icons'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 
 export type DentistFormValues = {
   title: string

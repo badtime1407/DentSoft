@@ -14,11 +14,11 @@ import {
   IconRotate,
   IconCalendar,
 } from '@/components/admin/icons'
-import { PageHeader } from '@/components/admin/PageHeader'
+import { PageHeader } from '@/components/shared/PageHeader'
 import { SearchBar } from '@/components/admin/SearchBar'
-import { StatCard } from '@/components/admin/StatCard'
-import { StatusBadge, type StatusTone } from '@/components/admin/StatusBadge'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { StatCard } from '@/components/shared/StatCard'
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge'
+import { focusRing } from '@/lib/shared/focus-ring'
 import type { AdminAppointment, BookingStatus } from '@/app/admin/appointments/types'
 import type { AdminDentist } from '@/app/admin/dentists/types'
 

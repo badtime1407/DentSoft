@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { AdminPatient } from '@/app/admin/patients/types'
 import { IconX, IconCalendarPlus } from './icons'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 
 export type PatientFormValues = {
   firstName: string

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { IconLogout, IconBell, IconAlertTriangle, IconRotate } from './icons'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 import { useCancelRequests } from './CancelRequestsProvider'
 
 function formatNow(date: Date) {

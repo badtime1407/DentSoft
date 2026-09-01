@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { PageHeader } from '@/components/admin/PageHeader'
+import { PageHeader } from '@/components/shared/PageHeader'
 import { SearchBar } from '@/components/admin/SearchBar'
-import { StatusBadge, type StatusTone } from '@/components/admin/StatusBadge'
-import { StatCard } from '@/components/admin/StatCard'
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge'
+import { StatCard } from '@/components/shared/StatCard'
 import { PatientDrawer, type PatientFormValues } from '@/components/admin/PatientDrawer'
 import { IconUsers, IconUserCheck, IconClock, IconPlus } from '@/components/admin/icons'
 import type { AdminPatient, RecallStatus } from './types'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 
 const recallConfig: Record<RecallStatus, { label: string; tone: StatusTone }> = {
   ON_TRACK: { label: 'ปกติ', tone: 'blue' },

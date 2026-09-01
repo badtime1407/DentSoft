@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { PageHeader } from '@/components/admin/PageHeader'
+import { PageHeader } from '@/components/shared/PageHeader'
 import { SearchBar } from '@/components/admin/SearchBar'
-import { StatusBadge, type StatusTone } from '@/components/admin/StatusBadge'
-import { StatCard } from '@/components/admin/StatCard'
+import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge'
+import { StatCard } from '@/components/shared/StatCard'
 import { AppointmentScheduleBoard } from '@/components/admin/AppointmentScheduleBoard'
 import { AppointmentDrawer, type AppointmentFormValues, type NewPatientValues } from '@/components/admin/AppointmentDrawer'
 import { useCancelRequests } from '@/components/admin/CancelRequestsProvider'
@@ -13,7 +13,7 @@ import { IconCalendar, IconClock, IconXCircle, IconChevronLeft, IconChevronRight
 import { addDays, toISODate, type AdminAppointment, type AdminDentistOption, type AdminServiceOption, type BookingStatus } from './types'
 import type { AdminPatient } from '@/app/admin/patients/types'
 import type { AdminDentist } from '@/app/admin/dentists/types'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 
 const statusConfig: Record<BookingStatus, { label: string; tone: StatusTone }> = {
   PENDING: { label: 'รอยืนยัน', tone: 'amber' },

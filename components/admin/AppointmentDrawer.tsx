@@ -5,7 +5,7 @@ import type { AdminAppointment, AdminDentistOption, AdminServiceOption } from '@
 import type { AdminPatient } from '@/app/admin/patients/types'
 import type { CancelRequestType } from './CancelRequestsProvider'
 import { IconX, IconAlertTriangle, IconRotate, IconPlus } from './icons'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 
 export type AppointmentFormValues = {
   patientId: string

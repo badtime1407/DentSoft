@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { IconGrid, IconCalendar, IconUsers, IconBadge, IconChartBar } from './icons'
-import { focusRing } from '@/lib/admin/focus-ring'
+import { focusRing } from '@/lib/shared/focus-ring'
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: IconGrid },
