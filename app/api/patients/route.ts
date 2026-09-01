@@ -22,6 +22,7 @@ export async function GET() {
   const now = new Date()
 
   const patients = await prisma.patient.findMany({
+    where: { OR: [{ userId: null }, { user: { role: 'PATIENT' } }] },
     include: { appointments: { include: { service: true } } },
     orderBy: { createdAt: 'desc' },
   })
