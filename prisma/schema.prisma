@@ -167,6 +167,7 @@ model Treatment {
 
   appointment Appointment     @relation(fields: [appointmentId], references: [id])
   items       TreatmentItem[]
+  images      TreatmentImage[]
 }
 
 // รายการที่ทำระหว่างการรักษาครั้งนั้นๆ (พิมพ์อิสระโดยทันตแพทย์ ไม่ผูกกับ Service)
@@ -174,6 +175,19 @@ model TreatmentItem {
   id          String   @id @default(cuid())
   treatmentId String
   text        String
+  createdAt   DateTime @default(now())
+
+  treatment Treatment @relation(fields: [treatmentId], references: [id])
+
+  @@index([treatmentId])
+}
+
+// รูปภาพ/X-ray ที่แนบกับการรักษาครั้งนั้นๆ เก็บไบต์ตรงในฐานข้อมูล (ไม่มี object storage ในโปรเจกต์นี้)
+model TreatmentImage {
+  id          String   @id @default(cuid())
+  treatmentId String
+  data        Bytes
+  mimeType    String
   createdAt   DateTime @default(now())
 
   treatment Treatment @relation(fields: [treatmentId], references: [id])

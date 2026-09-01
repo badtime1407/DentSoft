@@ -64,6 +64,8 @@ export function TreatmentPanel({
   })
 
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [imageError, setImageError] = useState('')
 
   function updateForm<K extends keyof TreatmentNote>(key: K, value: TreatmentNote[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -85,30 +87,51 @@ export function TreatmentPanel({
     setForm((prev) => ({ ...prev, treatmentItems: prev.treatmentItems.filter((_, i) => i !== index) }))
   }
 
-  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-
-    Array.from(files).forEach((file) => {
+  function readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.onload = (event) => {
-        const result = event.target?.result as string
-        if (result) {
-          setForm((prev) => ({
-            ...prev,
-            images: [...(prev.images || []), result],
-          }))
-        }
-      }
+      reader.onload = (event) => resolve(event.target?.result as string)
+      reader.onerror = reject
       reader.readAsDataURL(file)
     })
   }
 
-  function removeImage(index: number) {
-    setForm((prev) => ({
-      ...prev,
-      images: (prev.images || []).filter((_, i) => i !== index),
-    }))
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    e.target.value = ''
+
+    setImageError('')
+    setIsUploadingImage(true)
+    try {
+      for (const file of Array.from(files)) {
+        const dataUrl = await readFileAsDataUrl(file)
+        const res = await fetch(`/api/appointments/${appointment.id}/treatment/images`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: dataUrl }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          setImageError(data.error ?? 'อัปโหลดรูปไม่สำเร็จ')
+          continue
+        }
+        setForm((prev) => ({ ...prev, images: [...(prev.images || []), { id: data.id, url: data.url }] }))
+      }
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
+  async function removeImage(imageId: string) {
+    setImageError('')
+    const res = await fetch(`/api/appointments/${appointment.id}/treatment/images/${imageId}`, { method: 'DELETE' })
+    if (!res.ok) {
+      const data = await res.json()
+      setImageError(data.error ?? 'ลบรูปไม่สำเร็จ')
+      return
+    }
+    setForm((prev) => ({ ...prev, images: (prev.images || []).filter((img) => img.id !== imageId) }))
   }
 
   const isCancelled = appointment.status === 'CANCELLED'
@@ -267,33 +290,35 @@ export function TreatmentPanel({
 
               <div className="space-y-3 mt-1.5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <label className={`cursor-pointer px-3.5 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${focusRing}`}>
+                  <label className={`cursor-pointer px-3.5 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${focusRing} ${isUploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
                     <IconUpload className="w-4 h-4" />
-                    เพิ่มรูปภาพ / X-Ray
+                    {isUploadingImage ? 'กำลังอัปโหลด...' : 'เพิ่มรูปภาพ / X-Ray'}
                     <input
                       type="file"
                       accept="image/*"
                       multiple
                       className="hidden"
                       onChange={handleFileUpload}
-                      disabled={isCancelled}
+                      disabled={isCancelled || isUploadingImage}
                     />
                   </label>
                 </div>
 
+                {imageError && <p className="text-xs text-rose-600 font-medium">{imageError}</p>}
+
                 {/* Images Preview Grid */}
                 {form.images && form.images.length > 0 && (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1">
-                    {form.images.map((imgUrl, idx) => (
+                    {form.images.map((img) => (
                       <div
-                        key={idx}
+                        key={img.id}
                         className="group relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm"
                       >
                         <img
-                          src={imgUrl}
-                          alt={`รูปการรักษา ${idx + 1}`}
+                          src={img.url}
+                          alt="รูปการรักษา"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-                          onClick={() => setPreviewImage(imgUrl)}
+                          onClick={() => setPreviewImage(img.url)}
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center pointer-events-none">
                           <span className="opacity-0 group-hover:opacity-100 text-white text-[10px] font-bold bg-black/60 px-2 py-0.5 rounded-full transition-opacity">
@@ -303,7 +328,7 @@ export function TreatmentPanel({
                         {!isCancelled && (
                           <button
                             type="button"
-                            onClick={() => removeImage(idx)}
+                            onClick={() => removeImage(img.id)}
                             className="absolute top-1 right-1 w-5 h-5 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center text-[10px] font-bold shadow-md transition"
                             title="ลบรูปนี้"
                           >
@@ -338,13 +363,13 @@ export function TreatmentPanel({
                   {v.treatmentNote && <p className="text-xs text-gray-400 mt-0.5">{v.treatmentNote}</p>}
                   {v.images && v.images.length > 0 && (
                     <div className="flex gap-1.5 mt-2 overflow-x-auto pb-1">
-                      {v.images.map((img, imgIdx) => (
+                      {v.images.map((img) => (
                         <img
-                          key={imgIdx}
-                          src={img}
+                          key={img.id}
+                          src={img.url}
                           alt="Past visit photo"
                           className="w-12 h-12 rounded-lg object-cover border border-slate-200 cursor-pointer hover:opacity-80 transition shrink-0"
-                          onClick={() => setPreviewImage(img)}
+                          onClick={() => setPreviewImage(img.url)}
                         />
                       ))}
                     </div>

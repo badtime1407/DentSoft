@@ -20,7 +20,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       status: 'COMPLETED',
       ...(excludeAppointmentId ? { id: { not: excludeAppointmentId } } : {}),
     },
-    include: { service: true, treatment: { include: { items: true } } },
+    include: { service: true, treatment: { include: { items: true, images: { select: { id: true } } } } },
     orderBy: { date: 'desc' },
   })
 
@@ -30,6 +30,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     toothNumber: a.treatment?.toothNumber || undefined,
     diagnosis: a.treatment?.diagnosis || undefined,
     treatmentNote: a.treatment && a.treatment.items.length > 0 ? a.treatment.items.map((i) => i.text).join(', ') : undefined,
+    images: a.treatment ? a.treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })) : undefined,
   }))
 
   return NextResponse.json({ history })

@@ -1,11 +1,13 @@
 export type AppointmentStatus = 'CONFIRMED' | 'WAITING' | 'IN_TREATMENT' | 'COMPLETED' | 'CANCELLED'
 
+export type TreatmentImageRef = { id: string; url: string }
+
 export type TreatmentNote = {
   toothNumber: string
   diagnosis: string
   treatmentItems: string[]
   nextVisit: string
-  images?: string[]
+  images?: TreatmentImageRef[]
 }
 
 export type DentistAppointment = {
@@ -29,5 +31,5 @@ export type PastVisit = {
   toothNumber?: string
   diagnosis?: string
   treatmentNote?: string
-  images?: string[]
+  images?: TreatmentImageRef[]
 }
