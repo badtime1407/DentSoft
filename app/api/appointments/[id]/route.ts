@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { syncAppointmentsToSheet } from '@/lib/googleSheets'
 import type { Appointment, Dentist, Patient, Service } from '@prisma/client'
 
 type FullAppointment = Appointment & { patient: Patient; service: Service; dentist: Dentist | null }
@@ -62,6 +63,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       include: { patient: true, service: true, dentist: true },
     })
 
+    await syncAppointmentsToSheet()
+
     return NextResponse.json({ appointment: serializeAdminAppointment(appointment) })
   }
 
@@ -83,6 +86,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       where: { id },
       data: { status },
     })
+
+    await syncAppointmentsToSheet()
 
     return NextResponse.json({ appointment: { id: appointment.id, status: appointment.status } })
   }
@@ -110,6 +115,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data: { requestType, requestReason, requestedAt: new Date() },
       include: { service: true, dentist: true },
     })
+
+    await syncAppointmentsToSheet()
 
     return NextResponse.json({ appointment })
   }

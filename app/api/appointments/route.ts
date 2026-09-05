@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { syncAppointmentsToSheet } from '@/lib/googleSheets'
 import type { Appointment, Dentist, Patient, Service, Treatment, TreatmentItem, TreatmentImage, TreatmentAddOn } from '@prisma/client'
 
 type FullAppointment = Appointment & { patient: Patient; service: Service; dentist: Dentist | null }
@@ -197,6 +198,8 @@ export async function POST(req: Request) {
       include: { patient: true, service: true, dentist: true },
     })
 
+    await syncAppointmentsToSheet()
+
     return NextResponse.json({ appointment: serializeAdminAppointment(appointment) })
   }
 
@@ -234,6 +237,8 @@ export async function POST(req: Request) {
     },
     include: { service: true },
   })
+
+  await syncAppointmentsToSheet()
 
   return NextResponse.json({ appointment })
 }

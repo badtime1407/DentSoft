@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { GoogleGenAI } from '@google/genai'
 import { prisma } from '@/lib/prisma'
+import { syncAppointmentsToSheet } from '@/lib/googleSheets'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
@@ -21,6 +22,11 @@ const BOOK_APPOINTMENT_TOOL = {
       serviceId: { type: 'string', description: 'รหัสบริการ (id) จากรายการบริการที่ให้ไว้ในบทสนทนา' },
       date: { type: 'string', description: 'วันที่ต้องการนัด รูปแบบ YYYY-MM-DD' },
       time: { type: 'string', description: 'เวลาที่ต้องการนัด รูปแบบ 24 ชั่วโมง HH:mm' },
+      symptomSummary: {
+        type: 'string',
+        description:
+          'สรุปอาการของคนไข้แบบสั้นๆ 1 ประโยค จากที่คุยกันมาก่อนหน้านี้ในบทสนทนา (เช่น "ปวดฟันกรามล่างซ้ายมา 3 วัน") เพื่อส่งต่อให้ทันตแพทย์ทราบล่วงหน้า ใส่เฉพาะตอนที่คนไข้เล่าอาการมาจริงๆ ถ้าคนไข้จองตรงๆไม่ได้เล่าอาการ ให้เว้นว่างไว้ ห้ามแต่งอาการขึ้นเอง',
+      },
     },
     required: ['serviceId', 'date', 'time'],
   },
@@ -54,9 +60,10 @@ ${serviceList}
 
 async function executeBookAppointment(
   userId: string,
-  args: { serviceId?: unknown; date?: unknown; time?: unknown }
+  args: { serviceId?: unknown; date?: unknown; time?: unknown; symptomSummary?: unknown }
 ) {
-  const { serviceId, date, time } = args
+  const { serviceId, date, time, symptomSummary } = args
+  const note = typeof symptomSummary === 'string' && symptomSummary.trim() ? symptomSummary.trim() : null
   if (typeof serviceId !== 'string' || typeof date !== 'string' || typeof time !== 'string') {
     return { success: false, error: 'ข้อมูลการจองไม่ครบถ้วน' }
   }
@@ -84,8 +91,10 @@ async function executeBookAppointment(
   }
 
   const appointment = await prisma.appointment.create({
-    data: { patientId: patient.id, serviceId: service.id, date: appointmentDate, status: 'PENDING' },
+    data: { patientId: patient.id, serviceId: service.id, date: appointmentDate, status: 'PENDING', note },
   })
+
+  await syncAppointmentsToSheet()
 
   return {
     success: true,
