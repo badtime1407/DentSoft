@@ -26,6 +26,14 @@ const titles = ['ทพ.', 'ทพญ.']
 
 const specialties = ['ทันตกรรมทั่วไป', 'ทันตกรรมจัดฟัน', 'ศัลยกรรมช่องปาก']
 
+// เบราว์เซอร์บาง locale โชว์ <input type="time"> เป็น AM/PM ไม่ยอมฟังแม้ตั้ง lang="th-TH"
+// เลยใช้ select ตัวเลือกตายตัวแทน เพื่อบังคับให้เป็นเวลาแบบ 24 ชม.เสมอ
+const timeOptions = Array.from({ length: 48 }, (_, i) => {
+  const h = String(Math.floor(i / 2)).padStart(2, '0')
+  const m = i % 2 === 0 ? '00' : '30'
+  return `${h}:${m}`
+})
+
 function defaultSchedule(): WeeklySchedule {
   return Array.from({ length: 7 }, (_, i) => ({
     active: i >= 1 && i <= 5,
@@ -214,19 +222,25 @@ export function DentistDrawer({
                   </label>
                   {d.active ? (
                     <div className="flex items-center gap-1.5 flex-1">
-                      <input
-                        type="time"
+                      <select
                         value={d.startTime}
                         onChange={(e) => updateDay(i, { startTime: e.target.value })}
                         className="flex-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700"
-                      />
+                      >
+                        {timeOptions.map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
                       <span className="text-gray-400 text-xs">-</span>
-                      <input
-                        type="time"
+                      <select
                         value={d.endTime}
                         onChange={(e) => updateDay(i, { endTime: e.target.value })}
                         className="flex-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700"
-                      />
+                      >
+                        {timeOptions.map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
                     </div>
                   ) : (
                     <span className="flex-1 text-xs text-gray-400">วันหยุด</span>

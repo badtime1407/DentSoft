@@ -21,6 +21,14 @@ export type NewPatientValues = { firstName: string; lastName: string; phone: str
 const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 
+// เบราว์เซอร์บาง locale โชว์ <input type="time"> เป็น AM/PM ไม่ยอมฟังแม้ตั้ง lang="th-TH"
+// เลยใช้ select ตัวเลือกตายตัวแทน เพื่อบังคับให้เป็นเวลาแบบ 24 ชม.เสมอ
+const timeOptions = Array.from({ length: 48 }, (_, i) => {
+  const h = String(Math.floor(i / 2)).padStart(2, '0')
+  const m = i % 2 === 0 ? '00' : '30'
+  return `${h}:${m}`
+})
+
 export function AppointmentDrawer({
   open,
   mode,
@@ -266,7 +274,11 @@ export function AppointmentDrawer({
             </div>
             <div>
               <label className={labelClass}>เวลา</label>
-              <input type="time" className={inputClass} value={values.startTime} onChange={(e) => update('startTime', e.target.value)} />
+              <select className={inputClass} value={values.startTime} onChange={(e) => update('startTime', e.target.value)}>
+                {timeOptions.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </div>
           </div>
 
