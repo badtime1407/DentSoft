@@ -40,8 +40,9 @@ model Patient {
   allergyNote String?
   createdAt   DateTime      @default(now())
 
-  user         User?         @relation(fields: [userId], references: [id])
-  appointments Appointment[]
+  user           User?           @relation(fields: [userId], references: [id])
+  appointments   Appointment[]
+  treatmentPlans TreatmentPlan[]
 
   @@index([phone])
 }
@@ -62,10 +63,12 @@ model Dentist {
   phone       String?
   createdAt   DateTime @default(now())
 
-  user         User          @relation(fields: [userId], references: [id])
-  appointments Appointment[]
-  schedules    Schedule[]
-  services     DentistService[]
+  user                  User                @relation(fields: [userId], references: [id])
+  appointments          Appointment[]
+  schedules             Schedule[]
+  services              DentistService[]
+  createdTreatmentPlans TreatmentPlan[]
+  createdPlanSteps      TreatmentPlanStep[]
 }
 
 // ตารางการทำงานทันตแพทย์
@@ -138,6 +141,7 @@ model Appointment {
   dentist   Dentist?   @relation(fields: [dentistId], references: [id])
   service   Service    @relation(fields: [serviceId], references: [id])
   treatment Treatment?
+  planStep  TreatmentPlanStep?
 
   @@index([date, status])
 }
@@ -165,6 +169,7 @@ model Treatment {
   treatmentNote String?  // แนวทางการรักษา
   servicePrice  Float?   // ราคาจริงที่คิดสำหรับบริการหลักของนัดนี้ (ยืนยัน/ปรับภายในช่วง minPrice-maxPrice ของ Service ตอนบันทึกการรักษา)
   nextVisit     DateTime?
+  nextVisitNote String?  // นัดครั้งถัดไปเพื่อทำอะไร กรอกอิสระโดยทันตแพทย์
   createdAt     DateTime @default(now())
 
   appointment Appointment     @relation(fields: [appointmentId], references: [id])
@@ -201,6 +206,47 @@ model TreatmentItem {
   treatment Treatment @relation(fields: [treatmentId], references: [id])
 
   @@index([treatmentId])
+}
+
+// แผนการรักษาระยะยาวของคนไข้ (ครอบคลุมหลายนัดหมาย เช่น รักษารากฟันแล้วครอบฟัน)
+model TreatmentPlan {
+  id                String              @id @default(cuid())
+  patientId         String
+  title             String              // ชื่อแผน เช่น "รักษารากฟันซี่ 36 + ครอบฟัน"
+  status            TreatmentPlanStatus @default(ACTIVE)
+  createdByDentistId String
+  createdAt         DateTime            @default(now())
+
+  patient         Patient             @relation(fields: [patientId], references: [id])
+  createdByDentist Dentist            @relation(fields: [createdByDentistId], references: [id])
+  steps            TreatmentPlanStep[]
+
+  @@index([patientId])
+}
+
+enum TreatmentPlanStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// ขั้นตอนแต่ละครั้งในแผนการรักษา ผูกกับนัดหมายจริงได้เมื่อถูกจองแล้ว
+// createdByDentistId ใช้จำกัดสิทธิ์ลบ — ลบได้เฉพาะหมอที่เพิ่มขั้นตอนนั้นเอง ส่วนกาเช็ค/แก้ไข/เพิ่มขั้นตอนใหม่ หมอคนไหนก็ทำได้ (ต่องานกันได้)
+model TreatmentPlanStep {
+  id                String   @id @default(cuid())
+  planId            String
+  order             Int
+  description       String
+  isDone            Boolean  @default(false)
+  appointmentId     String?  @unique
+  createdByDentistId String
+  createdAt         DateTime @default(now())
+
+  plan             TreatmentPlan @relation(fields: [planId], references: [id])
+  appointment      Appointment?  @relation(fields: [appointmentId], references: [id])
+  createdByDentist Dentist       @relation(fields: [createdByDentistId], references: [id])
+
+  @@index([planId])
 }
 
 // รูปภาพ/X-ray ที่แนบกับการรักษาครั้งนั้นๆ เก็บไบต์ตรงในฐานข้อมูล (ไม่มี object storage ในโปรเจกต์นี้)

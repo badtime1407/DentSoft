@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from 'react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { IconPhone, IconFileText, IconImageIcon, IconUpload, IconX, IconPlus, IconAlertTriangle } from '@/components/shared/icons'
+import { IconPhone, IconFileText, IconImageIcon, IconUpload, IconX, IconPlus, IconAlertTriangle, IconTrash } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
-import type { DentistAppointment, PastVisit, TreatmentNote } from '@/components/dentist/types'
+import type { DentistAppointment, PastVisit, TreatmentNote, TreatmentPlanSummary } from '@/components/dentist/types'
 import { queueStatusConfig } from '@/lib/dentist/status-config'
 
 type AddOnCatalogItem = { id: string; name: string; minPrice: number; maxPrice: number }
@@ -14,7 +14,7 @@ const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm t
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 const chipClass = `px-2.5 py-1 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 text-slate-600 text-[11px] font-medium rounded-full border border-slate-200 transition ${focusRing}`
 
-const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', servicePrice: null, treatmentItems: [], nextVisit: '', images: [], addOns: [] }
+const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', servicePrice: null, treatmentItems: [], nextVisit: '', nextVisitNote: '', images: [], addOns: [] }
 
 const serviceTemplates: Record<string, { diagnosis: string; treatmentItems: string[] }> = {
   'ตรวจสุขภาพฟัน': { diagnosis: 'ตรวจสุขภาพฟันและเหงือกโดยรวม ไม่พบความผิดปกติ', treatmentItems: ['ตรวจสุขภาพฟันประจำปี', 'แนะนำการดูแลสุขภาพช่องปาก'] },
@@ -50,14 +50,30 @@ function addMonths(dateStr: string, months: number) {
 export function TreatmentPanel({
   appointment,
   history,
+  treatmentPlans,
+  currentDentistId,
   onComplete,
   onSaveTreatment,
+  onCreatePlan,
+  onAddPlanStep,
+  onToggleStep,
+  onUpdateStep,
+  onDeleteStep,
+  onDeletePlan,
 }: {
   appointment: DentistAppointment
   history: PastVisit[]
+  currentDentistId: string | null
+  treatmentPlans: TreatmentPlanSummary[]
   onStart?: () => void
   onComplete?: () => void
   onSaveTreatment: (note: TreatmentNote) => void
+  onCreatePlan: (title: string, steps: string[]) => Promise<void>
+  onAddPlanStep: (planId: string, description: string) => Promise<void>
+  onToggleStep: (planId: string, stepId: string, isDone: boolean) => Promise<void>
+  onUpdateStep: (planId: string, stepId: string, description: string) => Promise<void>
+  onDeleteStep: (planId: string, stepId: string) => Promise<void>
+  onDeletePlan: (planId: string) => Promise<void>
 }) {
   const [form, setForm] = useState<TreatmentNote>(() => {
     if (appointment.treatment) {
@@ -74,6 +90,41 @@ export function TreatmentPanel({
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [imageError, setImageError] = useState('')
+
+  const [planModalOpen, setPlanModalOpen] = useState(false)
+  const [planFormOpen, setPlanFormOpen] = useState(false)
+  const [newPlanTitle, setNewPlanTitle] = useState('')
+  const [newPlanSteps, setNewPlanSteps] = useState<string[]>([''])
+  const [newStepText, setNewStepText] = useState<Record<string, string>>({})
+
+  function updateNewPlanStep(index: number, value: string) {
+    setNewPlanSteps((prev) => prev.map((s, i) => (i === index ? value : s)))
+  }
+
+  function addNewPlanStepRow() {
+    setNewPlanSteps((prev) => [...prev, ''])
+  }
+
+  function removeNewPlanStepRow(index: number) {
+    setNewPlanSteps((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  async function submitNewPlan() {
+    const title = newPlanTitle.trim()
+    if (!title) return
+    const steps = newPlanSteps.map((s) => s.trim()).filter(Boolean)
+    await onCreatePlan(title, steps)
+    setNewPlanTitle('')
+    setNewPlanSteps([''])
+    setPlanFormOpen(false)
+  }
+
+  async function submitNewStep(planId: string) {
+    const text = (newStepText[planId] ?? '').trim()
+    if (!text) return
+    await onAddPlanStep(planId, text)
+    setNewStepText((prev) => ({ ...prev, [planId]: '' }))
+  }
 
   const [addOnCatalog, setAddOnCatalog] = useState<AddOnCatalogItem[]>([])
   const [addOnPickerOpen, setAddOnPickerOpen] = useState(false)
@@ -220,7 +271,16 @@ export function TreatmentPanel({
               </p>
             </div>
           </div>
-          <StatusBadge label={queueStatusConfig[appointment.status].label} tone={queueStatusConfig[appointment.status].tone} />
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setPlanModalOpen(true)}
+              className={`px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-slate-50 transition ${focusRing}`}
+            >
+              ดูแผนการรักษา{treatmentPlans.length > 0 ? ` (${treatmentPlans.length})` : ''}
+            </button>
+            <StatusBadge label={queueStatusConfig[appointment.status].label} tone={queueStatusConfig[appointment.status].tone} />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
@@ -461,6 +521,12 @@ export function TreatmentPanel({
                   +1 เดือน
                 </button>
               </div>
+              <input
+                className={`${inputClass} mt-2`}
+                value={form.nextVisitNote ?? ''}
+                onChange={(e) => updateForm('nextVisitNote', e.target.value)}
+                placeholder="นัดครั้งถัดไปเพื่อทำอะไร (ถ้ามี) เช่น ครอบฟัน, ตรวจติดตามอาการ"
+              />
             </div>
 
             {/* Image Upload & Attachment Section */}
@@ -603,6 +669,167 @@ export function TreatmentPanel({
           )}
         </div>
       </div>
+
+      {/* Treatment plan modal */}
+      {planModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setPlanModalOpen(false)}>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl overflow-hidden w-full max-w-xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-2">
+            <div>
+              <h2 className="font-semibold text-gray-900">แผนการรักษา</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Treatment plan</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => setPlanFormOpen((v) => !v)} className={chipClass}>
+                <span className="inline-flex items-center gap-1"><IconPlus className="w-3 h-3" /> สร้างแผนใหม่</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPlanModalOpen(false)}
+                className={`p-1.5 rounded-lg text-gray-400 hover:bg-slate-100 transition ${focusRing}`}
+              >
+                <IconX className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {planFormOpen && (
+            <div className="px-6 py-4 border-b border-gray-100 bg-slate-50 space-y-2">
+              <input
+                value={newPlanTitle}
+                onChange={(e) => setNewPlanTitle(e.target.value)}
+                placeholder="ชื่อแผน เช่น รักษารากฟันซี่ 36 + ครอบฟัน"
+                className={inputClass}
+              />
+              <div className="space-y-1.5">
+                {newPlanSteps.map((step, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input
+                      value={step}
+                      onChange={(e) => updateNewPlanStep(idx, e.target.value)}
+                      placeholder={`ขั้นตอนที่ ${idx + 1}`}
+                      className={inputClass}
+                    />
+                    {newPlanSteps.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeNewPlanStepRow(idx)}
+                        className={`shrink-0 p-2 rounded-lg text-gray-400 hover:bg-rose-50 hover:text-rose-600 transition ${focusRing}`}
+                      >
+                        <IconX className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                <button type="button" onClick={addNewPlanStepRow} className={chipClass}>
+                  + เพิ่มขั้นตอน
+                </button>
+                <button
+                  type="button"
+                  onClick={submitNewPlan}
+                  disabled={!newPlanTitle.trim()}
+                  className={`px-3.5 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-40 transition ${focusRing}`}
+                >
+                  สร้างแผน
+                </button>
+              </div>
+            </div>
+          )}
+
+          {treatmentPlans.length > 0 ? (
+            <ul className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
+              {treatmentPlans.map((plan) => (
+                <li key={plan.id} className="px-6 py-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-gray-900">{plan.title}</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          plan.status === 'ACTIVE'
+                            ? 'bg-blue-50 text-blue-700'
+                            : plan.status === 'COMPLETED'
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {plan.status === 'ACTIVE' ? 'กำลังดำเนินการ' : plan.status === 'COMPLETED' ? 'เสร็จสิ้น' : 'ยกเลิก'}
+                      </span>
+                      {plan.createdByDentistId === currentDentistId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`ลบแผน "${plan.title}" ทั้งแผนใช่ไหม?`)) onDeletePlan(plan.id)
+                          }}
+                          className={`p-1 rounded-lg text-gray-300 hover:bg-rose-50 hover:text-rose-600 transition ${focusRing}`}
+                          title="ลบแผนนี้ (เฉพาะแผนที่คุณสร้าง)"
+                        >
+                          <IconTrash className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <ul className="mt-2 space-y-1.5">
+                    {plan.steps.map((step) => (
+                      <li key={step.id} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={step.isDone}
+                          onChange={(e) => onToggleStep(plan.id, step.id, e.target.checked)}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-400 shrink-0"
+                        />
+                        <input
+                          key={step.id}
+                          defaultValue={step.description}
+                          onBlur={(e) => {
+                            const value = e.target.value.trim()
+                            if (value && value !== step.description) onUpdateStep(plan.id, step.id, value)
+                          }}
+                          className={`flex-1 min-w-0 px-1.5 py-0.5 rounded text-xs bg-transparent hover:bg-slate-50 focus:bg-white border border-transparent focus:border-gray-200 transition ${focusRing} ${step.isDone ? 'text-gray-400 line-through' : 'text-gray-700'}`}
+                        />
+                        {step.createdByDentistId === currentDentistId && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteStep(plan.id, step.id)}
+                            className={`shrink-0 p-1 rounded-lg text-gray-300 hover:bg-rose-50 hover:text-rose-600 transition ${focusRing}`}
+                            title="ลบขั้นตอนนี้ (เฉพาะขั้นตอนที่คุณเพิ่ม)"
+                          >
+                            <IconX className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      value={newStepText[plan.id] ?? ''}
+                      onChange={(e) => setNewStepText((prev) => ({ ...prev, [plan.id]: e.target.value }))}
+                      placeholder="+ เพิ่มขั้นตอนใหม่"
+                      className="flex-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 placeholder:text-gray-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => submitNewStep(plan.id)}
+                      disabled={!(newStepText[plan.id] ?? '').trim()}
+                      className={`px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold disabled:opacity-40 transition ${focusRing}`}
+                    >
+                      เพิ่ม
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            !planFormOpen && (
+              <div className="px-6 py-8 text-center">
+                <p className="text-sm text-gray-400">ยังไม่มีแผนการรักษาสำหรับคนไข้นี้</p>
+              </div>
+            )
+          )}
+        </div>
+        </div>
+      )}
 
       {/* Lightbox Modal */}
       {previewImage && (

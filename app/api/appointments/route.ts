@@ -83,6 +83,7 @@ function serializeDentistAppointment(a: DentistFullAppointment) {
           servicePrice: a.treatment.servicePrice,
           treatmentItems: a.treatment.items.map((i) => i.text),
           nextVisit: a.treatment.nextVisit ? splitBangkok(a.treatment.nextVisit).date : '',
+          nextVisitNote: a.treatment.nextVisitNote ?? '',
           images: a.treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })),
           addOns: a.treatment.addOns.map((ao) => ({
             serviceId: ao.serviceId,

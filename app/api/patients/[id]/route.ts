@@ -33,7 +33,28 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     images: a.treatment ? a.treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })) : undefined,
   }))
 
-  return NextResponse.json({ history })
+  const plans = await prisma.treatmentPlan.findMany({
+    where: { patientId: id },
+    include: { steps: { orderBy: { order: 'asc' } } },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  const treatmentPlans = plans.map((p) => ({
+    id: p.id,
+    title: p.title,
+    status: p.status,
+    createdByDentistId: p.createdByDentistId,
+    steps: p.steps.map((s) => ({
+      id: s.id,
+      order: s.order,
+      description: s.description,
+      isDone: s.isDone,
+      appointmentId: s.appointmentId,
+      createdByDentistId: s.createdByDentistId,
+    })),
+  }))
+
+  return NextResponse.json({ history, treatmentPlans })
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {

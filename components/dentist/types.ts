@@ -15,6 +15,7 @@ export type TreatmentNote = {
   servicePrice?: number | null
   treatmentItems: string[]
   nextVisit: string
+  nextVisitNote?: string
   images?: TreatmentImageRef[]
   addOns?: TreatmentAddOnRef[]
 }
@@ -35,6 +36,23 @@ export type DentistAppointment = {
   status: AppointmentStatus
   note?: string | null
   treatment?: TreatmentNote
+}
+
+export type TreatmentPlanStep = {
+  id: string
+  order: number
+  description: string
+  isDone: boolean
+  appointmentId: string | null
+  createdByDentistId: string
+}
+
+export type TreatmentPlanSummary = {
+  id: string
+  title: string
+  status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+  createdByDentistId: string
+  steps: TreatmentPlanStep[]
 }
 
 export type PastVisit = {

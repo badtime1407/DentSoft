@@ -19,7 +19,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: 'ไม่พบนัดหมายนี้' }, { status: 404 })
   }
 
-  const { toothNumber, diagnosis, treatmentItems, nextVisit, addOns, servicePrice } = await req.json()
+  const { toothNumber, diagnosis, treatmentItems, nextVisit, nextVisitNote, addOns, servicePrice } = await req.json()
 
   const requestedServicePrice = typeof servicePrice === 'number' ? servicePrice : appointment.service.minPrice
   const clampedServicePrice = Math.min(Math.max(requestedServicePrice, appointment.service.minPrice), appointment.service.maxPrice)
@@ -67,6 +67,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       diagnosis: diagnosis || null,
       servicePrice: clampedServicePrice,
       nextVisit: nextVisit ? new Date(nextVisit) : null,
+      nextVisitNote: nextVisitNote || null,
       items: { deleteMany: {}, create: items.map((text) => ({ text })) },
       addOns: { deleteMany: {}, create: addOnRows },
     },
@@ -76,6 +77,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       diagnosis: diagnosis || null,
       servicePrice: clampedServicePrice,
       nextVisit: nextVisit ? new Date(nextVisit) : null,
+      nextVisitNote: nextVisitNote || null,
       items: { create: items.map((text) => ({ text })) },
       addOns: { create: addOnRows },
     },
@@ -89,6 +91,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       servicePrice: treatment.servicePrice,
       treatmentItems: treatment.items.map((i) => i.text),
       nextVisit: treatment.nextVisit ? treatment.nextVisit.toISOString().slice(0, 10) : '',
+      nextVisitNote: treatment.nextVisitNote ?? '',
       addOns: treatment.addOns.map((a) => ({
         serviceId: a.serviceId,
         serviceName: a.service?.name ?? a.customName ?? '',

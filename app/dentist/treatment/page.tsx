@@ -6,7 +6,7 @@ import { useQueue } from '@/components/dentist/QueueProvider'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PatientQueueList } from '@/components/dentist/PatientQueueList'
 import { TreatmentPanel } from '@/components/dentist/TreatmentPanel'
-import type { PastVisit } from '@/components/dentist/types'
+import type { PastVisit, TreatmentPlanSummary } from '@/components/dentist/types'
 
 function todayInBangkok() {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
@@ -42,17 +42,86 @@ export default function DentistTreatment() {
   const selected = appointments.find((a) => a.id === selectedId)
 
   const [history, setHistory] = useState<PastVisit[]>([])
+  const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlanSummary[]>([])
+  const [currentDentistId, setCurrentDentistId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/dentist/me')
+      .then((res) => res.json())
+      .then((data: { id?: string }) => setCurrentDentistId(data.id ?? null))
+      .catch(() => setCurrentDentistId(null))
+  }, [])
+
+  function refetchPatientData() {
+    if (!selected) return
+    fetch(`/api/patients/${selected.patientId}?excludeAppointmentId=${selected.id}`)
+      .then((res) => res.json())
+      .then((data: { history?: PastVisit[]; treatmentPlans?: TreatmentPlanSummary[] }) => {
+        setHistory(data.history ?? [])
+        setTreatmentPlans(data.treatmentPlans ?? [])
+      })
+      .catch(() => {
+        setHistory([])
+        setTreatmentPlans([])
+      })
+  }
 
   useEffect(() => {
     if (!selected) {
       setHistory([])
+      setTreatmentPlans([])
       return
     }
-    fetch(`/api/patients/${selected.patientId}?excludeAppointmentId=${selected.id}`)
-      .then((res) => res.json())
-      .then((data: { history?: PastVisit[] }) => setHistory(data.history ?? []))
-      .catch(() => setHistory([]))
+    refetchPatientData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected])
+
+  async function handleCreatePlan(title: string, steps: string[]) {
+    if (!selected) return
+    const res = await fetch('/api/treatment-plans', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patientId: selected.patientId, title, steps }),
+    })
+    if (res.ok) refetchPatientData()
+  }
+
+  async function handleAddPlanStep(planId: string, description: string) {
+    const res = await fetch(`/api/treatment-plans/${planId}/steps`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description }),
+    })
+    if (res.ok) refetchPatientData()
+  }
+
+  async function handleToggleStep(planId: string, stepId: string, isDone: boolean) {
+    const res = await fetch(`/api/treatment-plans/${planId}/steps/${stepId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isDone }),
+    })
+    if (res.ok) refetchPatientData()
+  }
+
+  async function handleUpdateStep(planId: string, stepId: string, description: string) {
+    const res = await fetch(`/api/treatment-plans/${planId}/steps/${stepId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description }),
+    })
+    if (res.ok) refetchPatientData()
+  }
+
+  async function handleDeleteStep(planId: string, stepId: string) {
+    const res = await fetch(`/api/treatment-plans/${planId}/steps/${stepId}`, { method: 'DELETE' })
+    if (res.ok) refetchPatientData()
+  }
+
+  async function handleDeletePlan(planId: string) {
+    const res = await fetch(`/api/treatment-plans/${planId}`, { method: 'DELETE' })
+    if (res.ok) refetchPatientData()
+  }
 
   return (
     <>
@@ -71,9 +140,17 @@ export default function DentistTreatment() {
             key={selected.id}
             appointment={selected}
             history={history}
+            treatmentPlans={treatmentPlans}
+            currentDentistId={currentDentistId}
             onStart={() => startTreatment(selected.id)}
             onComplete={() => completeAppointment(selected.id)}
             onSaveTreatment={(note) => saveTreatment(selected.id, note)}
+            onCreatePlan={handleCreatePlan}
+            onAddPlanStep={handleAddPlanStep}
+            onToggleStep={handleToggleStep}
+            onUpdateStep={handleUpdateStep}
+            onDeleteStep={handleDeleteStep}
+            onDeletePlan={handleDeletePlan}
           />
         ) : (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-sm text-gray-400">
