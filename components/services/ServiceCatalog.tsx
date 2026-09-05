@@ -67,12 +67,8 @@ export function ServiceCatalog({
                     <div className="flex items-start justify-between gap-3">
                       <h3 className={`font-bold ${c.heading} text-sm`}>{service.name}</h3>
                       <p className="text-sm font-extrabold text-blue-600 shrink-0 text-right">
-                        {(service.minPrice !== service.maxPrice || service.description) && (
-                          <span className={`text-[11px] font-normal ${c.muted} mr-1`}>
-                            {[service.minPrice !== service.maxPrice ? 'เริ่มต้น' : null, service.description]
-                              .filter(Boolean)
-                              .join(' ')}
-                          </span>
+                        {service.minPrice !== service.maxPrice && (
+                          <span className={`text-[11px] font-normal ${c.muted} mr-1`}>เริ่มต้น</span>
                         )}
                         {formatPrice(service)}
                       </p>
