@@ -79,7 +79,8 @@ export default function DentistAppointments() {
   }
 
   function handleOpen(appointment: DentistAppointment) {
-    if (appointment.status === 'CONFIRMED' || appointment.status === 'WAITING') {
+    const isAppointmentToday = appointment.date === TODAY
+    if (isAppointmentToday && (appointment.status === 'CONFIRMED' || appointment.status === 'WAITING')) {
       startTreatment(appointment.id)
     }
     router.push(`/dentist/treatment?id=${appointment.id}`)
