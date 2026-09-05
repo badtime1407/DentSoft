@@ -1,18 +1,20 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { IconPhone, IconFileText, IconImageIcon, IconUpload, IconX } from '@/components/shared/icons'
+import { IconPhone, IconFileText, IconImageIcon, IconUpload, IconX, IconPlus } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 import type { DentistAppointment, PastVisit, TreatmentNote } from '@/components/dentist/types'
 import { queueStatusConfig } from '@/lib/dentist/status-config'
+
+type AddOnCatalogItem = { id: string; name: string; minPrice: number; maxPrice: number }
 
 const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 transition-all ${focusRing}`
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 const chipClass = `px-2.5 py-1 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 text-slate-600 text-[11px] font-medium rounded-full border border-slate-200 transition ${focusRing}`
 
-const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', treatmentItems: [], nextVisit: '', images: [] }
+const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', treatmentItems: [], nextVisit: '', images: [], addOns: [] }
 
 const serviceTemplates: Record<string, { diagnosis: string; treatmentItems: string[] }> = {
   'ตรวจสุขภาพฟัน': { diagnosis: 'ตรวจสุขภาพฟันและเหงือกโดยรวม ไม่พบความผิดปกติ', treatmentItems: ['ตรวจสุขภาพฟันประจำปี', 'แนะนำการดูแลสุขภาพช่องปาก'] },
@@ -58,7 +60,7 @@ export function TreatmentPanel({
   onSaveTreatment: (note: TreatmentNote) => void
 }) {
   const [form, setForm] = useState<TreatmentNote>(() => {
-    if (appointment.treatment) return { images: [], ...appointment.treatment }
+    if (appointment.treatment) return { images: [], addOns: [], ...appointment.treatment }
     const template = serviceTemplates[appointment.serviceName]
     return template ? { ...emptyNote, diagnosis: template.diagnosis, treatmentItems: template.treatmentItems } : emptyNote
   })
@@ -66,6 +68,61 @@ export function TreatmentPanel({
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [imageError, setImageError] = useState('')
+
+  const [addOnCatalog, setAddOnCatalog] = useState<AddOnCatalogItem[]>([])
+  const [addOnPickerOpen, setAddOnPickerOpen] = useState(false)
+  const [customAddOnName, setCustomAddOnName] = useState('')
+  const [customAddOnPrice, setCustomAddOnPrice] = useState('')
+
+  useEffect(() => {
+    fetch('/api/services?type=ADD_ON')
+      .then((res) => res.json())
+      .then((data: { services?: AddOnCatalogItem[] }) => setAddOnCatalog(data.services ?? []))
+      .catch(() => setAddOnCatalog([]))
+  }, [])
+
+  function addAddOn(service: AddOnCatalogItem) {
+    setForm((prev) => {
+      const existing = prev.addOns ?? []
+      if (existing.some((a) => a.serviceId === service.id)) return prev
+      return {
+        ...prev,
+        addOns: [...existing, { serviceId: service.id, serviceName: service.name, quantity: 1, unitPrice: service.minPrice }],
+      }
+    })
+    setAddOnPickerOpen(false)
+  }
+
+  function updateAddOnQuantity(index: number, quantity: number) {
+    setForm((prev) => ({
+      ...prev,
+      addOns: (prev.addOns ?? []).map((a, i) => (i === index ? { ...a, quantity: Math.max(1, Math.floor(quantity) || 1) } : a)),
+    }))
+  }
+
+  function updateAddOnPrice(index: number, unitPrice: number) {
+    setForm((prev) => ({
+      ...prev,
+      addOns: (prev.addOns ?? []).map((a, i) => (i === index ? { ...a, unitPrice: Math.max(0, unitPrice || 0) } : a)),
+    }))
+  }
+
+  function removeAddOn(index: number) {
+    setForm((prev) => ({ ...prev, addOns: (prev.addOns ?? []).filter((_, i) => i !== index) }))
+  }
+
+  function addCustomAddOn() {
+    const name = customAddOnName.trim()
+    const price = Number(customAddOnPrice)
+    if (!name || !Number.isFinite(price) || price < 0) return
+    setForm((prev) => ({
+      ...prev,
+      addOns: [...(prev.addOns ?? []), { serviceId: null, serviceName: name, quantity: 1, unitPrice: price }],
+    }))
+    setCustomAddOnName('')
+    setCustomAddOnPrice('')
+    setAddOnPickerOpen(false)
+  }
 
   function updateForm<K extends keyof TreatmentNote>(key: K, value: TreatmentNote[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -170,28 +227,6 @@ export function TreatmentPanel({
             <p className="text-sm font-medium text-gray-800">{appointment.durationMin} นาที</p>
           </div>
         </div>
-
-        {!isCancelled && (
-          <div className="flex flex-wrap gap-2 mt-5">
-            <button
-              type="button"
-              onClick={() => onSaveTreatment(form)}
-              className={`px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all ${focusRing}`}
-            >
-              บันทึกร่าง
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onSaveTreatment(form)
-                onComplete?.()
-              }}
-              className={`px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
-            >
-              เสร็จสิ้นการรักษา
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -210,8 +245,8 @@ export function TreatmentPanel({
 
           <fieldset disabled={isCancelled} className="space-y-4 disabled:opacity-50">
             <div>
-              <label className={labelClass}>ฟันที่รักษา</label>
-              <input className={inputClass} value={form.toothNumber} onChange={(e) => updateForm('toothNumber', e.target.value)} placeholder="เช่น 36, 47" />
+              <label className={labelClass}>ฟันที่รักษา (ถ้ามี)</label>
+              <input className={inputClass} value={form.toothNumber} onChange={(e) => updateForm('toothNumber', e.target.value)} />
             </div>
             <div>
               <label className={labelClass}>ปัญหาที่พบ</label>
@@ -260,6 +295,113 @@ export function TreatmentPanel({
                 ))}
               </div>
             </div>
+            <div className="pt-2 border-t border-slate-100">
+              <label className={labelClass}>อุปกรณ์/บริการเพิ่มเติม</label>
+              <div className="space-y-2">
+                {(form.addOns ?? []).map((addOn, idx) => {
+                  const catalogItem = addOn.serviceId ? addOnCatalog.find((s) => s.id === addOn.serviceId) : undefined
+                  const priceIsEditable = !addOn.serviceId || (catalogItem ? catalogItem.minPrice !== catalogItem.maxPrice : true)
+                  return (
+                    <div key={addOn.serviceId ?? `custom-${idx}`} className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2">
+                      <span className="flex-1 text-sm text-gray-700 truncate">{addOn.serviceName}</span>
+                      <input
+                        type="number"
+                        min={1}
+                        value={addOn.quantity}
+                        onChange={(e) => updateAddOnQuantity(idx, Number(e.target.value))}
+                        className="w-14 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 text-center"
+                        title="จำนวน"
+                      />
+                      {priceIsEditable ? (
+                        <input
+                          type="number"
+                          min={catalogItem?.minPrice}
+                          max={catalogItem?.maxPrice}
+                          value={addOn.unitPrice}
+                          onChange={(e) => updateAddOnPrice(idx, Number(e.target.value))}
+                          className="w-20 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 text-right"
+                          title="ราคาต่อหน่วย"
+                        />
+                      ) : (
+                        <span className="w-20 text-xs text-gray-500 text-right tabular-nums">฿{addOn.unitPrice.toLocaleString('th-TH')}</span>
+                      )}
+                      <span className="w-24 text-xs font-semibold text-gray-800 text-right tabular-nums">
+                        ฿{(addOn.quantity * addOn.unitPrice).toLocaleString('th-TH')}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeAddOn(idx)}
+                        className={`shrink-0 p-1.5 rounded-lg text-gray-400 hover:bg-rose-50 hover:text-rose-600 transition ${focusRing}`}
+                        title="ลบรายการนี้"
+                      >
+                        <IconX className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )
+                })}
+                {(form.addOns ?? []).length === 0 && (
+                  <p className="text-xs text-gray-400">ยังไม่มีอุปกรณ์/บริการเพิ่มเติมที่ใช้</p>
+                )}
+              </div>
+
+              <div className="relative mt-2 inline-block">
+                <button type="button" onClick={() => setAddOnPickerOpen((v) => !v)} className={chipClass}>
+                  <span className="inline-flex items-center gap-1"><IconPlus className="w-3 h-3" /> เพิ่มรายการ</span>
+                </button>
+                {addOnPickerOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setAddOnPickerOpen(false)} />
+                    <div className="absolute left-0 mt-1 w-72 max-h-80 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg z-20">
+                      {addOnCatalog
+                        .filter((s) => !(form.addOns ?? []).some((a) => a.serviceId === s.id))
+                        .map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => addAddOn(s)}
+                            className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between gap-2"
+                          >
+                            <span className="truncate">{s.name}</span>
+                            <span className="shrink-0 text-gray-400 tabular-nums">฿{s.minPrice.toLocaleString('th-TH')}</span>
+                          </button>
+                        ))}
+                      {addOnCatalog.length === 0 && (
+                        <p className="px-3 py-2 text-xs text-gray-400">ไม่มีรายการเพิ่มเติมในระบบ</p>
+                      )}
+
+                      <div className="border-t border-gray-100 p-2 space-y-1.5" onClick={(e) => e.stopPropagation()}>
+                        <p className="text-[11px] font-semibold text-gray-500 px-1">หรือกรอกรายการเอง</p>
+                        <input
+                          value={customAddOnName}
+                          onChange={(e) => setCustomAddOnName(e.target.value)}
+                          placeholder="ชื่อรายการ"
+                          className="w-full px-2 py-1.5 rounded-md border border-gray-200 text-xs text-gray-700 placeholder:text-gray-400"
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            min={0}
+                            value={customAddOnPrice}
+                            onChange={(e) => setCustomAddOnPrice(e.target.value)}
+                            placeholder="ราคา"
+                            className="flex-1 px-2 py-1.5 rounded-md border border-gray-200 text-xs text-gray-700 placeholder:text-gray-400"
+                          />
+                          <button
+                            type="button"
+                            onClick={addCustomAddOn}
+                            disabled={!customAddOnName.trim() || customAddOnPrice === ''}
+                            className={`px-3 py-1.5 rounded-md bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-40 transition ${focusRing}`}
+                          >
+                            เพิ่ม
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
             <div>
               <label className={labelClass}>นัดครั้งถัดไป</label>
               <input type="date" className={inputClass} value={form.nextVisit} onChange={(e) => updateForm('nextVisit', e.target.value)} />
@@ -342,6 +484,28 @@ export function TreatmentPanel({
               </div>
             </div>
           </fieldset>
+
+          {!isCancelled && (
+            <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => onSaveTreatment(form)}
+                className={`px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all ${focusRing}`}
+              >
+                บันทึกร่าง
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onSaveTreatment(form)
+                  onComplete?.()
+                }}
+                className={`px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm shadow-blue-200 ${focusRing}`}
+              >
+                เสร็จสิ้นการรักษา
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Visit history */}

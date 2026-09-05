@@ -2,12 +2,20 @@ export type AppointmentStatus = 'CONFIRMED' | 'WAITING' | 'IN_TREATMENT' | 'COMP
 
 export type TreatmentImageRef = { id: string; url: string }
 
+export type TreatmentAddOnRef = {
+  serviceId: string | null
+  serviceName: string
+  quantity: number
+  unitPrice: number
+}
+
 export type TreatmentNote = {
   toothNumber: string
   diagnosis: string
   treatmentItems: string[]
   nextVisit: string
   images?: TreatmentImageRef[]
+  addOns?: TreatmentAddOnRef[]
 }
 
 export type DentistAppointment = {

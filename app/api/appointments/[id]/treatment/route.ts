@@ -19,11 +19,43 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: 'ไม่พบนัดหมายนี้' }, { status: 404 })
   }
 
-  const { toothNumber, diagnosis, treatmentItems, nextVisit } = await req.json()
+  const { toothNumber, diagnosis, treatmentItems, nextVisit, addOns } = await req.json()
 
   const items: string[] = Array.isArray(treatmentItems)
     ? treatmentItems.filter((t): t is string => typeof t === 'string' && t.trim() !== '')
     : []
+
+  type RequestedAddOn = { serviceId?: string; customName?: string; quantity: number; unitPrice?: number }
+  const requestedAddOns: RequestedAddOn[] = Array.isArray(addOns)
+    ? addOns.filter((a): a is RequestedAddOn => !!a && (typeof a.serviceId === 'string' || typeof a.customName === 'string'))
+    : []
+
+  const catalogServiceIds = requestedAddOns.filter((a) => a.serviceId).map((a) => a.serviceId as string)
+  const addOnServices = catalogServiceIds.length
+    ? await prisma.service.findMany({ where: { id: { in: catalogServiceIds }, type: 'ADD_ON', isActive: true } })
+    : []
+  const addOnServiceById = new Map(addOnServices.map((s) => [s.id, s]))
+
+  type AddOnRow = { serviceId: string | null; customName: string | null; quantity: number; unitPrice: number }
+
+  const addOnRows = requestedAddOns
+    .map((a): AddOnRow | null => {
+      const quantity = Number.isFinite(a.quantity) && a.quantity >= 1 ? Math.floor(a.quantity) : 1
+
+      if (a.serviceId) {
+        const service = addOnServiceById.get(a.serviceId)
+        if (!service) return null
+        const requestedPrice = typeof a.unitPrice === 'number' ? a.unitPrice : service.minPrice
+        const unitPrice = Math.min(Math.max(requestedPrice, service.minPrice), service.maxPrice)
+        return { serviceId: service.id, customName: null, quantity, unitPrice }
+      }
+
+      const customName = a.customName?.trim()
+      if (!customName) return null
+      const unitPrice = typeof a.unitPrice === 'number' && a.unitPrice >= 0 ? a.unitPrice : 0
+      return { serviceId: null, customName, quantity, unitPrice }
+    })
+    .filter((a): a is AddOnRow => a !== null)
 
   const treatment = await prisma.treatment.upsert({
     where: { appointmentId: id },
@@ -32,6 +64,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       diagnosis: diagnosis || null,
       nextVisit: nextVisit ? new Date(nextVisit) : null,
       items: { deleteMany: {}, create: items.map((text) => ({ text })) },
+      addOns: { deleteMany: {}, create: addOnRows },
     },
     create: {
       appointmentId: id,
@@ -39,8 +72,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       diagnosis: diagnosis || null,
       nextVisit: nextVisit ? new Date(nextVisit) : null,
       items: { create: items.map((text) => ({ text })) },
+      addOns: { create: addOnRows },
     },
-    include: { items: true },
+    include: { items: true, addOns: { include: { service: true } } },
   })
 
   return NextResponse.json({
@@ -49,6 +83,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       diagnosis: treatment.diagnosis ?? '',
       treatmentItems: treatment.items.map((i) => i.text),
       nextVisit: treatment.nextVisit ? treatment.nextVisit.toISOString().slice(0, 10) : '',
+      addOns: treatment.addOns.map((a) => ({
+        serviceId: a.serviceId,
+        serviceName: a.service?.name ?? a.customName ?? '',
+        quantity: a.quantity,
+        unitPrice: a.unitPrice,
+      })),
     },
   })
 }

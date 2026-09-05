@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import type { Appointment, Dentist, Patient, Service, Treatment, TreatmentItem, TreatmentImage } from '@prisma/client'
+import type { Appointment, Dentist, Patient, Service, Treatment, TreatmentItem, TreatmentImage, TreatmentAddOn } from '@prisma/client'
 
 type FullAppointment = Appointment & { patient: Patient; service: Service; dentist: Dentist | null }
 
@@ -49,7 +49,13 @@ function ageFromBirthDate(birthDate: Date | null) {
 type DentistFullAppointment = Appointment & {
   patient: Patient
   service: Service
-  treatment: (Treatment & { items: TreatmentItem[]; images: Pick<TreatmentImage, 'id'>[] }) | null
+  treatment:
+    | (Treatment & {
+        items: TreatmentItem[]
+        images: Pick<TreatmentImage, 'id'>[]
+        addOns: (TreatmentAddOn & { service: Service | null })[]
+      })
+    | null
 }
 
 function serializeDentistAppointment(a: DentistFullAppointment) {
@@ -73,6 +79,12 @@ function serializeDentistAppointment(a: DentistFullAppointment) {
           treatmentItems: a.treatment.items.map((i) => i.text),
           nextVisit: a.treatment.nextVisit ? splitBangkok(a.treatment.nextVisit).date : '',
           images: a.treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })),
+          addOns: a.treatment.addOns.map((ao) => ({
+            serviceId: ao.serviceId,
+            serviceName: ao.service?.name ?? ao.customName ?? '',
+            quantity: ao.quantity,
+            unitPrice: ao.unitPrice,
+          })),
         }
       : undefined,
   }
@@ -107,7 +119,13 @@ export async function GET() {
       include: {
         patient: true,
         service: true,
-        treatment: { include: { items: true, images: { select: { id: true } } } },
+        treatment: {
+          include: {
+            items: true,
+            images: { select: { id: true } },
+            addOns: { include: { service: true } },
+          },
+        },
       },
       orderBy: { date: 'asc' },
     })

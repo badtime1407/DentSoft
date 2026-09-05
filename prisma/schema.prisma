@@ -94,6 +94,7 @@ model Service {
 
   appointments Appointment[]
   dentists     DentistService[]
+  treatmentAddOns TreatmentAddOn[]
 }
 
 // หมอคนไหนทำบริการไหนได้บ้าง (many-to-many)
@@ -168,6 +169,25 @@ model Treatment {
   appointment Appointment     @relation(fields: [appointmentId], references: [id])
   items       TreatmentItem[]
   images      TreatmentImage[]
+  addOns      TreatmentAddOn[]
+}
+
+// บริการเสริม (ADD_ON) จริงจากแคตตาล็อกที่ใช้ระหว่างการรักษาครั้งนั้นๆ
+// เก็บ unitPrice เป็น snapshot ตอนใช้งานจริง กันราคาผันผวนถ้าแคตตาล็อกเปลี่ยนทีหลัง
+model TreatmentAddOn {
+  id          String   @id @default(cuid())
+  treatmentId String
+  serviceId   String?  // null เมื่อหมอพิมพ์รายการ/ราคาเองแทนการเลือกจากแคตตาล็อก
+  customName  String?  // ชื่อรายการตอนไม่ได้ผูกกับ Service
+  quantity    Int      @default(1)
+  unitPrice   Float
+  createdAt   DateTime @default(now())
+
+  treatment Treatment @relation(fields: [treatmentId], references: [id])
+  service   Service?  @relation(fields: [serviceId], references: [id])
+
+  @@index([treatmentId])
+  @@index([serviceId])
 }
 
 // รายการที่ทำระหว่างการรักษาครั้งนั้นๆ (พิมพ์อิสระโดยทันตแพทย์ ไม่ผูกกับ Service)
