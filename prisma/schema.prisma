@@ -163,6 +163,7 @@ model Treatment {
   toothNumber   String?  // ฟันที่รักษา
   diagnosis     String?  // ปัญหาที่พบ
   treatmentNote String?  // แนวทางการรักษา
+  servicePrice  Float?   // ราคาจริงที่คิดสำหรับบริการหลักของนัดนี้ (ยืนยัน/ปรับภายในช่วง minPrice-maxPrice ของ Service ตอนบันทึกการรักษา)
   nextVisit     DateTime?
   createdAt     DateTime @default(now())
 

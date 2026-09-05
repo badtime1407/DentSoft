@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { IconPhone, IconFileText, IconImageIcon, IconUpload, IconX, IconPlus } from '@/components/shared/icons'
+import { IconPhone, IconFileText, IconImageIcon, IconUpload, IconX, IconPlus, IconAlertTriangle } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 import type { DentistAppointment, PastVisit, TreatmentNote } from '@/components/dentist/types'
 import { queueStatusConfig } from '@/lib/dentist/status-config'
@@ -14,7 +14,7 @@ const inputClass = `w-full px-3 py-2 rounded-lg border border-gray-200 text-sm t
 const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 const chipClass = `px-2.5 py-1 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 text-slate-600 text-[11px] font-medium rounded-full border border-slate-200 transition ${focusRing}`
 
-const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', treatmentItems: [], nextVisit: '', images: [], addOns: [] }
+const emptyNote: TreatmentNote = { toothNumber: '', diagnosis: '', servicePrice: null, treatmentItems: [], nextVisit: '', images: [], addOns: [] }
 
 const serviceTemplates: Record<string, { diagnosis: string; treatmentItems: string[] }> = {
   'ตรวจสุขภาพฟัน': { diagnosis: 'ตรวจสุขภาพฟันและเหงือกโดยรวม ไม่พบความผิดปกติ', treatmentItems: ['ตรวจสุขภาพฟันประจำปี', 'แนะนำการดูแลสุขภาพช่องปาก'] },
@@ -60,9 +60,15 @@ export function TreatmentPanel({
   onSaveTreatment: (note: TreatmentNote) => void
 }) {
   const [form, setForm] = useState<TreatmentNote>(() => {
-    if (appointment.treatment) return { images: [], addOns: [], ...appointment.treatment }
+    if (appointment.treatment) {
+      return {
+        images: [], addOns: [], ...appointment.treatment,
+        servicePrice: appointment.treatment.servicePrice ?? appointment.serviceMinPrice,
+      }
+    }
     const template = serviceTemplates[appointment.serviceName]
-    return template ? { ...emptyNote, diagnosis: template.diagnosis, treatmentItems: template.treatmentItems } : emptyNote
+    const base = template ? { ...emptyNote, diagnosis: template.diagnosis, treatmentItems: template.treatmentItems } : emptyNote
+    return { ...base, servicePrice: appointment.serviceMinPrice }
   })
 
   const [previewImage, setPreviewImage] = useState<string | null>(null)
@@ -192,6 +198,10 @@ export function TreatmentPanel({
   }
 
   const isCancelled = appointment.status === 'CANCELLED'
+  const servicePriceIsEditable = appointment.serviceMinPrice !== appointment.serviceMaxPrice
+  const servicePrice = form.servicePrice ?? appointment.serviceMinPrice
+  const addOnsTotal = (form.addOns ?? []).reduce((sum, a) => sum + a.quantity * a.unitPrice, 0)
+  const grandTotal = servicePrice + addOnsTotal
 
   return (
     <div className="space-y-6">
@@ -227,6 +237,18 @@ export function TreatmentPanel({
             <p className="text-sm font-medium text-gray-800">{appointment.durationMin} นาที</p>
           </div>
         </div>
+
+        {appointment.patientAllergyNote ? (
+          <div className="flex items-start gap-2 mt-4 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
+            <IconAlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-[11px] font-semibold text-rose-700">ประวัติแพ้ยา / ข้อควรระวัง</p>
+              <p className="text-sm text-rose-800 mt-0.5">{appointment.patientAllergyNote}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400 mt-4">ไม่มีประวัติแพ้ยา/ข้อควรระวังในระบบ</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -238,9 +260,32 @@ export function TreatmentPanel({
           </div>
 
           <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-4">
-            <p className="text-[11px] font-semibold text-blue-700 mb-0.5">สิ่งที่คนไข้จองมา</p>
-            <p className="text-sm font-medium text-slate-800">{appointment.serviceName}</p>
-            {appointment.note && <p className="text-xs text-slate-500 mt-1">หมายเหตุจากคนไข้: {appointment.note}</p>}
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold text-blue-700 mb-0.5">สิ่งที่คนไข้จองมา</p>
+                <p className="text-sm font-medium text-slate-800">{appointment.serviceName}</p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-[11px] text-blue-700 mb-0.5">ราคาค่าบริการ</p>
+                {servicePriceIsEditable ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={appointment.serviceMinPrice}
+                      max={appointment.serviceMaxPrice}
+                      value={servicePrice}
+                      onChange={(e) => updateForm('servicePrice', Number(e.target.value))}
+                      disabled={isCancelled}
+                      className="w-24 px-2 py-1 rounded-md border border-blue-200 text-sm text-slate-800 text-right tabular-nums disabled:opacity-50"
+                    />
+                    <span className="text-xs text-slate-500">บาท</span>
+                  </div>
+                ) : (
+                  <p className="text-sm font-semibold text-slate-800 tabular-nums">฿{servicePrice.toLocaleString('th-TH')}</p>
+                )}
+              </div>
+            </div>
+            {appointment.note && <p className="text-xs text-slate-500 mt-2">หมายเหตุจากคนไข้: {appointment.note}</p>}
           </div>
 
           <fieldset disabled={isCancelled} className="space-y-4 disabled:opacity-50">
@@ -485,8 +530,18 @@ export function TreatmentPanel({
             </div>
           </fieldset>
 
+          <div className="flex items-center justify-between gap-3 mt-6 pt-4 border-t border-gray-100">
+            <div className="text-xs text-gray-500 space-y-0.5">
+              <p>ค่าบริการ ฿{servicePrice.toLocaleString('th-TH')}{addOnsTotal > 0 && ` + เพิ่มเติม ฿${addOnsTotal.toLocaleString('th-TH')}`}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[11px] text-gray-400">ยอดรวมทั้งหมด</p>
+              <p className="text-lg font-bold text-blue-700 tabular-nums">฿{grandTotal.toLocaleString('th-TH')}</p>
+            </div>
+          </div>
+
           {!isCancelled && (
-            <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-gray-100">
+            <div className="flex flex-wrap gap-2 mt-4">
               <button
                 type="button"
                 onClick={() => onSaveTreatment(form)}

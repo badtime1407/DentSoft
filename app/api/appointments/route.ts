@@ -69,14 +69,18 @@ function serializeDentistAppointment(a: DentistFullAppointment) {
     patientName: `${a.patient.firstName} ${a.patient.lastName}`,
     patientAge: ageFromBirthDate(a.patient.birthDate),
     patientPhone: a.patient.phone ?? '-',
+    patientAllergyNote: a.patient.allergyNote,
     serviceName: a.service.name,
     durationMin: a.service.duration ?? 30,
+    serviceMinPrice: a.service.minPrice,
+    serviceMaxPrice: a.service.maxPrice,
     status: a.status,
     note: a.note,
     treatment: a.treatment
       ? {
           toothNumber: a.treatment.toothNumber ?? '',
           diagnosis: a.treatment.diagnosis ?? '',
+          servicePrice: a.treatment.servicePrice,
           treatmentItems: a.treatment.items.map((i) => i.text),
           nextVisit: a.treatment.nextVisit ? splitBangkok(a.treatment.nextVisit).date : '',
           images: a.treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })),

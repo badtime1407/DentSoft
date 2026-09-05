@@ -12,6 +12,7 @@ export type TreatmentAddOnRef = {
 export type TreatmentNote = {
   toothNumber: string
   diagnosis: string
+  servicePrice?: number | null
   treatmentItems: string[]
   nextVisit: string
   images?: TreatmentImageRef[]
@@ -26,8 +27,11 @@ export type DentistAppointment = {
   patientName: string
   patientAge: number
   patientPhone: string
+  patientAllergyNote?: string | null
   serviceName: string
   durationMin: number
+  serviceMinPrice: number
+  serviceMaxPrice: number
   status: AppointmentStatus
   note?: string | null
   treatment?: TreatmentNote

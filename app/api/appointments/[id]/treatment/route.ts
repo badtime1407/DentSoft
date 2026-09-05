@@ -12,14 +12,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   const { id } = await params
-  const appointment = await prisma.appointment.findUnique({ where: { id } })
+  const appointment = await prisma.appointment.findUnique({ where: { id }, include: { service: true } })
   const dentist = await prisma.dentist.findUnique({ where: { userId: user.id } })
 
   if (!appointment || !dentist || appointment.dentistId !== dentist.id) {
     return NextResponse.json({ error: 'ไม่พบนัดหมายนี้' }, { status: 404 })
   }
 
-  const { toothNumber, diagnosis, treatmentItems, nextVisit, addOns } = await req.json()
+  const { toothNumber, diagnosis, treatmentItems, nextVisit, addOns, servicePrice } = await req.json()
+
+  const requestedServicePrice = typeof servicePrice === 'number' ? servicePrice : appointment.service.minPrice
+  const clampedServicePrice = Math.min(Math.max(requestedServicePrice, appointment.service.minPrice), appointment.service.maxPrice)
 
   const items: string[] = Array.isArray(treatmentItems)
     ? treatmentItems.filter((t): t is string => typeof t === 'string' && t.trim() !== '')
@@ -62,6 +65,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     update: {
       toothNumber: toothNumber || null,
       diagnosis: diagnosis || null,
+      servicePrice: clampedServicePrice,
       nextVisit: nextVisit ? new Date(nextVisit) : null,
       items: { deleteMany: {}, create: items.map((text) => ({ text })) },
       addOns: { deleteMany: {}, create: addOnRows },
@@ -70,6 +74,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       appointmentId: id,
       toothNumber: toothNumber || null,
       diagnosis: diagnosis || null,
+      servicePrice: clampedServicePrice,
       nextVisit: nextVisit ? new Date(nextVisit) : null,
       items: { create: items.map((text) => ({ text })) },
       addOns: { create: addOnRows },
@@ -81,6 +86,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     treatment: {
       toothNumber: treatment.toothNumber ?? '',
       diagnosis: treatment.diagnosis ?? '',
+      servicePrice: treatment.servicePrice,
       treatmentItems: treatment.items.map((i) => i.text),
       nextVisit: treatment.nextVisit ? treatment.nextVisit.toISOString().slice(0, 10) : '',
       addOns: treatment.addOns.map((a) => ({
