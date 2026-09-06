@@ -59,7 +59,10 @@ export default function RecommendedServicesSection() {
                   <p className="text-xs text-gray-400 line-clamp-2">{service.description}</p>
                 )}
                 <p className="text-sm font-bold text-blue-600 pt-2">
-                  {formatPrice(service)} <span className="text-xs font-normal text-gray-400">เริ่มต้น</span>
+                  {service.minPrice !== service.maxPrice && (
+                    <span className="text-xs font-normal text-gray-400 mr-1">เริ่มต้น</span>
+                  )}
+                  {formatPrice(service)}
                 </p>
               </div>
             </div>

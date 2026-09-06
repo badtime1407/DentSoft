@@ -293,8 +293,10 @@ export default function PatientDashboard() {
                       <p className="text-xs text-slate-400 line-clamp-2">{service.description}</p>
                     )}
                     <p className="text-sm font-extrabold text-blue-600 pt-2">
-                      {formatPrice(service)}{' '}
-                      <span className="text-xs font-normal text-slate-400">เริ่มต้น</span>
+                      {service.minPrice !== service.maxPrice && (
+                        <span className="text-xs font-normal text-slate-400 mr-1">เริ่มต้น</span>
+                      )}
+                      {formatPrice(service)}
                     </p>
                   </div>
                 </div>
