@@ -48,6 +48,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (role === 'ADMIN') {
     const { status, serviceId, dentistId, date, note } = body
 
+    const nextDentistId = dentistId !== undefined ? dentistId || null : existing.dentistId
+    if (status === 'CONFIRMED' && !nextDentistId) {
+      return NextResponse.json({ error: 'กรุณาเลือกทันตแพทย์ก่อนยืนยันนัดหมาย' }, { status: 400 })
+    }
+
     const appointment = await prisma.appointment.update({
       where: { id },
       data: {

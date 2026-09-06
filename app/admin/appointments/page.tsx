@@ -172,8 +172,8 @@ export default function AdminAppointments() {
     return result.appointment as AdminAppointment
   }
 
-  async function confirmAppointment(id: string) {
-    await patchAppointment(id, { status: 'CONFIRMED' })
+  async function confirmAppointment(id: string, dentistId?: string) {
+    await patchAppointment(id, dentistId ? { status: 'CONFIRMED', dentistId } : { status: 'CONFIRMED' })
   }
 
   async function declineAppointment(id: string) {
@@ -349,7 +349,14 @@ export default function AdminAppointments() {
                     <div className="flex gap-2 shrink-0">
                       <button
                         type="button"
-                        onClick={() => confirmAppointment(a.id)}
+                        onClick={() => {
+                          if (a.dentistId) {
+                            confirmAppointment(a.id)
+                          } else {
+                            setFormError('')
+                            setDrawer({ open: true, mode: 'edit', appointment: a })
+                          }
+                        }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition ${focusRing}`}
                       >
                         ยืนยัน
@@ -533,7 +540,7 @@ export default function AdminAppointments() {
         onCreatePatient={handleCreatePatient}
         onConfirm={
           drawer.open && drawer.mode === 'edit'
-            ? () => { confirmAppointment(drawer.appointment.id); setDrawer({ open: false }) }
+            ? (dentistId: string) => { confirmAppointment(drawer.appointment.id, dentistId); setDrawer({ open: false }) }
             : undefined
         }
         onCancelAppointment={drawer.open && drawer.mode === 'edit' ? () => cancelAppointment(drawer.appointment.id) : undefined}
