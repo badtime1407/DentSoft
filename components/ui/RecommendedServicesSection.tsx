@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -14,12 +13,7 @@ type Service = {
   maxPrice: number
 }
 
-const FEATURED_SERVICE_IMAGES: Record<string, string> = {
-  ตรวจฟันทั่วไป: '/2.jpg',
-  อุดฟันสีเหมือนฟัน: '/3.jpg',
-  ขูดหินปูน: '/4.jpg',
-  ถอนฟัน: '/1.jpg',
-}
+const FEATURED_SERVICE_NAMES = ['ตรวจฟันทั่วไป', 'อุดฟันสีเหมือนฟัน', 'ขูดหินปูน', 'ถอนฟัน']
 
 function formatPrice(service: Service) {
   const min = service.minPrice.toLocaleString('th-TH')
@@ -35,7 +29,7 @@ export default function RecommendedServicesSection() {
       .then((res) => res.json())
       .then((data: { services: Service[] }) => {
         const services = data.services ?? []
-        const featured = Object.keys(FEATURED_SERVICE_IMAGES)
+        const featured = FEATURED_SERVICE_NAMES
           .map((name) => services.find((s) => s.name === name))
           .filter((s): s is Service => Boolean(s))
         setFeaturedServices(featured)
@@ -59,13 +53,6 @@ export default function RecommendedServicesSection() {
             className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
           >
             <div>
-              <div className="h-40 overflow-hidden relative bg-gray-100">
-                <img
-                  src={FEATURED_SERVICE_IMAGES[service.name]}
-                  alt={service.name}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
               <div className="p-4 space-y-1.5">
                 <h3 className="font-semibold text-gray-900 text-sm">{service.name}</h3>
                 {service.description && (

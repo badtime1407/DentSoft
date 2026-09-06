@@ -55,12 +55,7 @@ function daysUntilLabel(date: Date) {
   return `อีก ${diffDays} วัน`
 }
 
-const FEATURED_SERVICE_IMAGES: Record<string, string> = {
-  ตรวจฟันทั่วไป: '/2.jpg',
-  อุดฟันสีเหมือนฟัน: '/3.jpg',
-  ขูดหินปูน: '/4.jpg',
-  ถอนฟัน: '/1.jpg',
-}
+const FEATURED_SERVICE_NAMES = ['ตรวจฟันทั่วไป', 'อุดฟันสีเหมือนฟัน', 'ขูดหินปูน', 'ถอนฟัน']
 
 function formatPrice(service: Service) {
   const min = service.minPrice.toLocaleString('th-TH')
@@ -80,7 +75,7 @@ export default function PatientDashboard() {
       .then((res) => res.json())
       .then((data: { services: Service[] }) => {
         const services = data.services ?? []
-        const featured = Object.keys(FEATURED_SERVICE_IMAGES)
+        const featured = FEATURED_SERVICE_NAMES
           .map((name) => services.find((s) => s.name === name))
           .filter((s): s is Service => Boolean(s))
         setFeaturedServices(featured)
@@ -289,14 +284,6 @@ export default function PatientDashboard() {
                 className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
-                  {/* Card Thumbnail */}
-                  <div className="h-40 overflow-hidden relative bg-slate-100">
-                    <img
-                      src={FEATURED_SERVICE_IMAGES[service.name]}
-                      alt={service.name}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
                   {/* Card Content */}
                   <div className="p-4 space-y-1.5">
                     <h3 className="font-bold text-slate-900 text-sm sm:text-base">
