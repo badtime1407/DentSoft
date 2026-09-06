@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -9,13 +10,15 @@ import { focusRing } from '@/lib/shared/focus-ring'
 
 export function PatientHeader() {
   const [name, setName] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     fetch('/api/patient/me')
       .then((res) => res.json())
-      .then((data: { firstName?: string; lastName?: string }) => {
+      .then((data: { firstName?: string; lastName?: string; avatarUrl?: string | null }) => {
         if (data.firstName) setName(`${data.firstName} ${data.lastName ?? ''}`.trim())
+        setAvatarUrl(data.avatarUrl ?? null)
       })
   }, [])
 
@@ -35,9 +38,9 @@ export function PatientHeader() {
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="โปรไฟล์"
-            className={`w-9 h-9 rounded-full bg-blue-50 border border-blue-100 text-blue-600 font-bold text-xs flex items-center justify-center shadow-sm hover:bg-blue-100 transition ${focusRing}`}
+            className={`w-9 h-9 rounded-full bg-blue-50 border border-blue-100 text-blue-600 font-bold text-xs flex items-center justify-center shadow-sm hover:bg-blue-100 transition overflow-hidden ${focusRing}`}
           >
-            {initials}
+            {avatarUrl ? <img src={avatarUrl} alt="โปรไฟล์" className="w-full h-full object-cover" /> : initials}
           </button>
 
           {menuOpen && (
@@ -45,8 +48,8 @@ export function PatientHeader() {
               <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-slate-100 shadow-lg z-50 overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-blue-50 border border-blue-100 text-blue-600 font-bold text-sm flex items-center justify-center shadow-sm shrink-0">
-                    {initials}
+                  <div className="w-11 h-11 rounded-full bg-blue-50 border border-blue-100 text-blue-600 font-bold text-sm flex items-center justify-center shadow-sm shrink-0 overflow-hidden">
+                    {avatarUrl ? <img src={avatarUrl} alt="โปรไฟล์" className="w-full h-full object-cover" /> : initials}
                   </div>
                   <p className="text-sm font-bold text-slate-800 truncate">{name || 'ผู้ใช้งาน'}</p>
                 </div>

@@ -8,13 +8,15 @@ datasource db {
 
 // ผู้ใช้งานทั้งหมด
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  username  String   @unique  // เพิ่มตรงนี้
-  password  String
-  role      Role     @default(PATIENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  email           String   @unique
+  username        String   @unique  // เพิ่มตรงนี้
+  password        String
+  role            Role     @default(PATIENT)
+  avatarData      Bytes?   // รูปโปรไฟล์ เก็บไบต์ตรงในฐานข้อมูล (ไม่มี object storage ในโปรเจกต์นี้)
+  avatarMimeType  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   patient  Patient?
   dentist  Dentist?

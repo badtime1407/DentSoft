@@ -16,12 +16,15 @@ export async function GET() {
     return NextResponse.json({ error: 'ไม่พบข้อมูลคนไข้ของบัญชีนี้' }, { status: 404 })
   }
 
+  const userRecord = await prisma.user.findUnique({ where: { id: user.id }, select: { avatarData: true } })
+
   return NextResponse.json({
     firstName: patient.firstName,
     lastName: patient.lastName,
     phone: patient.phone,
     birthDate: patient.birthDate ? patient.birthDate.toISOString().slice(0, 10) : null,
     email: user.email,
+    avatarUrl: userRecord?.avatarData ? `/api/avatar/${user.id}` : null,
   })
 }
 
