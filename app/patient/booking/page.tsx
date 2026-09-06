@@ -64,7 +64,7 @@ function BookingForm() {
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ serviceId, date: `${date}T${time}:00` }),
+        body: JSON.stringify({ serviceId, date: `${date}T${time}:00+07:00` }),
       })
 
       const data = await res.json()

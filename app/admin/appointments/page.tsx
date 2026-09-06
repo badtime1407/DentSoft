@@ -209,7 +209,7 @@ export default function AdminAppointments() {
 
   async function handleSubmit(values: AppointmentFormValues) {
     setFormError('')
-    const isoDate = `${values.date}T${values.startTime}:00`
+    const isoDate = `${values.date}T${values.startTime}:00+07:00`
 
     if (drawer.open && drawer.mode === 'edit') {
       const updated = await patchAppointment(drawer.appointment.id, {
