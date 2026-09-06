@@ -61,5 +61,9 @@ export type PastVisit = {
   toothNumber?: string
   diagnosis?: string
   treatmentNote?: string
+  servicePrice?: number | null
+  nextVisit?: string
+  nextVisitNote?: string
   images?: TreatmentImageRef[]
+  addOns?: TreatmentAddOnRef[]
 }

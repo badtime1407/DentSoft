@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { AdminPatient } from '@/app/admin/patients/types'
-import type { PastVisit } from '@/components/dentist/types'
+import type { PastVisit, TreatmentPlanSummary } from '@/components/dentist/types'
 import { IconX, IconCalendarPlus } from './icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 
@@ -42,6 +42,7 @@ export function PatientDrawer({
 }) {
   const [values, setValues] = useState<PatientFormValues>(emptyValues)
   const [history, setHistory] = useState<PastVisit[]>([])
+  const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlanSummary[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
 
@@ -58,12 +59,19 @@ export function PatientDrawer({
       setHistoryLoading(true)
       fetch(`/api/patients/${patient.id}`)
         .then((res) => res.json())
-        .then((data: { history?: PastVisit[] }) => setHistory(data.history ?? []))
-        .catch(() => setHistory([]))
+        .then((data: { history?: PastVisit[]; treatmentPlans?: TreatmentPlanSummary[] }) => {
+          setHistory(data.history ?? [])
+          setTreatmentPlans(data.treatmentPlans ?? [])
+        })
+        .catch(() => {
+          setHistory([])
+          setTreatmentPlans([])
+        })
         .finally(() => setHistoryLoading(false))
     } else {
       setValues(emptyValues)
       setHistory([])
+      setTreatmentPlans([])
     }
   }, [open, mode, patient?.id])
 
@@ -176,6 +184,27 @@ export function PatientDrawer({
                       {v.toothNumber && <p className="text-xs text-gray-500 mt-1">ฟันที่รักษา: {v.toothNumber}</p>}
                       {v.diagnosis && <p className="text-xs text-gray-500 mt-0.5">ปัญหา: {v.diagnosis}</p>}
                       {v.treatmentNote && <p className="text-xs text-gray-400 mt-0.5">{v.treatmentNote}</p>}
+                      {v.addOns && v.addOns.length > 0 && (
+                        <ul className="mt-1.5 space-y-0.5">
+                          {v.addOns.map((ao, j) => (
+                            <li key={j} className="text-xs text-gray-500 flex items-center justify-between">
+                              <span>+ {ao.serviceName}{ao.quantity > 1 ? ` x${ao.quantity}` : ''}</span>
+                              <span className="tabular-nums">฿{(ao.unitPrice * ao.quantity).toLocaleString('th-TH')}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {typeof v.servicePrice === 'number' && (
+                        <p className="text-xs font-medium text-gray-700 mt-1.5">
+                          ยอดรวม: ฿{(v.servicePrice + (v.addOns?.reduce((sum, ao) => sum + ao.unitPrice * ao.quantity, 0) ?? 0)).toLocaleString('th-TH')}
+                        </p>
+                      )}
+                      {v.nextVisit && (
+                        <p className="text-xs text-blue-600 mt-1.5">
+                          นัดครั้งถัดไป: {new Date(v.nextVisit).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {v.nextVisitNote ? ` · ${v.nextVisitNote}` : ''}
+                        </p>
+                      )}
                       {v.images && v.images.length > 0 && (
                         <div className="flex gap-1.5 mt-2 overflow-x-auto pb-1">
                           {v.images.map((img) => (
@@ -195,6 +224,40 @@ export function PatientDrawer({
               ) : (
                 <p className="text-xs text-gray-400 py-3">ยังไม่มีประวัติการรักษา</p>
               )}
+            </div>
+          )}
+
+          {mode === 'edit' && patient && treatmentPlans.length > 0 && (
+            <div className="pt-2 border-t border-gray-100">
+              <p className="text-xs font-medium text-gray-500 mb-1.5">แผนการรักษาระยะยาว</p>
+              <ul className="space-y-2">
+                {treatmentPlans.map((plan) => (
+                  <li key={plan.id} className="border border-gray-100 rounded-xl px-3.5 py-3">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <p className="text-sm font-medium text-gray-900">{plan.title}</p>
+                      <span
+                        className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                          plan.status === 'ACTIVE'
+                            ? 'bg-sky-50 text-sky-700'
+                            : plan.status === 'COMPLETED'
+                              ? 'bg-blue-50 text-blue-700'
+                              : 'bg-rose-50 text-rose-500'
+                        }`}
+                      >
+                        {plan.status === 'ACTIVE' ? 'กำลังดำเนินการ' : plan.status === 'COMPLETED' ? 'เสร็จสิ้น' : 'ยกเลิก'}
+                      </span>
+                    </div>
+                    <ul className="space-y-1">
+                      {plan.steps.map((step) => (
+                        <li key={step.id} className="text-xs flex items-start gap-1.5">
+                          <span className={step.isDone ? 'text-blue-500' : 'text-gray-300'}>{step.isDone ? '✓' : '○'}</span>
+                          <span className={step.isDone ? 'text-gray-400 line-through' : 'text-gray-600'}>{step.description}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>

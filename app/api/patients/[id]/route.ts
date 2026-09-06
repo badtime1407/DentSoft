@@ -20,7 +20,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       status: 'COMPLETED',
       ...(excludeAppointmentId ? { id: { not: excludeAppointmentId } } : {}),
     },
-    include: { service: true, treatment: { include: { items: true, images: { select: { id: true } } } } },
+    include: {
+      service: true,
+      treatment: {
+        include: {
+          items: true,
+          images: { select: { id: true } },
+          addOns: { include: { service: true } },
+        },
+      },
+    },
     orderBy: { date: 'desc' },
   })
 
@@ -30,7 +39,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     toothNumber: a.treatment?.toothNumber || undefined,
     diagnosis: a.treatment?.diagnosis || undefined,
     treatmentNote: a.treatment && a.treatment.items.length > 0 ? a.treatment.items.map((i) => i.text).join(', ') : undefined,
+    servicePrice: a.treatment?.servicePrice ?? undefined,
+    nextVisit: a.treatment?.nextVisit ? a.treatment.nextVisit.toISOString() : undefined,
+    nextVisitNote: a.treatment?.nextVisitNote || undefined,
     images: a.treatment ? a.treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })) : undefined,
+    addOns: a.treatment
+      ? a.treatment.addOns.map((ao) => ({
+          serviceId: ao.serviceId,
+          serviceName: ao.service?.name ?? ao.customName ?? 'รายการเพิ่มเติม',
+          quantity: ao.quantity,
+          unitPrice: ao.unitPrice,
+        }))
+      : undefined,
   }))
 
   const plans = await prisma.treatmentPlan.findMany({
