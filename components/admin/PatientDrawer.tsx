@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { AdminPatient } from '@/app/admin/patients/types'
+import type { PastVisit } from '@/components/dentist/types'
 import { IconX, IconCalendarPlus } from './icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 
@@ -40,6 +41,9 @@ export function PatientDrawer({
   onSubmit: (values: PatientFormValues) => void
 }) {
   const [values, setValues] = useState<PatientFormValues>(emptyValues)
+  const [history, setHistory] = useState<PastVisit[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -51,8 +55,15 @@ export function PatientDrawer({
         birthDate: patient.birthDate ?? '',
         allergyNote: patient.allergyNote ?? '',
       })
+      setHistoryLoading(true)
+      fetch(`/api/patients/${patient.id}`)
+        .then((res) => res.json())
+        .then((data: { history?: PastVisit[] }) => setHistory(data.history ?? []))
+        .catch(() => setHistory([]))
+        .finally(() => setHistoryLoading(false))
     } else {
       setValues(emptyValues)
+      setHistory([])
     }
   }, [open, mode, patient?.id])
 
@@ -146,6 +157,46 @@ export function PatientDrawer({
               placeholder="เช่น แพ้ยาชา, โรคประจำตัว (ถ้ามี)"
             />
           </div>
+
+          {mode === 'edit' && patient && (
+            <div className="pt-2 border-t border-gray-100">
+              <p className="text-xs font-medium text-gray-500 mb-1.5">ประวัติการรักษา</p>
+              {historyLoading ? (
+                <p className="text-xs text-gray-400 py-3">กำลังโหลด...</p>
+              ) : history.length > 0 ? (
+                <ul className="divide-y divide-gray-50 border border-gray-100 rounded-xl overflow-hidden max-h-72 overflow-y-auto">
+                  {history.map((v, i) => (
+                    <li key={i} className="px-3.5 py-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-medium text-gray-900">{v.serviceName}</p>
+                        <p className="text-xs text-gray-400 tabular-nums shrink-0">
+                          {new Date(v.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
+                      {v.toothNumber && <p className="text-xs text-gray-500 mt-1">ฟันที่รักษา: {v.toothNumber}</p>}
+                      {v.diagnosis && <p className="text-xs text-gray-500 mt-0.5">ปัญหา: {v.diagnosis}</p>}
+                      {v.treatmentNote && <p className="text-xs text-gray-400 mt-0.5">{v.treatmentNote}</p>}
+                      {v.images && v.images.length > 0 && (
+                        <div className="flex gap-1.5 mt-2 overflow-x-auto pb-1">
+                          {v.images.map((img) => (
+                            <img
+                              key={img.id}
+                              src={img.url}
+                              alt="ภาพประกอบการรักษา"
+                              className="w-12 h-12 rounded-lg object-cover border border-slate-200 cursor-pointer hover:opacity-80 transition shrink-0"
+                              onClick={() => setPreviewImage(img.url)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-gray-400 py-3">ยังไม่มีประวัติการรักษา</p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="px-6 py-4 border-t border-gray-100 shrink-0 space-y-3">
@@ -159,6 +210,15 @@ export function PatientDrawer({
           </button>
         </div>
       </div>
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-6"
+          onClick={() => setPreviewImage(null)}
+        >
+          <img src={previewImage} alt="ภาพประกอบการรักษา (ขยาย)" className="max-w-full max-h-full rounded-xl" />
+        </div>
+      )}
     </div>
   )
 }

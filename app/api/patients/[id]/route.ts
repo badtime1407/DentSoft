@@ -6,8 +6,8 @@ import { prisma } from '@/lib/prisma'
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   const role = (session?.user as { role?: string } | undefined)?.role
-  if (role !== 'DENTIST') {
-    return NextResponse.json({ error: 'ต้องเข้าสู่ระบบด้วยบัญชีทันตแพทย์' }, { status: 401 })
+  if (role !== 'DENTIST' && role !== 'ADMIN') {
+    return NextResponse.json({ error: 'ต้องเข้าสู่ระบบด้วยบัญชีทันตแพทย์หรือแอดมิน' }, { status: 401 })
   }
 
   const { id } = await params
