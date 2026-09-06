@@ -281,34 +281,25 @@ export default function PatientDashboard() {
             {featuredServices.map((service) => (
               <div
                 key={service.id}
-                className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-4"
               >
-                <div>
-                  {/* Card Content */}
-                  <div className="p-4 space-y-1.5">
-                    <h3 className="font-bold text-slate-900 text-sm sm:text-base">
-                      {service.name}
-                    </h3>
-                    {service.description && (
-                      <p className="text-xs text-slate-400 line-clamp-2">{service.description}</p>
-                    )}
-                    <p className="text-sm font-extrabold text-blue-600 pt-2">
+                <div className="space-y-1.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-bold text-slate-900 text-sm">{service.name}</h3>
+                    <p className="text-sm font-extrabold text-blue-600 shrink-0 text-right">
                       {service.minPrice !== service.maxPrice && (
-                        <span className="text-xs font-normal text-slate-400 mr-1">เริ่มต้น</span>
+                        <span className="text-[11px] font-normal text-slate-400 mr-1">เริ่มต้น</span>
                       )}
                       {formatPrice(service)}
                     </p>
                   </div>
                 </div>
-                {/* Button */}
-                <div className="p-4 pt-0">
-                  <Link
-                    href={`/patient/booking?serviceId=${service.id}`}
-                    className={`w-full block text-center py-2 border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl text-xs font-semibold transition ${focusRing}`}
-                  >
-                    ดูรายละเอียด
-                  </Link>
-                </div>
+                <Link
+                  href={`/patient/booking?serviceId=${service.id}`}
+                  className={`w-full block text-center py-2 border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl text-xs font-semibold transition ${focusRing}`}
+                >
+                  ดูรายละเอียด
+                </Link>
               </div>
             ))}
           </div>
