@@ -1,9 +1,12 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { signOut, useSession } from 'next-auth/react'
 import { IconLogout, IconBell, IconAlertTriangle, IconRotate } from './icons'
+import { IconSettings } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 import { useCancelRequests } from './CancelRequestsProvider'
 
@@ -16,6 +19,8 @@ function formatNow(date: Date) {
 export function AdminHeader() {
   const [now, setNow] = useState<Date | null>(null)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const { requests } = useCancelRequests()
   const router = useRouter()
   const { data: session } = useSession()
@@ -25,6 +30,13 @@ export function AdminHeader() {
     setNow(new Date())
     const timer = setInterval(() => setNow(new Date()), 30_000)
     return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/admin/me')
+      .then((res) => res.json())
+      .then((data: { avatarUrl?: string | null }) => setAvatarUrl(data.avatarUrl ?? null))
+      .catch(() => setAvatarUrl(null))
   }, [])
 
   function goToRequest(appointmentId: string) {
@@ -109,14 +121,36 @@ export function AdminHeader() {
           )}
         </div>
 
-        <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer">
-          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-sm font-semibold">
-            {adminLabel.charAt(0).toUpperCase()}
-          </div>
-          <div className="hidden sm:block min-w-0">
-            <p className="text-sm font-medium text-gray-900 leading-none truncate">{adminLabel}</p>
-            <p className="text-xs text-gray-400 mt-0.5 truncate">ผู้ดูแลระบบ</p>
-          </div>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className={`flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition ${focusRing}`}
+          >
+            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-sm font-semibold overflow-hidden shrink-0">
+              {avatarUrl ? <img src={avatarUrl} alt="โปรไฟล์" className="w-full h-full object-cover" /> : adminLabel.charAt(0).toUpperCase()}
+            </div>
+            <div className="hidden sm:block min-w-0">
+              <p className="text-sm font-medium text-gray-900 leading-none truncate">{adminLabel}</p>
+              <p className="text-xs text-gray-400 mt-0.5 truncate">ผู้ดูแลระบบ</p>
+            </div>
+          </button>
+
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl border border-gray-100 shadow-lg z-50 overflow-hidden p-2">
+                <Link
+                  href="/admin/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition ${focusRing}`}
+                >
+                  <IconSettings className="w-4 h-4" />
+                  แก้ไขโปรไฟล์
+                </Link>
+              </div>
+            </>
+          )}
         </div>
         <button
           type="button"

@@ -65,7 +65,7 @@ export default function PatientProfilePage() {
     setIsUploadingAvatar(true)
     try {
       const dataUrl = await readFileAsDataUrl(file)
-      const res = await fetch('/api/patient/avatar', {
+      const res = await fetch('/api/avatar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: dataUrl }),
@@ -83,7 +83,7 @@ export default function PatientProfilePage() {
 
   async function handleAvatarRemove() {
     setAvatarError('')
-    const res = await fetch('/api/patient/avatar', { method: 'DELETE' })
+    const res = await fetch('/api/avatar', { method: 'DELETE' })
     if (!res.ok) {
       const data = await res.json()
       setAvatarError(data.error ?? 'ลบรูปไม่สำเร็จ')

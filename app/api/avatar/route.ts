@@ -11,12 +11,13 @@ function parseDataUrl(dataUrl: string): { mimeType: string; buffer: Uint8Array<A
   return { mimeType: match[1], buffer: Uint8Array.from(Buffer.from(match[2], 'base64')) }
 }
 
+// อัปโหลด/ลบรูปโปรไฟล์ของบัญชีตัวเอง ใช้ได้ทุก role เพราะ avatar เป็นข้อมูลระดับ User ไม่ผูกกับบทบาท
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
-  const user = session?.user as { id?: string; role?: string } | undefined
+  const user = session?.user as { id?: string } | undefined
 
-  if (!session || user?.role !== 'PATIENT' || !user?.id) {
-    return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบด้วยบัญชีคนไข้' }, { status: 401 })
+  if (!session || !user?.id) {
+    return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบ' }, { status: 401 })
   }
 
   const { image } = await req.json()
@@ -42,10 +43,10 @@ export async function POST(req: Request) {
 
 export async function DELETE() {
   const session = await getServerSession(authOptions)
-  const user = session?.user as { id?: string; role?: string } | undefined
+  const user = session?.user as { id?: string } | undefined
 
-  if (!session || user?.role !== 'PATIENT' || !user?.id) {
-    return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบด้วยบัญชีคนไข้' }, { status: 401 })
+  if (!session || !user?.id) {
+    return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบ' }, { status: 401 })
   }
 
   await prisma.user.update({
