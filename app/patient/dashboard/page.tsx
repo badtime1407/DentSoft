@@ -16,6 +16,7 @@ import {
   IconPhone,
 } from '@/components/shared/icons'
 import { ContactModal } from '@/components/shared/ContactModal'
+import { SkeletonCard, SkeletonDetailPanel } from '@/components/shared/Skeleton'
 import { focusRing } from '@/lib/shared/focus-ring'
 
 type Service = {
@@ -68,6 +69,7 @@ export default function PatientDashboard() {
   const [firstName, setFirstName] = useState('')
   const [nextAppointment, setNextAppointment] = useState<Appointment | null>(null)
   const [isLoadingAppointment, setIsLoadingAppointment] = useState(true)
+  const [isLoadingFeatured, setIsLoadingFeatured] = useState(true)
   const [contactOpen, setContactOpen] = useState(false)
 
   useEffect(() => {
@@ -80,6 +82,7 @@ export default function PatientDashboard() {
           .filter((s): s is Service => Boolean(s))
         setFeaturedServices(featured)
       })
+      .finally(() => setIsLoadingFeatured(false))
   }, [])
 
   useEffect(() => {
@@ -150,7 +153,7 @@ export default function PatientDashboard() {
           </div>
 
           {isLoadingAppointment ? (
-            <p className="text-sm text-slate-400 py-4">กำลังโหลดข้อมูลนัดหมาย...</p>
+            <SkeletonDetailPanel />
           ) : !nextAppointment ? (
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-1">
               <p className="text-sm text-slate-500 font-medium">
@@ -278,7 +281,9 @@ export default function PatientDashboard() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {featuredServices.map((service) => (
+            {isLoadingFeatured
+              ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+              : featuredServices.map((service) => (
               <div
                 key={service.id}
                 className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-4"

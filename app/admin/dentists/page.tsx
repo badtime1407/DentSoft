@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
+import { SkeletonStatCard, SkeletonDentistCard } from '@/components/shared/Skeleton'
 import { DentistDrawer, type DentistFormValues } from '@/components/admin/DentistDrawer'
 import { IconBadge, IconCalendar, IconUserCheck, IconPhone, IconPlus } from '@/components/admin/icons'
 import type { AdminDentist } from './types'
@@ -97,13 +98,27 @@ export default function AdminDentists() {
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-        <StatCard label="ทันตแพทย์ทั้งหมด" value={stats.total} icon={IconBadge} />
-        <StatCard label="คิววันนี้รวม" value={stats.totalBookedToday} icon={IconCalendar} />
-        <StatCard label="ทำงานวันนี้" value={stats.workingToday} icon={IconUserCheck} />
+        {isLoading ? (
+          <>
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+          </>
+        ) : (
+          <>
+            <StatCard label="ทันตแพทย์ทั้งหมด" value={stats.total} icon={IconBadge} />
+            <StatCard label="คิววันนี้รวม" value={stats.totalBookedToday} icon={IconCalendar} />
+            <StatCard label="ทำงานวันนี้" value={stats.workingToday} icon={IconUserCheck} />
+          </>
+        )}
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-400 text-center py-10">กำลังโหลดข้อมูลทันตแพทย์...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonDentistCard key={i} />
+          ))}
+        </div>
       ) : dentists.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-10">ยังไม่มีทันตแพทย์ในระบบ กด &quot;เพิ่มทันตแพทย์&quot; เพื่อเริ่มต้น</p>
       ) : (

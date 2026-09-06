@@ -6,6 +6,7 @@ import { useQueue } from '@/components/dentist/QueueProvider'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { AppointmentCalendar } from '@/components/dentist/AppointmentCalendar'
 import { DailyAppointmentList } from '@/components/dentist/DailyAppointmentList'
+import { SkeletonListRows } from '@/components/shared/Skeleton'
 import type { DentistAppointment } from '@/components/dentist/types'
 
 function todayInBangkok() {
@@ -25,7 +26,7 @@ function shiftMonth(year: number, month: number, delta: number): { year: number;
 }
 
 export default function DentistAppointments() {
-  const { appointments, startTreatment } = useQueue()
+  const { appointments, isLoading, startTreatment } = useQueue()
   const router = useRouter()
 
   const [viewYear, setViewYear] = useState(todayYear)
@@ -119,7 +120,11 @@ export default function DentistAppointments() {
           </div>
 
           <div className="flex-1 overflow-y-auto min-h-0 pr-1">
-            <DailyAppointmentList appointments={dayAppointments} highlightId={highlightId} onOpen={handleOpen} />
+            {isLoading ? (
+              <SkeletonListRows rows={4} />
+            ) : (
+              <DailyAppointmentList appointments={dayAppointments} highlightId={highlightId} onOpen={handleOpen} />
+            )}
           </div>
         </div>
       </div>

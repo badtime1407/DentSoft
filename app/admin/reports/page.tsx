@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
 import { VisitsStatusChart } from '@/components/admin/VisitsStatusChart'
+import { Skeleton, SkeletonStatCard, SkeletonTableRows } from '@/components/shared/Skeleton'
 import { IconCalendar, IconCheckCircle, IconXCircle } from '@/components/admin/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 
@@ -71,16 +72,26 @@ export default function AdminReports() {
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <StatCard label="จำนวนคิวทั้งหมด" value={totals.visits} icon={IconCalendar} />
-        <StatCard label="อัตราเสร็จสิ้น" value={`${totals.completedRate}%`} icon={IconCheckCircle} />
-        <StatCard label="อัตรายกเลิก" value={`${totals.cancelRate}%`} icon={IconXCircle} />
+        {isLoading ? (
+          <>
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+          </>
+        ) : (
+          <>
+            <StatCard label="จำนวนคิวทั้งหมด" value={totals.visits} icon={IconCalendar} />
+            <StatCard label="อัตราเสร็จสิ้น" value={`${totals.completedRate}%`} icon={IconCheckCircle} />
+            <StatCard label="อัตรายกเลิก" value={`${totals.cancelRate}%`} icon={IconXCircle} />
+          </>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
         <h2 className="font-semibold text-gray-900">คิวเสร็จสิ้น / ยกเลิก</h2>
         <p className="text-xs text-gray-400 mt-0.5 mb-4">Visits by status</p>
         {isLoading ? (
-          <p className="text-sm text-gray-400 text-center py-10">กำลังโหลดข้อมูล...</p>
+          <Skeleton className="h-48 w-full rounded-xl" />
         ) : (
           <VisitsStatusChart data={dailyStats} />
         )}
@@ -100,15 +111,21 @@ export default function AdminReports() {
                 <th className="px-6 py-3 font-medium">ยกเลิก</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
-              {[...dailyStats].reverse().map((d) => (
-                <tr key={d.date} className="hover:bg-slate-50 transition">
-                  <td className="px-6 py-3 text-gray-700">{formatDate(d.date)}</td>
-                  <td className="px-6 py-3 text-gray-700 tabular-nums">{d.completed}</td>
-                  <td className="px-6 py-3 text-gray-700 tabular-nums">{d.cancelled}</td>
-                </tr>
-              ))}
-            </tbody>
+            {isLoading ? (
+              <tbody>
+                <SkeletonTableRows rows={6} columns={3} />
+              </tbody>
+            ) : (
+              <tbody className="divide-y divide-gray-50">
+                {[...dailyStats].reverse().map((d) => (
+                  <tr key={d.date} className="hover:bg-slate-50 transition">
+                    <td className="px-6 py-3 text-gray-700">{formatDate(d.date)}</td>
+                    <td className="px-6 py-3 text-gray-700 tabular-nums">{d.completed}</td>
+                    <td className="px-6 py-3 text-gray-700 tabular-nums">{d.cancelled}</td>
+                  </tr>
+                ))}
+              </tbody>
+            )}
           </table>
         </div>
       </div>

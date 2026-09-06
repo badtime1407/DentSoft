@@ -6,6 +6,7 @@ import { useQueue } from '@/components/dentist/QueueProvider'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PatientQueueList } from '@/components/dentist/PatientQueueList'
 import { TreatmentPanel } from '@/components/dentist/TreatmentPanel'
+import { SkeletonListRows, Skeleton } from '@/components/shared/Skeleton'
 import type { PastVisit, TreatmentPlanSummary } from '@/components/dentist/types'
 
 function todayInBangkok() {
@@ -13,7 +14,7 @@ function todayInBangkok() {
 }
 
 export default function DentistTreatment() {
-  const { appointments, startTreatment, completeAppointment, saveTreatment } = useQueue()
+  const { appointments, isLoading, startTreatment, completeAppointment, saveTreatment } = useQueue()
   const searchParams = useSearchParams()
   const idParam = searchParams.get('id')
   const today = useMemo(() => todayInBangkok(), [])
@@ -132,10 +133,30 @@ export default function DentistTreatment() {
           <div className="px-4 py-3 border-b border-gray-100">
             <h2 className="text-sm font-semibold text-gray-900">คิววันนี้</h2>
           </div>
-          <PatientQueueList appointments={sorted} selectedId={selectedId} />
+          {isLoading ? <SkeletonListRows rows={4} /> : <PatientQueueList appointments={sorted} selectedId={selectedId} />}
         </div>
 
-        {selected ? (
+        {isLoading ? (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+            <div className="flex items-center gap-4">
+              <Skeleton className="w-14 h-14 rounded-2xl shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-3 w-1/4" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-16 rounded-lg" />
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+            </div>
+          </div>
+        ) : selected ? (
           <TreatmentPanel
             key={selected.id}
             appointment={selected}

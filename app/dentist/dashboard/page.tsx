@@ -7,6 +7,7 @@ import { useQueue } from '@/components/dentist/QueueProvider'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
+import { Skeleton, SkeletonStatCard, SkeletonTableRows } from '@/components/shared/Skeleton'
 import {
   IconCalendar,
   IconClipboardList,
@@ -78,22 +79,36 @@ export default function DentistDashboard() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <StatCard label="วันนี้" value={totalFormatted} sub="รายการนัดหมาย" icon={IconCalendar} />
-        <StatCard label="รอดำเนินการ" value={waitingFormatted} sub="คนไข้กำลังรอคิว" icon={IconClipboardList} />
+        {isLoading ? (
+          <>
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+            <div className="rounded-2xl p-5 bg-blue-600 shadow-sm flex flex-col gap-3">
+              <Skeleton className="w-9 h-9 rounded-xl bg-white/20" />
+              <Skeleton className="h-6 w-20 bg-white/20" />
+              <Skeleton className="h-3 w-24 bg-white/20" />
+            </div>
+          </>
+        ) : (
+          <>
+            <StatCard label="วันนี้" value={totalFormatted} sub="รายการนัดหมาย" icon={IconCalendar} />
+            <StatCard label="รอดำเนินการ" value={waitingFormatted} sub="คนไข้กำลังรอคิว" icon={IconClipboardList} />
 
-        {/* Featured card: next patient in queue — kept visually distinct since it has no admin equivalent */}
-        <div className="rounded-2xl p-5 bg-blue-600 text-white shadow-sm flex flex-col">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 bg-white/20 text-white">
-            <IconRotate className="w-5 h-5" />
-          </div>
-          <p className="text-2xl font-bold tabular-nums tracking-tight text-white">
-            {nextPatient ? `${nextPatient.time} น.` : 'ไม่มีคิวรอ'}
-          </p>
-          <p className="text-xs mt-1 font-medium text-sky-100">คิวถัดไป</p>
-          <p className="text-xs mt-0.5 text-sky-100 truncate">
-            {nextPatient ? `คนไข้: ${nextPatient.patientName}` : 'ไม่มีคนไข้ในขณะนี้'}
-          </p>
-        </div>
+            {/* Featured card: next patient in queue — kept visually distinct since it has no admin equivalent */}
+            <div className="rounded-2xl p-5 bg-blue-600 text-white shadow-sm flex flex-col">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 bg-white/20 text-white">
+                <IconRotate className="w-5 h-5" />
+              </div>
+              <p className="text-2xl font-bold tabular-nums tracking-tight text-white">
+                {nextPatient ? `${nextPatient.time} น.` : 'ไม่มีคิวรอ'}
+              </p>
+              <p className="text-xs mt-1 font-medium text-sky-100">คิวถัดไป</p>
+              <p className="text-xs mt-0.5 text-sky-100 truncate">
+                {nextPatient ? `คนไข้: ${nextPatient.patientName}` : 'ไม่มีคนไข้ในขณะนี้'}
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Today's appointment table */}
@@ -122,6 +137,11 @@ export default function DentistDashboard() {
                 <th className="px-6 py-3 font-medium">จัดการ</th>
               </tr>
             </thead>
+            {isLoading ? (
+              <tbody>
+                <SkeletonTableRows rows={4} columns={5} />
+              </tbody>
+            ) : (
             <tbody className="divide-y divide-gray-50">
               {todaysAppointments.map((a) => (
                 <tr key={a.id} className="hover:bg-slate-50 transition">
@@ -155,7 +175,7 @@ export default function DentistDashboard() {
                 </tr>
               ))}
 
-              {!isLoading && todaysAppointments.length === 0 && (
+              {todaysAppointments.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
                     ไม่มีนัดหมายวันนี้
@@ -163,6 +183,7 @@ export default function DentistDashboard() {
                 </tr>
               )}
             </tbody>
+            )}
           </table>
         </div>
       </div>

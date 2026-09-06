@@ -14,6 +14,7 @@ import { addDays, toISODate, type AdminAppointment, type AdminDentistOption, typ
 import type { AdminPatient } from '@/app/admin/patients/types'
 import type { AdminDentist } from '@/app/admin/dentists/types'
 import { focusRing } from '@/lib/shared/focus-ring'
+import { Skeleton, SkeletonStatCard, SkeletonListRows } from '@/components/shared/Skeleton'
 
 const statusConfig: Record<BookingStatus, { label: string; tone: StatusTone }> = {
   PENDING: { label: 'รอยืนยัน', tone: 'amber' },
@@ -303,7 +304,26 @@ export default function AdminAppointments() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-400 text-center py-10">กำลังโหลดข้อมูลนัดหมาย...</p>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <Skeleton className="h-6 w-40 mb-4" />
+            <Skeleton className="h-64 w-full rounded-xl" />
+          </div>
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <Skeleton className="h-4 w-24 mb-3" />
+              <Skeleton className="h-9 w-full rounded-xl" />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <SkeletonStatCard />
+              <SkeletonStatCard />
+              <SkeletonStatCard />
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <SkeletonListRows rows={4} />
+            </div>
+          </div>
+        </div>
       ) : (
         <>
           {/* Pending confirmations */}

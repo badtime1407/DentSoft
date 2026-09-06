@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { SearchBar } from '@/components/admin/SearchBar'
 import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge'
 import { StatCard } from '@/components/shared/StatCard'
+import { SkeletonStatCard, SkeletonTableRows } from '@/components/shared/Skeleton'
 import { PatientDrawer, type PatientFormValues } from '@/components/admin/PatientDrawer'
 import { IconUsers, IconUserCheck, IconClock, IconPlus } from '@/components/admin/icons'
 import type { AdminPatient, RecallStatus } from './types'
@@ -135,9 +136,19 @@ export default function AdminPatients() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <StatCard label="คนไข้ทั้งหมด" value={stats.total} icon={IconUsers} />
-        <StatCard label="คนไข้ใหม่เดือนนี้" value={stats.newThisMonth} icon={IconUserCheck} />
-        <StatCard label="ถึงกำหนดตรวจ" value={stats.dueRecall} icon={IconClock} />
+        {isLoading ? (
+          <>
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+            <SkeletonStatCard />
+          </>
+        ) : (
+          <>
+            <StatCard label="คนไข้ทั้งหมด" value={stats.total} icon={IconUsers} />
+            <StatCard label="คนไข้ใหม่เดือนนี้" value={stats.newThisMonth} icon={IconUserCheck} />
+            <StatCard label="ถึงกำหนดตรวจ" value={stats.dueRecall} icon={IconClock} />
+          </>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -165,22 +176,24 @@ export default function AdminPatients() {
           </div>
         </div>
 
-        {isLoading ? (
-          <p className="text-sm text-gray-400 text-center py-10">กำลังโหลดรายชื่อคนไข้...</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-50">
-                  <th className="px-6 py-3 font-medium">คนไข้</th>
-                  <th className="px-6 py-3 font-medium">เบอร์โทร</th>
-                  <th className="px-6 py-3 font-medium">ประเภท</th>
-                  <th className="px-6 py-3 font-medium">นัดล่าสุด</th>
-                  <th className="px-6 py-3 font-medium">นัดถัดไป</th>
-                  <th className="px-6 py-3 font-medium">สถานะตรวจ</th>
-                  <th className="px-6 py-3 font-medium">จัดการ</th>
-                </tr>
-              </thead>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-50">
+                <th className="px-6 py-3 font-medium">คนไข้</th>
+                <th className="px-6 py-3 font-medium">เบอร์โทร</th>
+                <th className="px-6 py-3 font-medium">ประเภท</th>
+                <th className="px-6 py-3 font-medium">นัดล่าสุด</th>
+                <th className="px-6 py-3 font-medium">นัดถัดไป</th>
+                <th className="px-6 py-3 font-medium">สถานะตรวจ</th>
+                <th className="px-6 py-3 font-medium">จัดการ</th>
+              </tr>
+            </thead>
+            {isLoading ? (
+              <tbody>
+                <SkeletonTableRows rows={6} columns={7} />
+              </tbody>
+            ) : (
               <tbody className="divide-y divide-gray-50">
                 {filteredPatients.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50 transition">
@@ -220,9 +233,9 @@ export default function AdminPatients() {
                   </tr>
                 )}
               </tbody>
-            </table>
-          </div>
-        )}
+            )}
+          </table>
+        </div>
 
         <div className="px-6 py-3 border-t border-gray-50">
           <p className="text-xs text-gray-400">แสดง {filteredPatients.length} จาก {patients.length} รายการ</p>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { PatientHeader } from '@/components/patient/PatientHeader'
 import { PatientFooter } from '@/components/patient/PatientFooter'
 import { focusRing } from '@/lib/shared/focus-ring'
+import { Skeleton } from '@/components/shared/Skeleton'
 
 type ProfileValues = {
   firstName: string
@@ -87,7 +88,31 @@ export default function PatientProfilePage() {
 
         <div className="bg-white rounded-3xl border border-slate-100 p-8 shadow-sm space-y-5 max-w-xl">
           {isLoading ? (
-            <p className="text-sm text-slate-400 text-center py-6">กำลังโหลดข้อมูล...</p>
+            <div className="space-y-5">
+              <div>
+                <Skeleton className="h-3 w-12 mb-1.5" />
+                <Skeleton className="h-11 w-full rounded-xl" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Skeleton className="h-3 w-8 mb-1.5" />
+                  <Skeleton className="h-11 w-full rounded-xl" />
+                </div>
+                <div>
+                  <Skeleton className="h-3 w-14 mb-1.5" />
+                  <Skeleton className="h-11 w-full rounded-xl" />
+                </div>
+              </div>
+              <div>
+                <Skeleton className="h-3 w-16 mb-1.5" />
+                <Skeleton className="h-11 w-full rounded-xl" />
+              </div>
+              <div>
+                <Skeleton className="h-3 w-20 mb-1.5" />
+                <Skeleton className="h-11 w-full rounded-xl" />
+              </div>
+              <Skeleton className="h-12 w-full rounded-2xl" />
+            </div>
           ) : (
             <>
               <div>

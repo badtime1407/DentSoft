@@ -11,6 +11,7 @@ import {
   IconHeadset,
 } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
+import { SkeletonDetailPanel, SkeletonTableRows } from '@/components/shared/Skeleton'
 
 type Appointment = {
   id: string
@@ -103,7 +104,18 @@ export default function PatientHistoryPage() {
         </div>
 
         {isLoading ? (
-          <p className="text-sm text-slate-400 text-center py-10">กำลังโหลดข้อมูล...</p>
+          <>
+            <section className="bg-white rounded-2xl border border-slate-100/90 shadow-sm p-6 sm:p-7">
+              <SkeletonDetailPanel />
+            </section>
+            <div className="bg-white rounded-2xl border border-slate-100/90 shadow-sm overflow-hidden mt-6">
+              <table className="w-full">
+                <tbody>
+                  <SkeletonTableRows rows={5} columns={4} />
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <>
             {/* Latest / upcoming appointment */}

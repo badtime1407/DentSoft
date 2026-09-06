@@ -17,6 +17,7 @@ import {
 import { PageHeader } from '@/components/shared/PageHeader'
 import { SearchBar } from '@/components/admin/SearchBar'
 import { StatCard } from '@/components/shared/StatCard'
+import { SkeletonStatCard, SkeletonTableRows, SkeletonListRows } from '@/components/shared/Skeleton'
 import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge'
 import { focusRing } from '@/lib/shared/focus-ring'
 import type { AdminAppointment, BookingStatus } from '@/app/admin/appointments/types'
@@ -228,9 +229,11 @@ export default function AdminDashboard() {
 
       {/* Operational summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        {summaryCards.map((s) => (
-          <StatCard key={s.label} label={s.label} value={s.value} sub={s.sub} icon={s.icon} />
-        ))}
+        {isLoading
+          ? Array.from({ length: 5 }).map((_, i) => <SkeletonStatCard key={i} />)
+          : summaryCards.map((s) => (
+              <StatCard key={s.label} label={s.label} value={s.value} sub={s.sub} icon={s.icon} />
+            ))}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -276,6 +279,11 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 font-medium">จัดการ</th>
                   </tr>
                 </thead>
+                {isLoading ? (
+                  <tbody>
+                    <SkeletonTableRows rows={5} columns={6} />
+                  </tbody>
+                ) : (
                 <tbody className="divide-y divide-gray-50">
                   {visibleAppointments.map((a) => (
                     <tr key={a.id} className="hover:bg-slate-50 transition">
@@ -328,7 +336,7 @@ export default function AdminDashboard() {
                     </tr>
                   ))}
 
-                  {!isLoading && visibleAppointments.length === 0 && (
+                  {visibleAppointments.length === 0 && (
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">
                         {searchTerm.trim() !== '' ? 'ไม่พบคนไข้ที่ค้นหา' : 'ไม่มีนัดหมายในสถานะนี้'}
@@ -336,6 +344,7 @@ export default function AdminDashboard() {
                     </tr>
                   )}
                 </tbody>
+                )}
               </table>
             </div>
 
@@ -354,6 +363,9 @@ export default function AdminDashboard() {
               <h2 className="font-semibold text-gray-900">ทันตแพทย์วันนี้</h2>
               <p className="text-xs text-gray-400 mt-0.5">Dentist availability</p>
             </div>
+            {isLoading ? (
+              <SkeletonListRows rows={3} />
+            ) : (
             <ul className="divide-y divide-gray-50">
               {dentistViews.map((d) => (
                 <li key={d.name} className="px-6 py-4">
@@ -386,10 +398,11 @@ export default function AdminDashboard() {
                 </li>
               ))}
 
-              {!isLoading && dentistViews.length === 0 && (
+              {dentistViews.length === 0 && (
                 <li className="px-6 py-8 text-center text-sm text-gray-400">ยังไม่มีทันตแพทย์ในระบบ</li>
               )}
             </ul>
+            )}
           </div>
 
           {/* Recent activity */}
@@ -398,6 +411,9 @@ export default function AdminDashboard() {
               <h2 className="font-semibold text-gray-900">กิจกรรมล่าสุด</h2>
               <p className="text-xs text-gray-400 mt-0.5">Recent activity</p>
             </div>
+            {isLoading ? (
+              <SkeletonListRows rows={4} />
+            ) : (
             <ul className="divide-y divide-gray-50">
               {activities.map((item, i) => {
                 const ActivityIcon = item.icon
@@ -414,10 +430,11 @@ export default function AdminDashboard() {
                 )
               })}
 
-              {!isLoading && activities.length === 0 && (
+              {activities.length === 0 && (
                 <li className="px-6 py-8 text-center text-sm text-gray-400">ยังไม่มีกิจกรรม</li>
               )}
             </ul>
+            )}
           </div>
         </div>
       </div>

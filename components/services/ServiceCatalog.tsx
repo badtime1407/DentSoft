@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { focusRing } from '@/lib/shared/focus-ring'
+import { SkeletonCard } from '@/components/shared/Skeleton'
 
 type CatalogService = {
   id: string
@@ -41,7 +42,13 @@ export function ServiceCatalog({
   }, [])
 
   if (isLoading) {
-    return <p className={`text-sm ${c.muted} text-center py-10`}>กำลังโหลดรายการบริการ...</p>
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    )
   }
 
   if (services.length === 0) {
