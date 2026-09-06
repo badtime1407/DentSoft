@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { PatientHeader } from '@/components/patient/PatientHeader'
 import { PatientFooter } from '@/components/patient/PatientFooter'
@@ -26,6 +26,12 @@ export default function PatientChatPage() {
   const [draft, setDraft] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [interactionId, setInteractionId] = useState<string | null>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (container) container.scrollTop = container.scrollHeight
+  }, [messages, isTyping])
 
   async function handleSend() {
     const text = draft.trim()
@@ -84,7 +90,7 @@ export default function PatientChatPage() {
         </div>
 
         <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex flex-col h-[500px]">
-          <div className="flex-1 overflow-y-auto space-y-4 p-4 border-b border-slate-100">
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto space-y-4 p-4 border-b border-slate-100">
             {messages.map((message) =>
               message.from === 'ai' ? (
                 <div key={message.id} className="flex justify-start items-end gap-2">
