@@ -72,6 +72,12 @@ export default function AdminAppointments() {
   const [formError, setFormError] = useState('')
 
   useEffect(() => {
+    if (!formError) return
+    const timer = setTimeout(() => setFormError(''), 4000)
+    return () => clearTimeout(timer)
+  }, [formError])
+
+  useEffect(() => {
     Promise.all([
       fetch('/api/appointments').then((r) => r.json()),
       fetch('/api/dentists').then((r) => r.json()),
@@ -167,6 +173,7 @@ export default function AdminAppointments() {
       setFormError(result.error ?? 'บันทึกไม่สำเร็จ')
       return null
     }
+    setFormError('')
     setAppointments((prev) => prev.map((a) => (a.id === id ? result.appointment : a)))
     resolveRequestByAppointment(id)
     return result.appointment as AdminAppointment
@@ -545,7 +552,7 @@ export default function AdminAppointments() {
         }
         onCancelAppointment={drawer.open && drawer.mode === 'edit' ? () => cancelAppointment(drawer.appointment.id) : undefined}
       />
-      {formError && drawer.open && (
+      {formError && (
         <div className="fixed bottom-6 right-6 z-[60] bg-rose-600 text-white text-sm px-4 py-3 rounded-xl shadow-lg">
           {formError}
         </div>

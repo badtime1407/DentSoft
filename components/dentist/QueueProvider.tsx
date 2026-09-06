@@ -12,6 +12,7 @@ type QueueContextValue = {
   startTreatment: (id: string) => Promise<void>
   saveTreatment: (id: string, note: TreatmentNote) => Promise<void>
   completeAppointment: (id: string) => Promise<void>
+  notify: (notice: Notice) => void
 }
 
 const QueueContext = createContext<QueueContextValue | null>(null)
@@ -21,6 +22,7 @@ export function QueueProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState<Notice | null>(null)
+  const notify = useCallback((n: Notice) => setNotice(n), [])
 
   useEffect(() => {
     if (!notice) return
@@ -72,7 +74,7 @@ export function QueueProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <QueueContext.Provider value={{ appointments, isLoading, error, startTreatment, saveTreatment, completeAppointment }}>
+    <QueueContext.Provider value={{ appointments, isLoading, error, startTreatment, saveTreatment, completeAppointment, notify }}>
       {children}
       {notice && (
         <div

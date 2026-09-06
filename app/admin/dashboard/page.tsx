@@ -88,6 +88,13 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL' | BookingStatus>('ALL')
   const [searchTerm, setSearchTerm] = useState('')
+  const [actionError, setActionError] = useState('')
+
+  useEffect(() => {
+    if (!actionError) return
+    const timer = setTimeout(() => setActionError(''), 4000)
+    return () => clearTimeout(timer)
+  }, [actionError])
 
   useEffect(() => {
     Promise.all([
@@ -107,8 +114,12 @@ export default function AdminDashboard() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
-    if (!res.ok) return null
     const result = await res.json()
+    if (!res.ok) {
+      setActionError(result.error ?? 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
+      return null
+    }
+    setActionError('')
     setAppointments((prev) => prev.map((a) => (a.id === id ? result.appointment : a)))
     return result.appointment as AdminAppointment
   }
@@ -438,6 +449,12 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {actionError && (
+        <div className="fixed bottom-6 right-6 z-[60] bg-rose-600 text-white text-sm px-4 py-3 rounded-xl shadow-lg">
+          {actionError}
+        </div>
+      )}
     </>
   )
 }

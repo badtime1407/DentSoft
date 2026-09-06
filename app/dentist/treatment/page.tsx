@@ -14,7 +14,7 @@ function todayInBangkok() {
 }
 
 export default function DentistTreatment() {
-  const { appointments, isLoading, startTreatment, completeAppointment, saveTreatment } = useQueue()
+  const { appointments, isLoading, startTreatment, completeAppointment, saveTreatment, notify } = useQueue()
   const searchParams = useSearchParams()
   const idParam = searchParams.get('id')
   const today = useMemo(() => todayInBangkok(), [])
@@ -84,7 +84,12 @@ export default function DentistTreatment() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ patientId: selected.patientId, title, steps }),
     })
-    if (res.ok) refetchPatientData()
+    if (res.ok) {
+      refetchPatientData()
+      notify({ type: 'success', message: 'สร้างแผนการรักษาแล้ว' })
+    } else {
+      notify({ type: 'error', message: 'สร้างแผนการรักษาไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' })
+    }
   }
 
   async function handleAddPlanStep(planId: string, description: string) {
@@ -93,7 +98,12 @@ export default function DentistTreatment() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ description }),
     })
-    if (res.ok) refetchPatientData()
+    if (res.ok) {
+      refetchPatientData()
+      notify({ type: 'success', message: 'เพิ่มขั้นตอนแล้ว' })
+    } else {
+      notify({ type: 'error', message: 'เพิ่มขั้นตอนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' })
+    }
   }
 
   async function handleToggleStep(planId: string, stepId: string, isDone: boolean) {
@@ -102,7 +112,11 @@ export default function DentistTreatment() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isDone }),
     })
-    if (res.ok) refetchPatientData()
+    if (res.ok) {
+      refetchPatientData()
+    } else {
+      notify({ type: 'error', message: 'อัปเดตขั้นตอนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' })
+    }
   }
 
   async function handleUpdateStep(planId: string, stepId: string, description: string) {
@@ -111,17 +125,30 @@ export default function DentistTreatment() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ description }),
     })
-    if (res.ok) refetchPatientData()
+    if (res.ok) {
+      refetchPatientData()
+      notify({ type: 'success', message: 'แก้ไขขั้นตอนแล้ว' })
+    } else {
+      notify({ type: 'error', message: 'แก้ไขขั้นตอนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' })
+    }
   }
 
   async function handleDeleteStep(planId: string, stepId: string) {
     const res = await fetch(`/api/treatment-plans/${planId}/steps/${stepId}`, { method: 'DELETE' })
-    if (res.ok) refetchPatientData()
+    if (res.ok) {
+      refetchPatientData()
+    } else {
+      notify({ type: 'error', message: 'ลบขั้นตอนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' })
+    }
   }
 
   async function handleDeletePlan(planId: string) {
     const res = await fetch(`/api/treatment-plans/${planId}`, { method: 'DELETE' })
-    if (res.ok) refetchPatientData()
+    if (res.ok) {
+      refetchPatientData()
+    } else {
+      notify({ type: 'error', message: 'ลบแผนการรักษาไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' })
+    }
   }
 
   return (
