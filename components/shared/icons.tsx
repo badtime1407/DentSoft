@@ -198,6 +198,14 @@ export function IconX({ className = '' }: { className?: string }) {
   )
 }
 
+export function IconMenu({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...stroke}>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  )
+}
+
 export function IconPhone({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...stroke}>

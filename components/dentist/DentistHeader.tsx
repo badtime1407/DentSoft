@@ -4,8 +4,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { signOut, useSession } from 'next-auth/react'
-import { IconLogout, IconSettings } from '@/components/shared/icons'
+import { IconLogout, IconSettings, IconMenu } from '@/components/shared/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
+import { useMobileSidebar } from '@/components/shared/MobileSidebarContext'
 
 function formatNow(date: Date) {
   const day = date.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -18,6 +19,7 @@ export function DentistHeader() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const { data: session } = useSession()
+  const { toggle: toggleSidebar } = useMobileSidebar()
   const dentistLabel = session?.user?.email ?? 'ทันตแพทย์'
 
   useEffect(() => {
@@ -34,8 +36,18 @@ export function DentistHeader() {
   }, [])
 
   return (
-    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-30 shrink-0">
-      <p className="text-sm text-gray-500">{now ? formatNow(now) : ''}</p>
+    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-30 shrink-0 gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label="เปิดเมนู"
+          className={`lg:hidden p-2 -ml-2 rounded-lg text-gray-500 hover:bg-gray-50 transition shrink-0 ${focusRing}`}
+        >
+          <IconMenu className="w-5 h-5" />
+        </button>
+        <p className="text-sm text-gray-500 truncate">{now ? formatNow(now) : ''}</p>
+      </div>
 
       <div className="flex items-center gap-2">
         <div className="relative">
@@ -72,9 +84,10 @@ export function DentistHeader() {
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-rose-400 hover:bg-rose-50 transition ${focusRing}`}
+          aria-label="ออกจากระบบ"
+          className={`flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg text-sm text-rose-400 hover:bg-rose-50 transition shrink-0 ${focusRing}`}
         >
-          <IconLogout className="w-4 h-4" /> ออกจากระบบ
+          <IconLogout className="w-4 h-4 shrink-0" /> <span className="hidden sm:inline whitespace-nowrap">ออกจากระบบ</span>
         </button>
       </div>
     </header>
