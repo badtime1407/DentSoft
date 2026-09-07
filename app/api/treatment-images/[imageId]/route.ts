@@ -26,6 +26,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ imageId:
     if (!dentist || image.treatment.appointment.dentistId !== dentist.id) {
       return NextResponse.json({ error: 'ไม่พบรูปภาพนี้' }, { status: 404 })
     }
+  } else if (user.role === 'PATIENT') {
+    const patient = await prisma.patient.findUnique({ where: { userId: user.id } })
+    if (!patient || image.treatment.appointment.patientId !== patient.id) {
+      return NextResponse.json({ error: 'ไม่พบรูปภาพนี้' }, { status: 404 })
+    }
   } else if (user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }

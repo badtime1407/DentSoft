@@ -38,21 +38,30 @@ export async function GET(req: Request) {
 
   const appointments = await prisma.appointment.findMany({
     where: { date: { gte: start, lt: end }, status: { in: ['COMPLETED', 'CANCELLED'] } },
-    select: { date: true, status: true },
+    select: {
+      date: true,
+      status: true,
+      treatment: { select: { servicePrice: true, addOns: { select: { unitPrice: true, quantity: true } } } },
+    },
   })
 
-  const buckets = new Map<string, { completed: number; cancelled: number }>()
+  const buckets = new Map<string, { completed: number; cancelled: number; revenue: number }>()
   for (let i = 0; i < days; i++) {
     const key = toIsoDate(toBangkok(bangkokMidnightUtc(y, m, d - (days - 1) + i)))
-    buckets.set(key, { completed: 0, cancelled: 0 })
+    buckets.set(key, { completed: 0, cancelled: 0, revenue: 0 })
   }
 
   for (const a of appointments) {
     const key = toIsoDate(toBangkok(a.date))
     const bucket = buckets.get(key)
     if (!bucket) continue
-    if (a.status === 'COMPLETED') bucket.completed += 1
-    else bucket.cancelled += 1
+    if (a.status === 'COMPLETED') {
+      bucket.completed += 1
+      const addOnsTotal = a.treatment?.addOns.reduce((sum, ao) => sum + ao.unitPrice * ao.quantity, 0) ?? 0
+      bucket.revenue += (a.treatment?.servicePrice ?? 0) + addOnsTotal
+    } else {
+      bucket.cancelled += 1
+    }
   }
 
   const dailyStats = Array.from(buckets.entries()).map(([date, v]) => ({ date, ...v }))

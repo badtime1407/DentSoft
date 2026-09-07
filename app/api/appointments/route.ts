@@ -59,6 +59,31 @@ type DentistFullAppointment = Appointment & {
     | null
 }
 
+type TreatmentWithDetails = Treatment & {
+  items: TreatmentItem[]
+  images: Pick<TreatmentImage, 'id'>[]
+  addOns: (TreatmentAddOn & { service: Service | null })[]
+}
+
+function serializeTreatment(treatment: TreatmentWithDetails | null) {
+  if (!treatment) return undefined
+  return {
+    toothNumber: treatment.toothNumber ?? '',
+    diagnosis: treatment.diagnosis ?? '',
+    servicePrice: treatment.servicePrice,
+    treatmentItems: treatment.items.map((i) => i.text),
+    nextVisit: treatment.nextVisit ? splitBangkok(treatment.nextVisit).date : '',
+    nextVisitNote: treatment.nextVisitNote ?? '',
+    images: treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })),
+    addOns: treatment.addOns.map((ao) => ({
+      serviceId: ao.serviceId,
+      serviceName: ao.service?.name ?? ao.customName ?? '',
+      quantity: ao.quantity,
+      unitPrice: ao.unitPrice,
+    })),
+  }
+}
+
 function serializeDentistAppointment(a: DentistFullAppointment) {
   const { date, time } = splitBangkok(a.date)
   return {
@@ -76,23 +101,27 @@ function serializeDentistAppointment(a: DentistFullAppointment) {
     serviceMaxPrice: a.service.maxPrice,
     status: a.status,
     note: a.note,
-    treatment: a.treatment
-      ? {
-          toothNumber: a.treatment.toothNumber ?? '',
-          diagnosis: a.treatment.diagnosis ?? '',
-          servicePrice: a.treatment.servicePrice,
-          treatmentItems: a.treatment.items.map((i) => i.text),
-          nextVisit: a.treatment.nextVisit ? splitBangkok(a.treatment.nextVisit).date : '',
-          nextVisitNote: a.treatment.nextVisitNote ?? '',
-          images: a.treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })),
-          addOns: a.treatment.addOns.map((ao) => ({
-            serviceId: ao.serviceId,
-            serviceName: ao.service?.name ?? ao.customName ?? '',
-            quantity: ao.quantity,
-            unitPrice: ao.unitPrice,
-          })),
-        }
-      : undefined,
+    treatment: serializeTreatment(a.treatment),
+  }
+}
+
+type PatientFullAppointment = Appointment & {
+  service: Service
+  dentist: Dentist | null
+  treatment: TreatmentWithDetails | null
+}
+
+function serializePatientAppointment(a: PatientFullAppointment) {
+  return {
+    id: a.id,
+    date: a.date.toISOString(),
+    status: a.status,
+    requestType: a.requestType,
+    requestReason: a.requestReason,
+    requestedAt: a.requestedAt ? a.requestedAt.toISOString() : null,
+    service: { name: a.service.name },
+    dentist: a.dentist ? { title: a.dentist.title, firstName: a.dentist.firstName, lastName: a.dentist.lastName } : null,
+    treatment: serializeTreatment(a.treatment),
   }
 }
 
@@ -150,13 +179,23 @@ export async function GET() {
 
   const appointments = await prisma.appointment.findMany({
     where: { patientId: patient.id },
-    include: { service: true, dentist: true },
+    include: {
+      service: true,
+      dentist: true,
+      treatment: {
+        include: {
+          items: true,
+          images: { select: { id: true } },
+          addOns: { include: { service: true } },
+        },
+      },
+    },
     orderBy: { date: 'asc' },
   })
 
   return NextResponse.json({
     patient: { firstName: patient.firstName, lastName: patient.lastName },
-    appointments,
+    appointments: appointments.map(serializePatientAppointment),
   })
 }
 

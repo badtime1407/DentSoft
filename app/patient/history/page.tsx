@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -13,6 +14,19 @@ import {
 import { focusRing } from '@/lib/shared/focus-ring'
 import { SkeletonDetailPanel, SkeletonTableRows } from '@/components/shared/Skeleton'
 
+type TreatmentAddOn = { serviceId: string | null; serviceName: string; quantity: number; unitPrice: number }
+
+type Treatment = {
+  toothNumber: string
+  diagnosis: string
+  servicePrice?: number | null
+  treatmentItems: string[]
+  nextVisit: string
+  nextVisitNote: string
+  images: { id: string; url: string }[]
+  addOns: TreatmentAddOn[]
+}
+
 type Appointment = {
   id: string
   date: string
@@ -20,6 +34,7 @@ type Appointment = {
   requestType: 'CANCEL' | 'RESCHEDULE' | null
   service: { name: string }
   dentist: { title: string; firstName: string; lastName: string } | null
+  treatment?: Treatment
 }
 
 const statusLabel: Record<Appointment['status'], { label: string; style: string }> = {
@@ -40,6 +55,8 @@ export default function PatientHistoryPage() {
   const [reason, setReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionError, setActionError] = useState('')
+  const [detailAppointment, setDetailAppointment] = useState<Appointment | null>(null)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/appointments')
@@ -208,6 +225,7 @@ export default function PatientHistoryPage() {
                         <th className="py-3.5 px-6">บริการ</th>
                         <th className="py-3.5 px-6">ทันตแพทย์</th>
                         <th className="py-3.5 px-6 text-center w-[130px]">สถานะ</th>
+                        <th className="py-3.5 px-6 w-[110px]" />
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
@@ -228,11 +246,22 @@ export default function PatientHistoryPage() {
                               {statusLabel[a.status].label}
                             </span>
                           </td>
+                          <td className="py-4 px-6 align-middle text-right">
+                            {a.treatment && (
+                              <button
+                                type="button"
+                                onClick={() => setDetailAppointment(a)}
+                                className={`text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-bold transition px-2.5 py-1.5 rounded-lg ${focusRing}`}
+                              >
+                                ดูรายละเอียด
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       ))}
                       {pastAppointments.length === 0 && (
                         <tr>
-                          <td colSpan={4} className="py-10 px-6 text-center text-sm text-slate-400">ยังไม่มีประวัติการนัดหมาย</td>
+                          <td colSpan={5} className="py-10 px-6 text-center text-sm text-slate-400">ยังไม่มีประวัติการนัดหมาย</td>
                         </tr>
                       )}
                     </tbody>
@@ -295,6 +324,91 @@ export default function PatientHistoryPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {detailAppointment?.treatment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setDetailAppointment(null)} />
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-slate-900">รายละเอียดการรักษา</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {detailAppointment.service.name} · {new Date(detailAppointment.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDetailAppointment(null)}
+                className={`p-2 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition ${focusRing}`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-2 text-sm">
+              {detailAppointment.treatment.toothNumber && (
+                <p className="text-slate-600">ฟันที่รักษา: {detailAppointment.treatment.toothNumber}</p>
+              )}
+              {detailAppointment.treatment.diagnosis && (
+                <p className="text-slate-600">ปัญหา: {detailAppointment.treatment.diagnosis}</p>
+              )}
+              {detailAppointment.treatment.treatmentItems.length > 0 && (
+                <p className="text-slate-500">{detailAppointment.treatment.treatmentItems.join(', ')}</p>
+              )}
+
+              {detailAppointment.treatment.addOns.length > 0 && (
+                <ul className="space-y-0.5 pt-1">
+                  {detailAppointment.treatment.addOns.map((ao, i) => (
+                    <li key={i} className="text-xs text-slate-500 flex items-center justify-between">
+                      <span>+ {ao.serviceName}{ao.quantity > 1 ? ` x${ao.quantity}` : ''}</span>
+                      <span className="tabular-nums">฿{(ao.unitPrice * ao.quantity).toLocaleString('th-TH')}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {typeof detailAppointment.treatment.servicePrice === 'number' && (
+                <p className="text-sm font-bold text-slate-900 pt-1">
+                  ยอดรวม: ฿
+                  {(
+                    detailAppointment.treatment.servicePrice +
+                    detailAppointment.treatment.addOns.reduce((sum, ao) => sum + ao.unitPrice * ao.quantity, 0)
+                  ).toLocaleString('th-TH')}
+                </p>
+              )}
+              {detailAppointment.treatment.nextVisit && (
+                <p className="text-sm text-blue-600 pt-1">
+                  นัดครั้งถัดไป: {new Date(detailAppointment.treatment.nextVisit).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  {detailAppointment.treatment.nextVisitNote ? ` · ${detailAppointment.treatment.nextVisitNote}` : ''}
+                </p>
+              )}
+              {detailAppointment.treatment.images.length > 0 && (
+                <div className="flex gap-2 flex-wrap pt-2">
+                  {detailAppointment.treatment.images.map((img) => (
+                    <img
+                      key={img.id}
+                      src={img.url}
+                      alt="ภาพประกอบการรักษา"
+                      className="w-16 h-16 rounded-lg object-cover border border-slate-200 cursor-pointer hover:opacity-80 transition"
+                      onClick={() => setPreviewImage(img.url)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-6"
+          onClick={() => setPreviewImage(null)}
+        >
+          <img src={previewImage} alt="ภาพประกอบการรักษา (ขยาย)" className="max-w-full max-h-full rounded-xl" />
         </div>
       )}
 
