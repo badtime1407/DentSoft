@@ -1,9 +1,18 @@
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
+import { authOptions } from '@/lib/auth'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import { AdminHeader } from '@/components/admin/AdminHeader'
 import { CancelRequestsProvider } from '@/components/admin/CancelRequestsProvider'
 import { MobileSidebarProvider } from '@/components/shared/MobileSidebarContext'
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions)
+  const role = (session?.user as { role?: string } | undefined)?.role
+  if (role !== 'ADMIN') {
+    redirect('/login')
+  }
+
   return (
     <CancelRequestsProvider>
       <MobileSidebarProvider>

@@ -1,9 +1,18 @@
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
+import { authOptions } from '@/lib/auth'
 import { DentistSidebar } from '@/components/dentist/DentistSidebar'
 import { DentistHeader } from '@/components/dentist/DentistHeader'
 import { QueueProvider } from '@/components/dentist/QueueProvider'
 import { MobileSidebarProvider } from '@/components/shared/MobileSidebarContext'
 
-export default function DentistLayout({ children }: { children: React.ReactNode }) {
+export default async function DentistLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions)
+  const role = (session?.user as { role?: string } | undefined)?.role
+  if (role !== 'DENTIST') {
+    redirect('/login')
+  }
+
   return (
     <QueueProvider>
       <MobileSidebarProvider>

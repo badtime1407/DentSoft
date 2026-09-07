@@ -5,12 +5,23 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
-  const role = (session?.user as { role?: string } | undefined)?.role
-  if (role !== 'DENTIST' && role !== 'ADMIN') {
+  const user = session?.user as { id?: string; role?: string } | undefined
+  if (user?.role !== 'DENTIST' && user?.role !== 'ADMIN') {
     return NextResponse.json({ error: 'ต้องเข้าสู่ระบบด้วยบัญชีทันตแพทย์หรือแอดมิน' }, { status: 401 })
   }
 
   const { id } = await params
+
+  if (user.role === 'DENTIST') {
+    const dentist = await prisma.dentist.findUnique({ where: { userId: user.id! } })
+    const hasRelationship = dentist
+      ? await prisma.appointment.findFirst({ where: { patientId: id, dentistId: dentist.id } })
+      : null
+    if (!hasRelationship) {
+      return NextResponse.json({ error: 'ไม่มีสิทธิ์ดูข้อมูลคนไข้นี้' }, { status: 403 })
+    }
+  }
+
   const { searchParams } = new URL(req.url)
   const excludeAppointmentId = searchParams.get('excludeAppointmentId')
 
