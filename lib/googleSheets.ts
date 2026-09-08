@@ -20,8 +20,6 @@ function formatAppointmentCode(seq: number) {
   return `DS${String(seq).padStart(7, '0')}`
 }
 
-let sheetTitleCache: string | null = null
-
 function getSheetsClient(): sheets_v4.Sheets | null {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
   const key = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n')
@@ -35,14 +33,43 @@ function getSheetsClient(): sheets_v4.Sheets | null {
   return google.sheets({ version: 'v4', auth })
 }
 
-async function getFirstSheetTitle(sheets: sheets_v4.Sheets, spreadsheetId: string) {
-  if (sheetTitleCache) return sheetTitleCache
-  const meta = await sheets.spreadsheets.get({ spreadsheetId })
-  sheetTitleCache = meta.data.sheets?.[0]?.properties?.title ?? 'Sheet1'
-  return sheetTitleCache
+// ชื่อชีตของเดือนปัจจุบัน (ตามเวลาไทย) เช่น "2026-09" — แยกชีตรายเดือนกันข้อมูลแน่นเกินไปในชีตเดียว
+function currentMonthSheetTitle() {
+  return new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Bangkok' }).slice(0, 7)
 }
 
-// ซิงก์ตารางนัดหมายทั้งหมดจาก Postgres ไปทับชีตแรกของ Google Sheet ทุกครั้งที่มีการจอง/แก้ไขนัดหมาย
+let ensuredSheetTitle: string | null = null
+
+// เช็คว่ามีชีตของเดือนนี้แล้วหรือยัง ถ้ายังไม่มี: ถ้าในไฟล์มีแค่ชีตเดียวอยู่ก่อน (ครั้งแรกที่ใช้ฟีเจอร์นี้) จะเปลี่ยนชื่อชีตเดิมมาใช้แทน
+// แต่ถ้ามีหลายชีตแล้ว (เคยขึ้นเดือนใหม่มาก่อนหน้านี้) จะสร้างชีตใหม่เพิ่มโดยไม่แตะชีตเดือนก่อนๆ เลย
+async function ensureMonthSheetExists(sheets: sheets_v4.Sheets, spreadsheetId: string, title: string) {
+  if (ensuredSheetTitle === title) return
+  const meta = await sheets.spreadsheets.get({ spreadsheetId })
+  const allSheets = meta.data.sheets ?? []
+  const existing = allSheets.find((s) => s.properties?.title === title)
+  if (existing) {
+    ensuredSheetTitle = title
+    return
+  }
+
+  if (allSheets.length === 1 && allSheets[0].properties?.sheetId !== undefined && allSheets[0].properties?.sheetId !== null) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [{ updateSheetProperties: { properties: { sheetId: allSheets[0].properties.sheetId, title }, fields: 'title' } }],
+      },
+    })
+  } else {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: { requests: [{ addSheet: { properties: { title } } }] },
+    })
+  }
+  ensuredSheetTitle = title
+}
+
+// ซิงก์นัดหมายของ "เดือนปัจจุบัน" จาก Postgres ไปทับชีตประจำเดือนนั้นใน Google Sheet ทุกครั้งที่มีการจอง/แก้ไขนัดหมาย
+// พอขึ้นเดือนใหม่ จะสร้าง/สลับไปเขียนชีตของเดือนใหม่แทน ชีตเดือนก่อนๆ จะหยุดถูกแก้ไขและเก็บไว้เป็นประวัติ
 // เป็น one-way sync (DB -> Sheet เท่านั้น) ความล้มเหลวของ Sheets API ต้องไม่ทำให้ request หลักพัง จึงจับ error ไว้ในนี้ทั้งหมด
 export async function syncAppointmentsToSheet() {
   const spreadsheetId = process.env.GOOGLE_SHEET_ID
@@ -50,19 +77,22 @@ export async function syncAppointmentsToSheet() {
   if (!sheets || !spreadsheetId) return
 
   try {
-    const sheetTitle = await getFirstSheetTitle(sheets, spreadsheetId)
+    const sheetTitle = currentMonthSheetTitle()
+    await ensureMonthSheetExists(sheets, spreadsheetId, sheetTitle)
 
     const appointments = await prisma.appointment.findMany({
       include: { patient: true, service: true, dentist: true },
       orderBy: { date: 'desc' },
     })
 
+    const monthAppointments = appointments.filter((a) => splitBangkok(a.date).date.slice(0, 7) === sheetTitle)
+
     const header = [
       'รหัสนัดหมาย', 'วันที่', 'เวลา', 'ชื่อคนไข้', 'เบอร์โทร',
       'บริการ', 'ทันตแพทย์', 'สถานะ', 'สร้างเมื่อ', 'แก้ไขล่าสุด',
     ]
 
-    const rows = appointments.map((a) => {
+    const rows = monthAppointments.map((a) => {
       const { date, time } = splitBangkok(a.date)
       const updated = splitBangkok(a.updatedAt)
       return [
