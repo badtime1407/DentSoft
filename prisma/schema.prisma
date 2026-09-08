@@ -126,6 +126,7 @@ enum ServiceType {
 // การนัดหมาย
 model Appointment {
   id            String            @id @default(cuid())
+  seq           Int               @unique @default(autoincrement()) // เลขรันสำหรับออกรหัสนัดหมายแบบอ่านง่าย (เช่น DS0000001)
   patientId     String
   dentistId     String?
   serviceId     String

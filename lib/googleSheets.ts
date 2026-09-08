@@ -16,6 +16,10 @@ function splitBangkok(date: Date) {
   return { date: datePart, time: timePart?.slice(0, 5) ?? '' }
 }
 
+function formatAppointmentCode(seq: number) {
+  return `DS${String(seq).padStart(7, '0')}`
+}
+
 let sheetTitleCache: string | null = null
 
 function getSheetsClient(): sheets_v4.Sheets | null {
@@ -62,7 +66,7 @@ export async function syncAppointmentsToSheet() {
       const { date, time } = splitBangkok(a.date)
       const updated = splitBangkok(a.updatedAt)
       return [
-        a.id,
+        formatAppointmentCode(a.seq),
         date,
         time,
         `${a.patient.firstName} ${a.patient.lastName}`,
