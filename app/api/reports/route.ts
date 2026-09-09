@@ -41,14 +41,20 @@ export async function GET(req: Request) {
     select: {
       date: true,
       status: true,
-      treatment: { select: { servicePrice: true, addOns: { select: { unitPrice: true, quantity: true } } } },
+      treatment: {
+        select: {
+          servicePrice: true,
+          paymentStatus: true,
+          addOns: { select: { unitPrice: true, quantity: true } },
+        },
+      },
     },
   })
 
-  const buckets = new Map<string, { completed: number; cancelled: number; revenue: number }>()
+  const buckets = new Map<string, { completed: number; cancelled: number; revenue: number; collectedRevenue: number }>()
   for (let i = 0; i < days; i++) {
     const key = toIsoDate(toBangkok(bangkokMidnightUtc(y, m, d - (days - 1) + i)))
-    buckets.set(key, { completed: 0, cancelled: 0, revenue: 0 })
+    buckets.set(key, { completed: 0, cancelled: 0, revenue: 0, collectedRevenue: 0 })
   }
 
   for (const a of appointments) {
@@ -58,7 +64,9 @@ export async function GET(req: Request) {
     if (a.status === 'COMPLETED') {
       bucket.completed += 1
       const addOnsTotal = a.treatment?.addOns.reduce((sum, ao) => sum + ao.unitPrice * ao.quantity, 0) ?? 0
-      bucket.revenue += (a.treatment?.servicePrice ?? 0) + addOnsTotal
+      const total = (a.treatment?.servicePrice ?? 0) + addOnsTotal
+      bucket.revenue += total
+      if (a.treatment?.paymentStatus === 'PAID') bucket.collectedRevenue += total
     } else {
       bucket.cancelled += 1
     }

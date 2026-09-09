@@ -163,6 +163,11 @@ enum RequestType {
   RESCHEDULE
 }
 
+enum PaymentStatus {
+  UNPAID
+  PAID
+}
+
 // บันทึกการรักษา
 model Treatment {
   id            String   @id @default(cuid())
@@ -173,6 +178,8 @@ model Treatment {
   servicePrice  Float?   // ราคาจริงที่คิดสำหรับบริการหลักของนัดนี้ (ยืนยัน/ปรับภายในช่วง minPrice-maxPrice ของ Service ตอนบันทึกการรักษา)
   nextVisit     DateTime?
   nextVisitNote String?  // นัดครั้งถัดไปเพื่อทำอะไร กรอกอิสระโดยทันตแพทย์
+  paymentStatus PaymentStatus @default(UNPAID) // แอดมินเป็นคนเดียวที่กดยืนยันเปลี่ยนเป็น PAID ได้ (รับเงินหน้าเคาน์เตอร์จริง)
+  paidAt        DateTime? // เวลาที่แอดมินกดยืนยันรับเงิน
   createdAt     DateTime @default(now())
 
   appointment Appointment     @relation(fields: [appointmentId], references: [id])

@@ -158,6 +158,14 @@ export default function AdminAppointments() {
     [appointments]
   )
 
+  const paymentQueue = useMemo(
+    () =>
+      [...appointments]
+        .filter((a) => a.status === 'COMPLETED' && a.treatment?.paymentStatus === 'UNPAID')
+        .sort((a, b) => a.date.localeCompare(b.date)),
+    [appointments]
+  )
+
   const selectedDateLabel = new Date(selectedDate + 'T00:00:00').toLocaleDateString('th-TH', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   })
@@ -185,6 +193,23 @@ export default function AdminAppointments() {
 
   async function declineAppointment(id: string) {
     await patchAppointment(id, { status: 'CANCELLED' })
+  }
+
+  async function confirmPayment(id: string) {
+    const res = await fetch(`/api/appointments/${id}/payment`, { method: 'PATCH' })
+    const result = await res.json()
+    if (!res.ok) {
+      setFormError(result.error ?? 'ยืนยันรับชำระไม่สำเร็จ')
+      return
+    }
+    setFormError('')
+    setAppointments((prev) =>
+      prev.map((a) =>
+        a.id === id && a.treatment
+          ? { ...a, treatment: { ...a.treatment, paymentStatus: result.paymentStatus, paidAt: result.paidAt } }
+          : a
+      )
+    )
   }
 
   async function cancelAppointment(id: string) {
@@ -378,6 +403,41 @@ export default function AdminAppointments() {
                     </div>
                   </li>
                 ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Pending payments */}
+          {paymentQueue.length > 0 && (
+            <div className="bg-sky-50/60 border border-sky-200 rounded-2xl mb-6 overflow-hidden">
+              <div className="px-6 py-3 border-b border-sky-100 flex items-center justify-between">
+                <p className="text-sm font-semibold text-sky-800">รอชำระเงิน</p>
+                <span className="text-xs font-medium text-sky-700 bg-white px-2.5 py-1 rounded-full ring-1 ring-inset ring-sky-200">
+                  {paymentQueue.length} รายการ
+                </span>
+              </div>
+              <ul className="divide-y divide-sky-100">
+                {paymentQueue.slice(0, 5).map((a) => {
+                  const addOnsTotal = a.treatment?.addOns?.reduce((sum, ao) => sum + ao.unitPrice * ao.quantity, 0) ?? 0
+                  const total = (a.treatment?.servicePrice ?? 0) + addOnsTotal
+                  return (
+                    <li key={a.id} className="px-6 py-3 flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{a.patientName}</p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {a.serviceName} · {a.dentistName ?? 'ยังไม่มอบหมาย'} · ฿{total.toLocaleString('th-TH')}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => confirmPayment(a.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition shrink-0 ${focusRing}`}
+                      >
+                        ยืนยันรับชำระ
+                      </button>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           )}

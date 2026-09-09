@@ -5,7 +5,18 @@ import { prisma } from '@/lib/prisma'
 import { syncAppointmentsToSheet } from '@/lib/googleSheets'
 import type { Appointment, Dentist, Patient, Service, Treatment, TreatmentItem, TreatmentImage, TreatmentAddOn } from '@prisma/client'
 
-type FullAppointment = Appointment & { patient: Patient; service: Service; dentist: Dentist | null }
+type FullAppointment = Appointment & {
+  patient: Patient
+  service: Service
+  dentist: Dentist | null
+  treatment:
+    | (Treatment & {
+        items: TreatmentItem[]
+        images: Pick<TreatmentImage, 'id'>[]
+        addOns: (TreatmentAddOn & { service: Service | null })[]
+      })
+    | null
+}
 
 function serializeAdminAppointment(a: FullAppointment) {
   return {
@@ -25,6 +36,7 @@ function serializeAdminAppointment(a: FullAppointment) {
     requestType: a.requestType,
     requestReason: a.requestReason,
     requestedAt: a.requestedAt ? a.requestedAt.toISOString() : null,
+    treatment: serializeTreatment(a.treatment),
   }
 }
 
@@ -81,6 +93,8 @@ function serializeTreatment(treatment: TreatmentWithDetails | null) {
       quantity: ao.quantity,
       unitPrice: ao.unitPrice,
     })),
+    paymentStatus: treatment.paymentStatus,
+    paidAt: treatment.paidAt ? splitBangkok(treatment.paidAt).date : null,
   }
 }
 
@@ -137,7 +151,18 @@ export async function GET() {
 
   if (role === 'ADMIN') {
     const appointments = await prisma.appointment.findMany({
-      include: { patient: true, service: true, dentist: true },
+      include: {
+        patient: true,
+        service: true,
+        dentist: true,
+        treatment: {
+          include: {
+            items: true,
+            images: { select: { id: true } },
+            addOns: { include: { service: true } },
+          },
+        },
+      },
       orderBy: { date: 'asc' },
     })
     return NextResponse.json({ appointments: appointments.map(serializeAdminAppointment) })
@@ -239,7 +264,18 @@ export async function POST(req: Request) {
         status: 'CONFIRMED',
         note: note || null,
       },
-      include: { patient: true, service: true, dentist: true },
+      include: {
+        patient: true,
+        service: true,
+        dentist: true,
+        treatment: {
+          include: {
+            items: true,
+            images: { select: { id: true } },
+            addOns: { include: { service: true } },
+          },
+        },
+      },
     })
 
     await syncAppointmentsToSheet()

@@ -1,5 +1,13 @@
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'WAITING' | 'IN_TREATMENT' | 'COMPLETED' | 'CANCELLED'
 export type RequestType = 'CANCEL' | 'RESCHEDULE'
+export type PaymentStatus = 'UNPAID' | 'PAID'
+
+export type AdminAppointmentTreatment = {
+  servicePrice?: number | null
+  addOns?: { serviceId: string | null; serviceName: string; quantity: number; unitPrice: number }[]
+  paymentStatus: PaymentStatus
+  paidAt: string | null
+}
 
 export type AdminAppointment = {
   id: string
@@ -18,6 +26,7 @@ export type AdminAppointment = {
   requestType: RequestType | null
   requestReason: string | null
   requestedAt: string | null
+  treatment?: AdminAppointmentTreatment
 }
 
 export type AdminServiceOption = {

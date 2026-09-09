@@ -3,9 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { syncAppointmentsToSheet } from '@/lib/googleSheets'
-import type { Appointment, Dentist, Patient, Service } from '@prisma/client'
+import type { Appointment, Dentist, Patient, Service, Treatment, TreatmentAddOn } from '@prisma/client'
 
-type FullAppointment = Appointment & { patient: Patient; service: Service; dentist: Dentist | null }
+type FullAppointment = Appointment & {
+  patient: Patient
+  service: Service
+  dentist: Dentist | null
+  treatment: (Treatment & { addOns: (TreatmentAddOn & { service: Service | null })[] }) | null
+}
 
 function serializeAdminAppointment(a: FullAppointment) {
   return {
@@ -24,6 +29,19 @@ function serializeAdminAppointment(a: FullAppointment) {
     requestType: a.requestType,
     requestReason: a.requestReason,
     requestedAt: a.requestedAt ? a.requestedAt.toISOString() : null,
+    treatment: a.treatment
+      ? {
+          servicePrice: a.treatment.servicePrice,
+          addOns: a.treatment.addOns.map((ao) => ({
+            serviceId: ao.serviceId,
+            serviceName: ao.service?.name ?? '',
+            quantity: ao.quantity,
+            unitPrice: ao.unitPrice,
+          })),
+          paymentStatus: a.treatment.paymentStatus,
+          paidAt: a.treatment.paidAt ? a.treatment.paidAt.toISOString() : null,
+        }
+      : undefined,
   }
 }
 
@@ -65,7 +83,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         requestReason: null,
         requestedAt: null,
       },
-      include: { patient: true, service: true, dentist: true },
+      include: {
+        patient: true,
+        service: true,
+        dentist: true,
+        treatment: { include: { addOns: { include: { service: true } } } },
+      },
     })
 
     await syncAppointmentsToSheet()

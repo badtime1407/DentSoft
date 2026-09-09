@@ -9,7 +9,7 @@ import { Skeleton, SkeletonStatCard, SkeletonTableRows } from '@/components/shar
 import { IconCalendar, IconCheckCircle, IconXCircle, IconChartBar } from '@/components/admin/icons'
 import { focusRing } from '@/lib/shared/focus-ring'
 
-type DailyStat = { date: string; completed: number; cancelled: number; revenue: number }
+type DailyStat = { date: string; completed: number; cancelled: number; revenue: number; collectedRevenue: number }
 
 const rangeOptions = [
   { id: 7, label: '7 วัน' },
@@ -37,6 +37,7 @@ export default function AdminReports() {
     const completed = dailyStats.reduce((sum, d) => sum + d.completed, 0)
     const cancelled = dailyStats.reduce((sum, d) => sum + d.cancelled, 0)
     const revenue = dailyStats.reduce((sum, d) => sum + d.revenue, 0)
+    const collectedRevenue = dailyStats.reduce((sum, d) => sum + d.collectedRevenue, 0)
     const visits = completed + cancelled
     return {
       visits,
@@ -44,6 +45,7 @@ export default function AdminReports() {
       cancelRate: visits > 0 ? Math.round((cancelled / visits) * 100) : 0,
       completed,
       revenue,
+      collectedRevenue,
     }
   }, [dailyStats])
 
@@ -70,9 +72,10 @@ export default function AdminReports() {
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
         {isLoading ? (
           <>
+            <SkeletonStatCard />
             <SkeletonStatCard />
             <SkeletonStatCard />
             <SkeletonStatCard />
@@ -83,14 +86,15 @@ export default function AdminReports() {
             <StatCard label="จำนวนคิวทั้งหมด" value={totals.visits} icon={IconCalendar} />
             <StatCard label="อัตราเสร็จสิ้น" value={`${totals.completedRate}%`} icon={IconCheckCircle} />
             <StatCard label="อัตรายกเลิก" value={`${totals.cancelRate}%`} icon={IconXCircle} />
-            <StatCard label="รายได้รวม" value={`฿${totals.revenue.toLocaleString('th-TH')}`} icon={IconChartBar} />
+            <StatCard label="รายได้ที่เรียกเก็บ" value={`฿${totals.revenue.toLocaleString('th-TH')}`} icon={IconChartBar} />
+            <StatCard label="รายได้ที่เก็บได้จริง" value={`฿${totals.collectedRevenue.toLocaleString('th-TH')}`} icon={IconChartBar} />
           </>
         )}
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-        <h2 className="font-semibold text-gray-900">รายได้รายวัน</h2>
-        <p className="text-xs text-gray-400 mt-0.5 mb-4">Revenue by day (นับเฉพาะนัดที่เสร็จสิ้นแล้ว)</p>
+        <h2 className="font-semibold text-gray-900">รายได้รายวัน (ที่เรียกเก็บ)</h2>
+        <p className="text-xs text-gray-400 mt-0.5 mb-4">Revenue by day (นับเฉพาะนัดที่เสร็จสิ้นแล้ว ไม่ว่าจะชำระเงินแล้วหรือยัง)</p>
         {isLoading ? (
           <Skeleton className="h-48 w-full rounded-xl" />
         ) : (
@@ -120,12 +124,13 @@ export default function AdminReports() {
                 <th className="px-6 py-3 font-medium">วันที่</th>
                 <th className="px-6 py-3 font-medium">เสร็จสิ้น</th>
                 <th className="px-6 py-3 font-medium">ยกเลิก</th>
-                <th className="px-6 py-3 font-medium">รายได้</th>
+                <th className="px-6 py-3 font-medium">รายได้ที่เรียกเก็บ</th>
+                <th className="px-6 py-3 font-medium">เก็บได้จริง</th>
               </tr>
             </thead>
             {isLoading ? (
               <tbody>
-                <SkeletonTableRows rows={6} columns={4} />
+                <SkeletonTableRows rows={6} columns={5} />
               </tbody>
             ) : (
               <tbody className="divide-y divide-gray-50">
@@ -135,6 +140,7 @@ export default function AdminReports() {
                     <td className="px-6 py-3 text-gray-700 tabular-nums">{d.completed}</td>
                     <td className="px-6 py-3 text-gray-700 tabular-nums">{d.cancelled}</td>
                     <td className="px-6 py-3 text-gray-700 tabular-nums">฿{d.revenue.toLocaleString('th-TH')}</td>
+                    <td className="px-6 py-3 text-gray-700 tabular-nums">฿{d.collectedRevenue.toLocaleString('th-TH')}</td>
                   </tr>
                 ))}
               </tbody>

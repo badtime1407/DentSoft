@@ -25,6 +25,7 @@ type Treatment = {
   nextVisitNote: string
   images: { id: string; url: string }[]
   addOns: TreatmentAddOn[]
+  paymentStatus: 'UNPAID' | 'PAID'
 }
 
 type Appointment = {
@@ -371,12 +372,21 @@ export default function PatientHistoryPage() {
                 </ul>
               )}
               {typeof detailAppointment.treatment.servicePrice === 'number' && (
-                <p className="text-sm font-bold text-slate-900 pt-1">
+                <p className="text-sm font-bold text-slate-900 pt-1 flex items-center gap-2">
                   ยอดรวม: ฿
                   {(
                     detailAppointment.treatment.servicePrice +
                     detailAppointment.treatment.addOns.reduce((sum, ao) => sum + ao.unitPrice * ao.quantity, 0)
                   ).toLocaleString('th-TH')}
+                  <span
+                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                      detailAppointment.treatment.paymentStatus === 'PAID'
+                        ? 'bg-emerald-50 text-emerald-600'
+                        : 'bg-amber-50 text-amber-600'
+                    }`}
+                  >
+                    {detailAppointment.treatment.paymentStatus === 'PAID' ? 'ชำระแล้ว' : 'รอชำระ'}
+                  </span>
                 </p>
               )}
               {detailAppointment.treatment.nextVisit && (
