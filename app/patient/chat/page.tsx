@@ -97,7 +97,7 @@ export default function PatientChatPage() {
                   <span className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                     <IconSparkle className="w-3.5 h-3.5" />
                   </span>
-                  <div className="bg-slate-100 text-slate-800 p-3 rounded-2xl text-xs sm:text-sm max-w-xs">
+                  <div className="bg-slate-100 text-slate-800 p-3 rounded-2xl text-xs sm:text-sm max-w-xs sm:max-w-sm whitespace-pre-line">
                     {message.text}
                   </div>
                 </div>

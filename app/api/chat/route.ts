@@ -7,21 +7,37 @@ import { syncAppointmentsToSheet } from '@/lib/googleSheets'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
+const TIME_SLOTS = ['10:00', '11:30', '14:00', '16:00']
+const MIN_ADVANCE_DAYS = 3
+const MAX_ALTERNATIVES = 3
+const ALTERNATIVE_SEARCH_DAYS = 14
+
 function todayInBangkok() {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
+}
+
+function addDaysToISODate(dateISO: string, days: number): string {
+  const [y, m, d] = dateISO.split('-').map(Number)
+  const next = new Date(Date.UTC(y, m - 1, d + days))
+  return next.toISOString().slice(0, 10)
+}
+
+function dayOfWeekFromISODate(dateISO: string): number {
+  const [y, m, d] = dateISO.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay()
 }
 
 const BOOK_APPOINTMENT_TOOL = {
   type: 'function' as const,
   name: 'book_appointment',
   description:
-    'จองนัดหมายจริงเข้าระบบให้คนไข้ ใช้เมื่อคนไข้ยืนยันชัดเจนแล้วว่าต้องการจองบริการอะไร วันที่ไหน เวลาอะไร (ห้ามเรียกถ้าข้อมูลยังไม่ครบหรือคนไข้ยังไม่ได้ยืนยัน)',
+    'จองนัดหมายจริงเข้าระบบให้คนไข้ ใช้เมื่อคนไข้ยืนยันชัดเจนแล้วว่าต้องการจองบริการอะไร วันที่ไหน เวลาอะไร (ห้ามเรียกถ้าข้อมูลยังไม่ครบหรือคนไข้ยังไม่ได้ยืนยัน) ถ้าผลลัพธ์กลับมาไม่สำเร็จและมี alternatives ให้เสนอเวลาทางเลือกเหล่านั้นให้คนไข้แทน',
   parameters: {
     type: 'object',
     properties: {
       serviceId: { type: 'string', description: 'รหัสบริการ (id) จากรายการบริการที่ให้ไว้ในบทสนทนา' },
       date: { type: 'string', description: 'วันที่ต้องการนัด รูปแบบ YYYY-MM-DD' },
-      time: { type: 'string', description: 'เวลาที่ต้องการนัด รูปแบบ 24 ชั่วโมง HH:mm' },
+      time: { type: 'string', description: `เวลาที่ต้องการนัด ต้องเป็นหนึ่งใน: ${TIME_SLOTS.join(', ')} เท่านั้น` },
       symptomSummary: {
         type: 'string',
         description:
@@ -39,6 +55,7 @@ async function buildSystemInstruction() {
     orderBy: { name: 'asc' },
   })
   const serviceList = services.map((s) => `- ${s.name} (id: ${s.id}, ใช้เวลาประมาณ ${s.duration ?? 30} นาที)`).join('\n')
+  const earliestBookableDate = addDaysToISODate(todayInBangkok(), MIN_ADVANCE_DAYS)
 
   return `คุณคือผู้ช่วย AI ของ DentSoft คลินิกทันตกรรม ทำหน้าที่เหมือนผู้ช่วยทันตแพทย์ที่คุยกับคนไข้จริง
 
@@ -54,8 +71,36 @@ ${serviceList}
 4. ห้ามแนะนำชื่อยาหรือปริมาณยาที่เจาะจง หากถามเรื่องยาให้แนะนำให้ปรึกษาเภสัชกรหรือทันตแพทย์โดยตรง
 5. ถามคำถามเพิ่มเติมได้ไม่เกิน 1-2 รอบเพื่อให้ได้ข้อมูลอาการที่ชัดเจน ไม่ต้องซักถามวนซ้ำหลายรอบ
 6. หากคนไข้ต้องการจองนัดหมาย ให้ถามจนได้ครบ 3 อย่าง คือ บริการ (จากรายการที่ให้ไว้เท่านั้น) วันที่ และเวลา แล้วสรุปให้คนไข้ยืนยันอีกครั้งก่อนเรียกฟังก์ชัน book_appointment ถ้าคนไข้ต้องการบริการที่ไม่อยู่ในรายการ ให้แจ้งว่ายังไม่มีบริการนี้ในระบบ
-7. หากอาการดูรุนแรงหรือฉุกเฉิน (เช่น ปวดรุนแรง บวมมาก มีไข้ร่วมด้วย) ให้แนะนำให้ติดต่อคลินิกหรือไปพบทันตแพทย์โดยเร็วที่สุด
-8. ใช้ภาษาไทย น้ำเสียงสุภาพ เป็นมิตร กระชับ ไม่เกิน 3-4 ประโยคต่อครั้ง ไม่ใช้ศัพท์ทางการแพทย์ที่เข้าใจยากเกินไป`
+7. เวลานัดหมายรับได้เฉพาะรอบ ${TIME_SLOTS.join(', ')} น. เท่านั้น ห้ามเสนอหรือรับเวลาอื่นนอกจากนี้
+8. คลินิกต้องการเวลาเตรียมตัวล่วงหน้า คนไข้ต้องจองล่วงหน้าอย่างน้อย ${MIN_ADVANCE_DAYS} วัน วันที่เร็วที่สุดที่จองได้ตอนนี้คือ ${earliestBookableDate} ถ้าคนไข้ขอวันที่เร็วกว่านี้ ให้แจ้งกฎนี้และเสนอวันที่เร็วที่สุดที่จองได้แทนทันที ไม่ต้องเรียกฟังก์ชัน book_appointment
+9. หากอาการดูรุนแรงหรือฉุกเฉิน (เช่น ปวดรุนแรง บวมมาก มีไข้ร่วมด้วย) ให้แนะนำให้ติดต่อคลินิกหรือไปพบทันตแพทย์โดยเร็วที่สุด
+10. ใช้ภาษาไทย น้ำเสียงสุภาพ เป็นมิตร กระชับ ไม่เกิน 3-4 ประโยคหลักต่อครั้ง ไม่ใช้ศัพท์ทางการแพทย์ที่เข้าใจยากเกินไป
+11. จัดข้อความให้อ่านง่าย: ขึ้นบรรทัดใหม่แยกแต่ละประเด็น (เช่น สรุปการจอง กับ คำถามถัดไป ให้อยู่คนละบรรทัด) และเวลาต้องเสนอตัวเลือกมากกว่า 1 อย่าง (เช่น เวลาที่ว่างหลายช่วง) ให้ขึ้นบรรทัดใหม่ทีละตัวเลือกโดยขึ้นต้นด้วย "- " เสมอ ห้ามเขียนตัวเลือกต่อกันในบรรทัดเดียว`
+}
+
+async function findAlternativeSlots(fromDateISO: string): Promise<{ date: string; time: string }[]> {
+  const alternatives: { date: string; time: string }[] = []
+
+  for (let dayOffset = 0; dayOffset < ALTERNATIVE_SEARCH_DAYS && alternatives.length < MAX_ALTERNATIVES; dayOffset++) {
+    const candidateDate = addDaysToISODate(fromDateISO, dayOffset)
+    const dayOfWeek = dayOfWeekFromISODate(candidateDate)
+
+    for (const time of TIME_SLOTS) {
+      if (alternatives.length >= MAX_ALTERNATIVES) break
+
+      const capacity = await prisma.schedule.count({
+        where: { isActive: true, dayOfWeek, startTime: { lte: time }, endTime: { gt: time } },
+      })
+      if (capacity === 0) continue
+
+      const booked = await prisma.appointment.count({
+        where: { date: new Date(`${candidateDate}T${time}:00+07:00`), status: { not: 'CANCELLED' } },
+      })
+      if (booked < capacity) alternatives.push({ date: candidateDate, time })
+    }
+  }
+
+  return alternatives
 }
 
 async function executeBookAppointment(
@@ -78,8 +123,8 @@ async function executeBookAppointment(
     return { success: false, error: 'ไม่พบบริการนี้ในระบบ' }
   }
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
-    return { success: false, error: 'รูปแบบวันที่หรือเวลาไม่ถูกต้อง' }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !TIME_SLOTS.includes(time)) {
+    return { success: false, error: `รูปแบบวันที่หรือเวลาไม่ถูกต้อง เวลาที่จองได้มีเฉพาะ ${TIME_SLOTS.join(', ')} น.` }
   }
 
   const appointmentDate = new Date(`${date}T${time}:00+07:00`)
@@ -88,6 +133,31 @@ async function executeBookAppointment(
   }
   if (appointmentDate.getTime() < Date.now()) {
     return { success: false, error: 'ไม่สามารถจองย้อนหลังได้ กรุณาเลือกวันเวลาในอนาคต' }
+  }
+
+  const earliestBookableDate = addDaysToISODate(todayInBangkok(), MIN_ADVANCE_DAYS)
+  if (date < earliestBookableDate) {
+    return {
+      success: false,
+      error: `คลินิกต้องการให้จองล่วงหน้าอย่างน้อย ${MIN_ADVANCE_DAYS} วัน วันที่เร็วที่สุดที่จองได้คือ ${earliestBookableDate}`,
+      alternatives: await findAlternativeSlots(earliestBookableDate),
+    }
+  }
+
+  const dayOfWeek = dayOfWeekFromISODate(date)
+  const capacity = await prisma.schedule.count({
+    where: { isActive: true, dayOfWeek, startTime: { lte: time }, endTime: { gt: time } },
+  })
+  const booked = await prisma.appointment.count({
+    where: { date: appointmentDate, status: { not: 'CANCELLED' } },
+  })
+
+  if (capacity === 0 || booked >= capacity) {
+    return {
+      success: false,
+      error: 'ช่วงเวลานี้เต็มแล้วหรือคลินิกไม่เปิดให้บริการช่วงเวลานี้',
+      alternatives: await findAlternativeSlots(date),
+    }
   }
 
   const appointment = await prisma.appointment.create({
