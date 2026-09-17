@@ -146,6 +146,7 @@ model Appointment {
   treatment Treatment?
   planStep  TreatmentPlanStep?
 
+  @@unique([patientId, date]) // กันจองซ้ำ (คนไข้คนเดียวกันจองวันเวลาเดียวกันซ้ำ) ระดับฐานข้อมูล กัน race condition จากการกดซ้ำเร็วๆ ที่เช็คแบบ query ก่อนอย่างเดียวป้องกันไม่ได้
   @@index([date, status])
 }
 

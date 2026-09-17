@@ -3,7 +3,12 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { syncAppointmentsToSheet } from '@/lib/googleSheets'
+import { Prisma } from '@prisma/client'
 import type { Appointment, Dentist, Patient, Service, Treatment, TreatmentItem, TreatmentImage, TreatmentAddOn } from '@prisma/client'
+
+function isDuplicateBookingError(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
+}
 
 type FullAppointment = Appointment & {
   patient: Patient
@@ -255,28 +260,43 @@ export async function POST(req: Request) {
     if (!patient) return NextResponse.json({ error: 'ไม่พบคนไข้ที่เลือก' }, { status: 404 })
     if (!service) return NextResponse.json({ error: 'ไม่พบบริการที่เลือก' }, { status: 404 })
 
-    const appointment = await prisma.appointment.create({
-      data: {
-        patientId,
-        serviceId,
-        dentistId: dentistId || null,
-        date: appointmentDate,
-        status: 'CONFIRMED',
-        note: note || null,
-      },
-      include: {
-        patient: true,
-        service: true,
-        dentist: true,
-        treatment: {
-          include: {
-            items: true,
-            images: { select: { id: true } },
-            addOns: { include: { service: true } },
+    const duplicate = await prisma.appointment.findFirst({
+      where: { patientId, date: appointmentDate, status: { not: 'CANCELLED' } },
+    })
+    if (duplicate) {
+      return NextResponse.json({ error: 'คนไข้คนนี้มีนัดหมายในวันเวลานี้อยู่แล้ว' }, { status: 409 })
+    }
+
+    let appointment
+    try {
+      appointment = await prisma.appointment.create({
+        data: {
+          patientId,
+          serviceId,
+          dentistId: dentistId || null,
+          date: appointmentDate,
+          status: 'CONFIRMED',
+          note: note || null,
+        },
+        include: {
+          patient: true,
+          service: true,
+          dentist: true,
+          treatment: {
+            include: {
+              items: true,
+              images: { select: { id: true } },
+              addOns: { include: { service: true } },
+            },
           },
         },
-      },
-    })
+      })
+    } catch (error) {
+      if (isDuplicateBookingError(error)) {
+        return NextResponse.json({ error: 'คนไข้คนนี้มีนัดหมายในวันเวลานี้อยู่แล้ว' }, { status: 409 })
+      }
+      throw error
+    }
 
     await syncAppointmentsToSheet()
 
@@ -308,15 +328,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'ไม่พบบริการที่เลือก' }, { status: 404 })
   }
 
-  const appointment = await prisma.appointment.create({
-    data: {
-      patientId: patient.id,
-      serviceId: service.id,
-      date: appointmentDate,
-      status: 'PENDING',
-    },
-    include: { service: true },
+  const duplicate = await prisma.appointment.findFirst({
+    where: { patientId: patient.id, date: appointmentDate, status: { not: 'CANCELLED' } },
   })
+  if (duplicate) {
+    return NextResponse.json({ error: 'คุณมีนัดหมายในวันเวลานี้อยู่แล้ว' }, { status: 409 })
+  }
+
+  let appointment
+  try {
+    appointment = await prisma.appointment.create({
+      data: {
+        patientId: patient.id,
+        serviceId: service.id,
+        date: appointmentDate,
+        status: 'PENDING',
+      },
+      include: { service: true },
+    })
+  } catch (error) {
+    if (isDuplicateBookingError(error)) {
+      return NextResponse.json({ error: 'คุณมีนัดหมายในวันเวลานี้อยู่แล้ว' }, { status: 409 })
+    }
+    throw error
+  }
 
   await syncAppointmentsToSheet()
 

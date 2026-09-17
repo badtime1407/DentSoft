@@ -53,7 +53,7 @@ export function AppointmentDrawer({
   patients: AdminPatient[]
   cancelRequest?: { type: CancelRequestType; reason: string }
   onClose: () => void
-  onSubmit: (values: AppointmentFormValues) => void
+  onSubmit: (values: AppointmentFormValues) => void | Promise<void>
   onCreatePatient: (values: NewPatientValues) => Promise<AdminPatient | null>
   onConfirm?: (dentistId: string) => void
   onCancelAppointment?: () => void
@@ -70,9 +70,11 @@ export function AppointmentDrawer({
   const [selectedPatient, setSelectedPatient] = useState<AdminPatient | null>(null)
   const [creatingPatient, setCreatingPatient] = useState(false)
   const [newPatient, setNewPatient] = useState<NewPatientValues>({ firstName: '', lastName: '', phone: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (!open) return
+    setIsSubmitting(false)
     if (mode === 'edit' && appointment) {
       const d = new Date(appointment.date)
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -107,6 +109,16 @@ export function AppointmentDrawer({
 
   function update<K extends keyof AppointmentFormValues>(key: K, value: AppointmentFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }))
+  }
+
+  async function handleSubmitClick() {
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      await onSubmit(values)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const matchingPatients =
@@ -316,11 +328,11 @@ export function AppointmentDrawer({
             )}
             <button
               type="button"
-              disabled={mode === 'create' && !values.patientId}
-              onClick={() => onSubmit(values)}
+              disabled={isSubmitting || (mode === 'create' && !values.patientId)}
+              onClick={handleSubmitClick}
               className={`flex-1 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${focusRing}`}
             >
-              {mode === 'create' ? 'บันทึกนัดหมาย' : 'บันทึกการแก้ไข'}
+              {isSubmitting ? 'กำลังบันทึก...' : mode === 'create' ? 'บันทึกนัดหมาย' : 'บันทึกการแก้ไข'}
             </button>
           </div>
         </div>

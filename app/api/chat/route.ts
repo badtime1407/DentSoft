@@ -4,8 +4,13 @@ import { authOptions } from '@/lib/auth'
 import { GoogleGenAI } from '@google/genai'
 import { prisma } from '@/lib/prisma'
 import { syncAppointmentsToSheet } from '@/lib/googleSheets'
+import { Prisma } from '@prisma/client'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+
+function isDuplicateBookingError(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
+}
 
 const TIME_SLOTS = ['10:00', '11:30', '14:00', '16:00']
 const MIN_ADVANCE_DAYS = 3
@@ -160,9 +165,24 @@ async function executeBookAppointment(
     }
   }
 
-  const appointment = await prisma.appointment.create({
-    data: { patientId: patient.id, serviceId: service.id, date: appointmentDate, status: 'PENDING', note },
+  const duplicate = await prisma.appointment.findFirst({
+    where: { patientId: patient.id, date: appointmentDate, status: { not: 'CANCELLED' } },
   })
+  if (duplicate) {
+    return { success: false, error: 'คุณมีนัดหมายในวันเวลานี้อยู่แล้ว ไม่ต้องจองซ้ำนะคะ' }
+  }
+
+  let appointment
+  try {
+    appointment = await prisma.appointment.create({
+      data: { patientId: patient.id, serviceId: service.id, date: appointmentDate, status: 'PENDING', note },
+    })
+  } catch (error) {
+    if (isDuplicateBookingError(error)) {
+      return { success: false, error: 'คุณมีนัดหมายในวันเวลานี้อยู่แล้ว ไม่ต้องจองซ้ำนะคะ' }
+    }
+    throw error
+  }
 
   await syncAppointmentsToSheet()
 
