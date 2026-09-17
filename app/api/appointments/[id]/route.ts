@@ -33,6 +33,7 @@ function serializeAdminAppointment(a: FullAppointment) {
       ? {
           servicePrice: a.treatment.servicePrice,
           addOns: a.treatment.addOns.map((ao) => ({
+            id: ao.id,
             serviceId: ao.serviceId,
             serviceName: ao.service?.name ?? '',
             quantity: ao.quantity,

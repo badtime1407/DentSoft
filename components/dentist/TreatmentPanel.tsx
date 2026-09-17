@@ -129,7 +129,6 @@ export function TreatmentPanel({
   const [addOnCatalog, setAddOnCatalog] = useState<AddOnCatalogItem[]>([])
   const [addOnPickerOpen, setAddOnPickerOpen] = useState(false)
   const [customAddOnName, setCustomAddOnName] = useState('')
-  const [customAddOnPrice, setCustomAddOnPrice] = useState('')
 
   useEffect(() => {
     fetch('/api/services?type=ADD_ON')
@@ -170,14 +169,12 @@ export function TreatmentPanel({
 
   function addCustomAddOn() {
     const name = customAddOnName.trim()
-    const price = Number(customAddOnPrice)
-    if (!name || !Number.isFinite(price) || price < 0) return
+    if (!name) return
     setForm((prev) => ({
       ...prev,
-      addOns: [...(prev.addOns ?? []), { serviceId: null, serviceName: name, quantity: 1, unitPrice: price }],
+      addOns: [...(prev.addOns ?? []), { serviceId: null, serviceName: name, quantity: 1, unitPrice: 0 }],
     }))
     setCustomAddOnName('')
-    setCustomAddOnPrice('')
     setAddOnPickerOpen(false)
   }
 
@@ -405,7 +402,7 @@ export function TreatmentPanel({
               <div className="space-y-2">
                 {(form.addOns ?? []).map((addOn, idx) => {
                   const catalogItem = addOn.serviceId ? addOnCatalog.find((s) => s.id === addOn.serviceId) : undefined
-                  const priceIsEditable = !addOn.serviceId || (catalogItem ? catalogItem.minPrice !== catalogItem.maxPrice : true)
+                  const priceIsEditable = !!addOn.serviceId && (catalogItem ? catalogItem.minPrice !== catalogItem.maxPrice : true)
                   return (
                     <div key={addOn.serviceId ?? `custom-${idx}`} className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2">
                       <span className="flex-1 text-sm text-gray-700 truncate">{addOn.serviceName}</span>
@@ -427,12 +424,16 @@ export function TreatmentPanel({
                           className="w-20 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 text-right"
                           title="ราคาต่อหน่วย"
                         />
-                      ) : (
+                      ) : addOn.serviceId ? (
                         <span className="w-20 text-xs text-gray-500 text-right tabular-nums">฿{addOn.unitPrice.toLocaleString('th-TH')}</span>
+                      ) : (
+                        <span className="w-24 text-[11px] text-amber-600 text-right shrink-0">รอแอดมินระบุราคา</span>
                       )}
-                      <span className="w-24 text-xs font-semibold text-gray-800 text-right tabular-nums">
-                        ฿{(addOn.quantity * addOn.unitPrice).toLocaleString('th-TH')}
-                      </span>
+                      {addOn.serviceId && (
+                        <span className="w-24 text-xs font-semibold text-gray-800 text-right tabular-nums">
+                          ฿{(addOn.quantity * addOn.unitPrice).toLocaleString('th-TH')}
+                        </span>
+                      )}
                       <button
                         type="button"
                         onClick={() => removeAddOn(idx)}
@@ -476,30 +477,23 @@ export function TreatmentPanel({
 
                       <div className="border-t border-gray-100 p-2 space-y-1.5" onClick={(e) => e.stopPropagation()}>
                         <p className="text-[11px] font-semibold text-gray-500 px-1">หรือกรอกรายการเอง</p>
-                        <input
-                          value={customAddOnName}
-                          onChange={(e) => setCustomAddOnName(e.target.value)}
-                          placeholder="ชื่อรายการ"
-                          className="w-full px-2 py-1.5 rounded-md border border-gray-200 text-xs text-gray-700 placeholder:text-gray-400"
-                        />
                         <div className="flex items-center gap-1.5">
                           <input
-                            type="number"
-                            min={0}
-                            value={customAddOnPrice}
-                            onChange={(e) => setCustomAddOnPrice(e.target.value)}
-                            placeholder="ราคา"
+                            value={customAddOnName}
+                            onChange={(e) => setCustomAddOnName(e.target.value)}
+                            placeholder="ชื่อรายการ"
                             className="flex-1 px-2 py-1.5 rounded-md border border-gray-200 text-xs text-gray-700 placeholder:text-gray-400"
                           />
                           <button
                             type="button"
                             onClick={addCustomAddOn}
-                            disabled={!customAddOnName.trim() || customAddOnPrice === ''}
+                            disabled={!customAddOnName.trim()}
                             className={`px-3 py-1.5 rounded-md bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-40 transition ${focusRing}`}
                           >
                             เพิ่ม
                           </button>
                         </div>
+                        <p className="text-[11px] text-gray-400 px-1">แอดมินจะเป็นผู้ระบุราคาตอนยืนยันรับชำระเงิน</p>
                       </div>
                     </div>
                   </>

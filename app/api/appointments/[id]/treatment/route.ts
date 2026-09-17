@@ -28,9 +28,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     ? treatmentItems.filter((t): t is string => typeof t === 'string' && t.trim() !== '')
     : []
 
-  type RequestedAddOn = { serviceId?: string; customName?: string; quantity: number; unitPrice?: number }
+  // ฝั่งหน้าบ้าน (TreatmentPanel) ส่งชื่อรายการที่พิมพ์เองมาในฟิลด์ serviceName เดียวกับรายการจากแคตตาล็อก ไม่ได้ส่งเป็น customName
+  type RequestedAddOn = { serviceId?: string; serviceName?: string; quantity: number; unitPrice?: number }
   const requestedAddOns: RequestedAddOn[] = Array.isArray(addOns)
-    ? addOns.filter((a): a is RequestedAddOn => !!a && (typeof a.serviceId === 'string' || typeof a.customName === 'string'))
+    ? addOns.filter((a): a is RequestedAddOn => !!a && (typeof a.serviceId === 'string' || typeof a.serviceName === 'string'))
     : []
 
   const catalogServiceIds = requestedAddOns.filter((a) => a.serviceId).map((a) => a.serviceId as string)
@@ -53,7 +54,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         return { serviceId: service.id, customName: null, quantity, unitPrice }
       }
 
-      const customName = a.customName?.trim()
+      const customName = a.serviceName?.trim()
       if (!customName) return null
       const unitPrice = typeof a.unitPrice === 'number' && a.unitPrice >= 0 ? a.unitPrice : 0
       return { serviceId: null, customName, quantity, unitPrice }
@@ -93,6 +94,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       nextVisit: treatment.nextVisit ? treatment.nextVisit.toISOString().slice(0, 10) : '',
       nextVisitNote: treatment.nextVisitNote ?? '',
       addOns: treatment.addOns.map((a) => ({
+        id: a.id,
         serviceId: a.serviceId,
         serviceName: a.service?.name ?? a.customName ?? '',
         quantity: a.quantity,

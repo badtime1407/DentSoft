@@ -8,6 +8,7 @@ import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge'
 import { StatCard } from '@/components/shared/StatCard'
 import { AppointmentScheduleBoard } from '@/components/admin/AppointmentScheduleBoard'
 import { AppointmentDrawer, type AppointmentFormValues, type NewPatientValues } from '@/components/admin/AppointmentDrawer'
+import { PaymentConfirmModal } from '@/components/admin/PaymentConfirmModal'
 import { useCancelRequests } from '@/components/admin/CancelRequestsProvider'
 import { IconCalendar, IconClock, IconXCircle, IconChevronLeft, IconChevronRight, IconPlus } from '@/components/admin/icons'
 import { addDays, toISODate, type AdminAppointment, type AdminDentistOption, type AdminServiceOption, type BookingStatus } from './types'
@@ -69,6 +70,7 @@ export default function AdminAppointments() {
   const [dentistFilter, setDentistFilter] = useState('ALL')
   const [statusFilter, setStatusFilter] = useState<'ALL' | BookingStatus>('ALL')
   const [drawer, setDrawer] = useState<DrawerState>({ open: false })
+  const [paymentDrawer, setPaymentDrawer] = useState<{ open: boolean; appointment: AdminAppointment | null }>({ open: false, appointment: null })
   const [formError, setFormError] = useState('')
 
   useEffect(() => {
@@ -195,8 +197,12 @@ export default function AdminAppointments() {
     await patchAppointment(id, { status: 'CANCELLED' })
   }
 
-  async function confirmPayment(id: string) {
-    const res = await fetch(`/api/appointments/${id}/payment`, { method: 'PATCH' })
+  async function confirmPayment(id: string, addOns: { id: string; unitPrice: number }[]) {
+    const res = await fetch(`/api/appointments/${id}/payment`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ addOns }),
+    })
     const result = await res.json()
     if (!res.ok) {
       setFormError(result.error ?? 'ยืนยันรับชำระไม่สำเร็จ')
@@ -206,10 +212,11 @@ export default function AdminAppointments() {
     setAppointments((prev) =>
       prev.map((a) =>
         a.id === id && a.treatment
-          ? { ...a, treatment: { ...a.treatment, paymentStatus: result.paymentStatus, paidAt: result.paidAt } }
+          ? { ...a, treatment: { ...a.treatment, servicePrice: result.servicePrice, addOns: result.addOns, paymentStatus: result.paymentStatus, paidAt: result.paidAt } }
           : a
       )
     )
+    setPaymentDrawer({ open: false, appointment: null })
   }
 
   async function cancelAppointment(id: string) {
@@ -430,10 +437,10 @@ export default function AdminAppointments() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => confirmPayment(a.id)}
+                        onClick={() => setPaymentDrawer({ open: true, appointment: a })}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition shrink-0 ${focusRing}`}
                       >
-                        ยืนยันรับชำระ
+                        ตรวจสอบ & ชำระ
                       </button>
                     </li>
                   )
@@ -611,6 +618,13 @@ export default function AdminAppointments() {
             : undefined
         }
         onCancelAppointment={drawer.open && drawer.mode === 'edit' ? () => cancelAppointment(drawer.appointment.id) : undefined}
+      />
+
+      <PaymentConfirmModal
+        open={paymentDrawer.open}
+        appointment={paymentDrawer.appointment}
+        onClose={() => setPaymentDrawer({ open: false, appointment: null })}
+        onConfirm={(addOns) => confirmPayment(paymentDrawer.appointment!.id, addOns)}
       />
       {formError && (
         <div className="fixed bottom-6 right-6 z-[60] bg-rose-600 text-white text-sm px-4 py-3 rounded-xl shadow-lg">

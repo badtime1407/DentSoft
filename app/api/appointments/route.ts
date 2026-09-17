@@ -93,6 +93,7 @@ function serializeTreatment(treatment: TreatmentWithDetails | null) {
     nextVisitNote: treatment.nextVisitNote ?? '',
     images: treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })),
     addOns: treatment.addOns.map((ao) => ({
+      id: ao.id,
       serviceId: ao.serviceId,
       serviceName: ao.service?.name ?? ao.customName ?? '',
       quantity: ao.quantity,
