@@ -1,16 +1,38 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { AuthField, PasswordField } from '@/components/auth/AuthField'
 
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  AccessDenied: 'บัญชีนี้ยังไม่ได้รับอนุญาตให้เข้าสู่ระบบผ่านผู้ให้บริการนี้ กรุณาติดต่อผู้ดูแลระบบ',
+  OAuthAccountNotLinked: 'อีเมลนี้เคยสมัครไว้ด้วยวิธีอื่นแล้ว กรุณาเข้าสู่ระบบด้วยวิธีเดิม',
+  OAuthSignin: 'เชื่อมต่อกับผู้ให้บริการไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+  OAuthCallback: 'เชื่อมต่อกับผู้ให้บริการไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+  OAuthCreateAccount: 'สร้างบัญชีจากผู้ให้บริการนี้ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+}
+
+function oauthErrorMessage(code: string | null): string {
+  if (!code) return ''
+  return OAUTH_ERROR_MESSAGES[code] ?? 'เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'
+}
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(() => oauthErrorMessage(searchParams.get('error')))
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async () => {
