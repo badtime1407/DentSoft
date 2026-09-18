@@ -24,6 +24,8 @@ export type AdminAppointment = {
   patientPhone: string | null
   serviceId: string
   serviceName: string
+  serviceMinPrice: number
+  serviceMaxPrice: number
   durationMin: number
   dentistId: string | null
   dentistName: string | null

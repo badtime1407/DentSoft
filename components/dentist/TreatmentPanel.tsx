@@ -329,18 +329,12 @@ export function TreatmentPanel({
               <div className="text-right shrink-0">
                 <p className="text-[11px] text-blue-700 mb-0.5">ราคาค่าบริการ</p>
                 {servicePriceIsEditable ? (
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={appointment.serviceMinPrice}
-                      max={appointment.serviceMaxPrice}
-                      value={servicePrice}
-                      onChange={(e) => updateForm('servicePrice', Number(e.target.value))}
-                      disabled={isCancelled}
-                      className="w-24 px-2 py-1 rounded-md border border-blue-200 text-sm text-slate-800 text-right tabular-nums disabled:opacity-50"
-                    />
-                    <span className="text-xs text-slate-500">บาท</span>
-                  </div>
+                  <>
+                    <p className="text-sm font-semibold text-slate-800 tabular-nums">
+                      ฿{appointment.serviceMinPrice.toLocaleString('th-TH')} - ฿{appointment.serviceMaxPrice.toLocaleString('th-TH')}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">แอดมินยืนยันราคาตอนรับชำระ</p>
+                  </>
                 ) : (
                   <p className="text-sm font-semibold text-slate-800 tabular-nums">฿{servicePrice.toLocaleString('th-TH')}</p>
                 )}

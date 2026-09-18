@@ -35,6 +35,8 @@ function serializeAdminAppointment(a: FullAppointment) {
     patientPhone: a.patient.phone,
     serviceId: a.serviceId,
     serviceName: a.service.name,
+    serviceMinPrice: a.service.minPrice,
+    serviceMaxPrice: a.service.maxPrice,
     durationMin: a.service.duration ?? 30,
     dentistId: a.dentistId,
     dentistName: a.dentist ? `${a.dentist.title} ${a.dentist.firstName} ${a.dentist.lastName}` : null,

@@ -20,7 +20,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params
   const appointment = await prisma.appointment.findUnique({
     where: { id },
-    include: { treatment: { include: { addOns: true } } },
+    include: { service: true, treatment: { include: { addOns: true } } },
   })
   if (!appointment || !appointment.treatment) {
     return NextResponse.json({ error: 'ไม่พบบันทึกการรักษาของนัดหมายนี้' }, { status: 404 })
@@ -35,13 +35,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       typeof u.id === 'string' && existingAddOnIds.has(u.id) && typeof u.unitPrice === 'number' && u.unitPrice >= 0
   )
 
+  const requestedServicePrice = typeof body?.servicePrice === 'number' ? body.servicePrice : appointment.treatment.servicePrice
+  const clampedServicePrice =
+    requestedServicePrice == null
+      ? null
+      : Math.min(Math.max(requestedServicePrice, appointment.service.minPrice), appointment.service.maxPrice)
+
   const treatment = await prisma.$transaction(async (tx) => {
     for (const update of validUpdates) {
       await tx.treatmentAddOn.update({ where: { id: update.id }, data: { unitPrice: update.unitPrice } })
     }
     return tx.treatment.update({
       where: { appointmentId: id },
-      data: { paymentStatus: 'PAID', paidAt: new Date() },
+      data: { servicePrice: clampedServicePrice, paymentStatus: 'PAID', paidAt: new Date() },
       include: { addOns: { include: { service: true } } },
     })
   })

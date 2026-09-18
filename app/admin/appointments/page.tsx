@@ -199,13 +199,14 @@ export default function AdminAppointments() {
 
   async function confirmPayment(
     id: string,
+    servicePrice: number,
     addOns: { id: string; unitPrice: number }[],
     nextAppointment: { date: string; time: string } | null
   ) {
     const res = await fetch(`/api/appointments/${id}/payment`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ addOns, nextAppointment }),
+      body: JSON.stringify({ servicePrice, addOns, nextAppointment }),
     })
     const result = await res.json()
     if (!res.ok) {
@@ -636,7 +637,9 @@ export default function AdminAppointments() {
         open={paymentDrawer.open}
         appointment={paymentDrawer.appointment}
         onClose={() => setPaymentDrawer({ open: false, appointment: null })}
-        onConfirm={(addOns, nextAppointment) => confirmPayment(paymentDrawer.appointment!.id, addOns, nextAppointment)}
+        onConfirm={(servicePrice, addOns, nextAppointment) =>
+          confirmPayment(paymentDrawer.appointment!.id, servicePrice, addOns, nextAppointment)
+        }
       />
       {formError && (
         <div className="fixed bottom-6 right-6 z-[60] bg-rose-600 text-white text-sm px-4 py-3 rounded-xl shadow-lg">

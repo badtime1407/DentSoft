@@ -22,8 +22,13 @@ export function PaymentConfirmModal({
   open: boolean
   appointment: AdminAppointment | null
   onClose: () => void
-  onConfirm: (addOns: { id: string; unitPrice: number }[], nextAppointment: { date: string; time: string } | null) => Promise<void>
+  onConfirm: (
+    servicePrice: number,
+    addOns: { id: string; unitPrice: number }[],
+    nextAppointment: { date: string; time: string } | null
+  ) => Promise<void>
 }) {
+  const [servicePrice, setServicePrice] = useState(0)
   const [addOns, setAddOns] = useState<AdminAppointmentAddOn[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [bookNextVisit, setBookNextVisit] = useState(false)
@@ -32,6 +37,7 @@ export function PaymentConfirmModal({
 
   useEffect(() => {
     if (!open) return
+    setServicePrice(appointment?.treatment?.servicePrice ?? appointment?.serviceMinPrice ?? 0)
     setAddOns(appointment?.treatment?.addOns ?? [])
     setIsSubmitting(false)
     setBookNextVisit(false)
@@ -46,7 +52,7 @@ export function PaymentConfirmModal({
     setAddOns((prev) => prev.map((a) => (a.id === id ? { ...a, unitPrice: Math.max(0, unitPrice || 0) } : a)))
   }
 
-  const servicePrice = appointment.treatment?.servicePrice ?? 0
+  const servicePriceIsEditable = appointment.serviceMinPrice !== appointment.serviceMaxPrice
   const addOnsTotal = addOns.reduce((sum, a) => sum + a.quantity * a.unitPrice, 0)
   const grandTotal = servicePrice + addOnsTotal
   const hasUnpriced = addOns.some((a) => a.unitPrice <= 0)
@@ -59,6 +65,7 @@ export function PaymentConfirmModal({
     setIsSubmitting(true)
     try {
       await onConfirm(
+        servicePrice,
         addOns.map((a) => ({ id: a.id, unitPrice: a.unitPrice })),
         canBookNextVisit ? { date: nextDate, time: nextTime } : null
       )
@@ -85,7 +92,22 @@ export function PaymentConfirmModal({
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           <div className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
             <span className="text-sm text-gray-700">{appointment.serviceName}</span>
-            <span className="text-sm font-semibold text-gray-800 tabular-nums">฿{servicePrice.toLocaleString('th-TH')}</span>
+            {servicePriceIsEditable ? (
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-xs text-gray-400">฿</span>
+                <input
+                  type="number"
+                  min={appointment.serviceMinPrice}
+                  max={appointment.serviceMaxPrice}
+                  value={servicePrice}
+                  onChange={(e) => setServicePrice(Math.max(0, Number(e.target.value) || 0))}
+                  className="w-20 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 text-right"
+                  title={`฿${appointment.serviceMinPrice.toLocaleString('th-TH')} - ฿${appointment.serviceMaxPrice.toLocaleString('th-TH')}`}
+                />
+              </div>
+            ) : (
+              <span className="text-sm font-semibold text-gray-800 tabular-nums">฿{servicePrice.toLocaleString('th-TH')}</span>
+            )}
           </div>
 
           {addOns.length > 0 && (
