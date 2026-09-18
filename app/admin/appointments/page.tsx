@@ -197,18 +197,30 @@ export default function AdminAppointments() {
     await patchAppointment(id, { status: 'CANCELLED' })
   }
 
-  async function confirmPayment(id: string, addOns: { id: string; unitPrice: number }[]) {
+  async function confirmPayment(
+    id: string,
+    addOns: { id: string; unitPrice: number }[],
+    nextAppointment: { date: string; time: string } | null
+  ) {
     const res = await fetch(`/api/appointments/${id}/payment`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ addOns }),
+      body: JSON.stringify({ addOns, nextAppointment }),
     })
     const result = await res.json()
     if (!res.ok) {
       setFormError(result.error ?? 'ยืนยันรับชำระไม่สำเร็จ')
       return
     }
-    setFormError('')
+    setFormError(result.nextAppointmentError ?? '')
+    if (nextAppointment && !result.nextAppointmentError) {
+      fetch('/api/appointments')
+        .then((r) => r.json())
+        .then((data: { appointments?: AdminAppointment[] }) => {
+          if (data.appointments) setAppointments(data.appointments)
+        })
+        .catch(() => {})
+    }
     setAppointments((prev) =>
       prev.map((a) =>
         a.id === id && a.treatment
@@ -624,7 +636,7 @@ export default function AdminAppointments() {
         open={paymentDrawer.open}
         appointment={paymentDrawer.appointment}
         onClose={() => setPaymentDrawer({ open: false, appointment: null })}
-        onConfirm={(addOns) => confirmPayment(paymentDrawer.appointment!.id, addOns)}
+        onConfirm={(addOns, nextAppointment) => confirmPayment(paymentDrawer.appointment!.id, addOns, nextAppointment)}
       />
       {formError && (
         <div className="fixed bottom-6 right-6 z-[60] bg-rose-600 text-white text-sm px-4 py-3 rounded-xl shadow-lg">

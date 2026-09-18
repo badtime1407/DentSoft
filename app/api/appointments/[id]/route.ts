@@ -12,6 +12,12 @@ type FullAppointment = Appointment & {
   treatment: (Treatment & { addOns: (TreatmentAddOn & { service: Service | null })[] }) | null
 }
 
+const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000
+
+function bangkokDateOnly(date: Date): string {
+  return new Date(date.getTime() + BANGKOK_OFFSET_MS).toISOString().slice(0, 10)
+}
+
 function serializeAdminAppointment(a: FullAppointment) {
   return {
     id: a.id,
@@ -41,6 +47,8 @@ function serializeAdminAppointment(a: FullAppointment) {
           })),
           paymentStatus: a.treatment.paymentStatus,
           paidAt: a.treatment.paidAt ? a.treatment.paidAt.toISOString() : null,
+          nextVisit: a.treatment.nextVisit ? bangkokDateOnly(a.treatment.nextVisit) : null,
+          nextVisitNote: a.treatment.nextVisitNote,
         }
       : undefined,
   }

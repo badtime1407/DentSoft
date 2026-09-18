@@ -9,6 +9,8 @@ export type AdminAppointmentTreatment = {
   addOns?: AdminAppointmentAddOn[]
   paymentStatus: PaymentStatus
   paidAt: string | null
+  nextVisit?: string | null
+  nextVisitNote?: string | null
 }
 
 export type AdminAppointment = {

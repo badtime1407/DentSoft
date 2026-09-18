@@ -47,6 +47,10 @@ function addMonths(dateStr: string, months: number) {
   return toDateInputValue(d)
 }
 
+function formatThaiDate(dateStr: string) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 export function TreatmentPanel({
   appointment,
   history,
@@ -502,9 +506,8 @@ export function TreatmentPanel({
             </div>
 
             <div>
-              <label className={labelClass}>นัดครั้งถัดไป</label>
-              <input type="date" className={inputClass} value={form.nextVisit} onChange={(e) => updateForm('nextVisit', e.target.value)} />
-              <div className="flex flex-wrap gap-1.5 mt-1.5">
+              <label className={labelClass}>นัดครั้งถัดไป (ช่วงเวลาโดยประมาณ)</label>
+              <div className="flex flex-wrap items-center gap-1.5">
                 <button type="button" onClick={() => updateForm('nextVisit', addDays(appointment.date, 7))} className={chipClass}>
                   +1 สัปดาห์
                 </button>
@@ -514,7 +517,21 @@ export function TreatmentPanel({
                 <button type="button" onClick={() => updateForm('nextVisit', addMonths(appointment.date, 1))} className={chipClass}>
                   +1 เดือน
                 </button>
+                {form.nextVisit && (
+                  <span className="flex items-center gap-1 text-xs text-blue-700 bg-blue-50 rounded-full pl-2.5 pr-1 py-1">
+                    ประมาณ {formatThaiDate(form.nextVisit)}
+                    <button
+                      type="button"
+                      onClick={() => updateForm('nextVisit', '')}
+                      className={`p-0.5 rounded-full hover:bg-blue-100 transition ${focusRing}`}
+                      title="ยกเลิกนัดครั้งถัดไป"
+                    >
+                      <IconX className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
               </div>
+              <p className="text-[11px] text-gray-400 mt-1.5">แอดมินจะเป็นผู้กำหนดวันเวลาที่แน่นอนตอนนัดหมายจริง</p>
               <input
                 className={`${inputClass} mt-2`}
                 value={form.nextVisitNote ?? ''}
