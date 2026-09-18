@@ -10,6 +10,18 @@ function isDuplicateBookingError(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
 }
 
+const MIN_ADVANCE_DAYS = 3
+
+function todayInBangkok() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
+}
+
+function addDaysToISODate(dateISO: string, days: number): string {
+  const [y, m, d] = dateISO.split('-').map(Number)
+  const next = new Date(Date.UTC(y, m - 1, d + days))
+  return next.toISOString().slice(0, 10)
+}
+
 type FullAppointment = Appointment & {
   patient: Patient
   service: Service
@@ -319,6 +331,14 @@ export async function POST(req: Request) {
   const appointmentDate = new Date(date)
   if (Number.isNaN(appointmentDate.getTime())) {
     return NextResponse.json({ error: 'วันเวลาที่เลือกไม่ถูกต้อง' }, { status: 400 })
+  }
+
+  const earliestBookableDate = addDaysToISODate(todayInBangkok(), MIN_ADVANCE_DAYS)
+  if (splitBangkok(appointmentDate).date < earliestBookableDate) {
+    return NextResponse.json(
+      { error: `คลินิกต้องการให้จองล่วงหน้าอย่างน้อย ${MIN_ADVANCE_DAYS} วัน วันที่เร็วที่สุดที่จองได้คือ ${earliestBookableDate}` },
+      { status: 400 }
+    )
   }
 
   const patient = await prisma.patient.findUnique({ where: { userId } })

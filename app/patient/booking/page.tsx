@@ -21,6 +21,17 @@ function formatPrice(service: Service) {
 }
 
 const TIME_SLOTS = ['10:00', '11:30', '14:00', '16:00']
+const MIN_ADVANCE_DAYS = 3
+
+function todayInBangkok() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
+}
+
+function addDaysToISODate(dateISO: string, days: number): string {
+  const [y, m, d] = dateISO.split('-').map(Number)
+  const next = new Date(Date.UTC(y, m - 1, d + days))
+  return next.toISOString().slice(0, 10)
+}
 
 export default function PatientBookingPage() {
   return (
@@ -34,9 +45,11 @@ function BookingForm() {
   const searchParams = useSearchParams()
   const preselectedServiceId = searchParams.get('serviceId')
 
+  const minBookableDate = addDaysToISODate(todayInBangkok(), MIN_ADVANCE_DAYS)
+
   const [services, setServices] = useState<Service[]>([])
   const [serviceId, setServiceId] = useState('')
-  const [date, setDate] = useState('')
+  const [date, setDate] = useState(minBookableDate)
   const [time, setTime] = useState(TIME_SLOTS[0])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [result, setResult] = useState<'success' | 'error' | null>(null)
@@ -143,9 +156,11 @@ function BookingForm() {
                   <input
                     type="date"
                     value={date}
+                    min={minBookableDate}
                     onChange={(e) => setDate(e.target.value)}
                     className={`w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm ${focusRing}`}
                   />
+                  <p className="text-[11px] text-slate-400">กรุณาจองล่วงหน้าอย่างน้อย {MIN_ADVANCE_DAYS} วัน</p>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-700">เวลา</label>
