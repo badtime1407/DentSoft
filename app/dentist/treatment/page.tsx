@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useQueue } from '@/components/dentist/QueueProvider'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PatientQueueList } from '@/components/dentist/PatientQueueList'
@@ -15,6 +15,7 @@ function todayInBangkok() {
 
 export default function DentistTreatment() {
   const { appointments, isLoading, startTreatment, completeAppointment, saveTreatment, notify } = useQueue()
+  const router = useRouter()
   const searchParams = useSearchParams()
   const idParam = searchParams.get('id')
   const today = useMemo(() => todayInBangkok(), [])
@@ -191,7 +192,10 @@ export default function DentistTreatment() {
             treatmentPlans={treatmentPlans}
             currentDentistId={currentDentistId}
             onStart={() => startTreatment(selected.id)}
-            onComplete={() => completeAppointment(selected.id)}
+            onComplete={() => {
+              completeAppointment(selected.id)
+              router.replace('/dentist/treatment', { scroll: false })
+            }}
             onSaveTreatment={(note) => saveTreatment(selected.id, note)}
             onCreatePlan={handleCreatePlan}
             onAddPlanStep={handleAddPlanStep}
