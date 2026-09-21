@@ -17,6 +17,16 @@ function toWeeklySchedule(schedules: { dayOfWeek: number; startTime: string; end
   })
 }
 
+function todayInBangkok() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
+}
+
+function addDaysToISODate(dateISO: string, days: number): string {
+  const [y, m, d] = dateISO.split('-').map(Number)
+  const next = new Date(Date.UTC(y, m - 1, d + days))
+  return next.toISOString().slice(0, 10)
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions)
   const role = (session?.user as { role?: string } | undefined)?.role
@@ -24,15 +34,14 @@ export async function GET() {
     return NextResponse.json({ error: 'ต้องเข้าสู่ระบบด้วยบัญชีแอดมิน' }, { status: 401 })
   }
 
-  const startOfToday = new Date()
-  startOfToday.setHours(0, 0, 0, 0)
-  const endOfToday = new Date(startOfToday)
-  endOfToday.setDate(endOfToday.getDate() + 1)
+  const todayISO = todayInBangkok()
+  const startOfToday = new Date(`${todayISO}T00:00:00+07:00`)
+  const endOfToday = new Date(`${addDaysToISODate(todayISO, 1)}T00:00:00+07:00`)
 
   const dentists = await prisma.dentist.findMany({
     include: {
       schedules: true,
-      appointments: { where: { date: { gte: startOfToday, lt: endOfToday } } },
+      appointments: { where: { date: { gte: startOfToday, lt: endOfToday }, status: { not: 'CANCELLED' } } },
       services: { include: { service: true } },
     },
     orderBy: { createdAt: 'asc' },

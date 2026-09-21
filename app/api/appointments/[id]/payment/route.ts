@@ -26,6 +26,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: 'ไม่พบบันทึกการรักษาของนัดหมายนี้' }, { status: 404 })
   }
 
+  if (appointment.status === 'CANCELLED') {
+    return NextResponse.json({ error: 'ไม่สามารถรับชำระเงินของนัดหมายที่ถูกยกเลิกแล้วได้' }, { status: 400 })
+  }
+
   const body = await req.json().catch(() => ({}))
   type PriceUpdate = { id?: string; unitPrice?: number }
   const priceUpdates: PriceUpdate[] = Array.isArray(body?.addOns) ? body.addOns : []

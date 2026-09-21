@@ -18,6 +18,7 @@ import {
 import { ContactModal } from '@/components/shared/ContactModal'
 import { SkeletonCard, SkeletonDetailPanel } from '@/components/shared/Skeleton'
 import { focusRing } from '@/lib/shared/focus-ring'
+import { splitBangkok } from '@/lib/shared/bangkok-time'
 
 type Service = {
   id: string
@@ -42,15 +43,19 @@ const THAI_MONTHS = [
 ]
 
 function formatTime(date: Date) {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+  return splitBangkok(date).time
+}
+
+function bangkokDateParts(date: Date) {
+  const [y, m, d] = splitBangkok(date).date.split('-').map(Number)
+  const dayOfWeek = new Date(Date.UTC(y, m - 1, d)).getUTCDay()
+  return { year: y, month: m - 1, day: d, dayOfWeek }
 }
 
 function daysUntilLabel(date: Date) {
-  const startOfToday = new Date()
-  startOfToday.setHours(0, 0, 0, 0)
-  const target = new Date(date)
-  target.setHours(0, 0, 0, 0)
-  const diffDays = Math.round((target.getTime() - startOfToday.getTime()) / 86400000)
+  const todayISO = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
+  const targetISO = splitBangkok(date).date
+  const diffDays = Math.round((new Date(`${targetISO}T00:00:00Z`).getTime() - new Date(`${todayISO}T00:00:00Z`).getTime()) / 86400000)
   if (diffDays <= 0) return 'วันนี้'
   if (diffDays === 1) return 'พรุ่งนี้'
   return `อีก ${diffDays} วัน`
@@ -172,14 +177,14 @@ export default function PatientDashboard() {
                 {/* Date Box */}
                 <div className="bg-blue-50 rounded-2xl py-4 px-5 text-center min-w-[125px] flex flex-col justify-center items-center shrink-0 border border-slate-100/60 shadow-sm">
                   <span className="text-xs font-medium text-slate-500">
-                    {THAI_DAYS[new Date(nextAppointment.date).getDay()]}
+                    {THAI_DAYS[bangkokDateParts(new Date(nextAppointment.date)).dayOfWeek]}
                   </span>
                   <span className="text-4xl font-extrabold text-[#1e293b] my-1">
-                    {new Date(nextAppointment.date).getDate()}
+                    {bangkokDateParts(new Date(nextAppointment.date)).day}
                   </span>
                   <div className="text-xs font-bold text-blue-600 leading-tight">
-                    <p>{THAI_MONTHS[new Date(nextAppointment.date).getMonth()]}</p>
-                    <p>{new Date(nextAppointment.date).getFullYear() + 543}</p>
+                    <p>{THAI_MONTHS[bangkokDateParts(new Date(nextAppointment.date)).month]}</p>
+                    <p>{bangkokDateParts(new Date(nextAppointment.date)).year + 543}</p>
                   </div>
                 </div>
 

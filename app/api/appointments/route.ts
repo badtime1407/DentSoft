@@ -12,6 +12,14 @@ function isDuplicateBookingError(error: unknown): boolean {
 
 const MIN_ADVANCE_DAYS = 3
 
+// ทุกครึ่งชั่วโมงตลอดเวลาทำการของคลินิก (09:30-17:00)
+const TIME_SLOTS = Array.from({ length: 16 }, (_, i) => {
+  const totalMin = 9 * 60 + 30 + i * 30
+  const h = String(Math.floor(totalMin / 60)).padStart(2, '0')
+  const m = String(totalMin % 60).padStart(2, '0')
+  return `${h}:${m}`
+})
+
 function todayInBangkok() {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
 }
@@ -338,8 +346,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'วันเวลาที่เลือกไม่ถูกต้อง' }, { status: 400 })
   }
 
-  const earliestBookableDate = addDaysToISODate(todayInBangkok(), MIN_ADVANCE_DAYS)
   const { date: apptDate, time: apptTime } = splitBangkok(appointmentDate)
+  if (!TIME_SLOTS.includes(apptTime)) {
+    return NextResponse.json(
+      { error: `เวลาที่จองได้มีเฉพาะ ${TIME_SLOTS.join(', ')} น. เท่านั้น` },
+      { status: 400 }
+    )
+  }
+
+  const earliestBookableDate = addDaysToISODate(todayInBangkok(), MIN_ADVANCE_DAYS)
   if (apptDate < earliestBookableDate) {
     return NextResponse.json(
       { error: `คลินิกต้องการให้จองล่วงหน้าอย่างน้อย ${MIN_ADVANCE_DAYS} วัน วันที่เร็วที่สุดที่จองได้คือ ${earliestBookableDate}` },

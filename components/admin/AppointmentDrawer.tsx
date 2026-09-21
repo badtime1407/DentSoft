@@ -6,6 +6,7 @@ import type { AdminPatient } from '@/app/admin/patients/types'
 import type { CancelRequestType } from './CancelRequestsProvider'
 import { IconX, IconAlertTriangle, IconRotate, IconPlus } from './icons'
 import { focusRing } from '@/lib/shared/focus-ring'
+import { splitBangkok } from '@/lib/shared/bangkok-time'
 
 export type AppointmentFormValues = {
   patientId: string
@@ -78,9 +79,7 @@ export function AppointmentDrawer({
     if (!open) return
     setIsSubmitting(false)
     if (mode === 'edit' && appointment) {
-      const d = new Date(appointment.date)
-      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-      const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+      const { date: dateStr, time: timeStr } = splitBangkok(new Date(appointment.date))
       setValues({
         patientId: appointment.patientId,
         serviceId: appointment.serviceId,

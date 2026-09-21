@@ -19,6 +19,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: 'ไม่พบนัดหมายนี้' }, { status: 404 })
   }
 
+  if (appointment.status === 'CANCELLED') {
+    return NextResponse.json({ error: 'ไม่สามารถบันทึกการรักษาของนัดหมายที่ถูกยกเลิกแล้วได้' }, { status: 400 })
+  }
+
   const { toothNumber, diagnosis, treatmentItems, nextVisit, nextVisitNote, addOns, servicePrice } = await req.json()
 
   const requestedServicePrice = typeof servicePrice === 'number' ? servicePrice : appointment.service.minPrice

@@ -15,7 +15,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (user.role === 'DENTIST') {
     const dentist = await prisma.dentist.findUnique({ where: { userId: user.id! } })
     const hasRelationship = dentist
-      ? await prisma.appointment.findFirst({ where: { patientId: id, dentistId: dentist.id } })
+      ? await prisma.appointment.findFirst({ where: { patientId: id, dentistId: dentist.id, status: { not: 'CANCELLED' } } })
       : null
     if (!hasRelationship) {
       return NextResponse.json({ error: 'ไม่มีสิทธิ์ดูข้อมูลคนไข้นี้' }, { status: 403 })

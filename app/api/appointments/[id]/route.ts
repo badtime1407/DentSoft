@@ -3,13 +3,24 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { syncAppointmentsToSheet } from '@/lib/googleSheets'
-import type { Appointment, Dentist, Patient, Service, Treatment, TreatmentAddOn } from '@prisma/client'
+import { Prisma } from '@prisma/client'
+import type { Appointment, Dentist, Patient, Service, Treatment, TreatmentItem, TreatmentImage, TreatmentAddOn } from '@prisma/client'
+
+function isDuplicateBookingError(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
+}
 
 type FullAppointment = Appointment & {
   patient: Patient
   service: Service
   dentist: Dentist | null
-  treatment: (Treatment & { addOns: (TreatmentAddOn & { service: Service | null })[] }) | null
+  treatment:
+    | (Treatment & {
+        items: TreatmentItem[]
+        images: Pick<TreatmentImage, 'id'>[]
+        addOns: (TreatmentAddOn & { service: Service | null })[]
+      })
+    | null
 }
 
 const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000
@@ -23,6 +34,7 @@ function serializeAdminAppointment(a: FullAppointment) {
     id: a.id,
     date: a.date.toISOString(),
     status: a.status,
+    updatedAt: a.updatedAt.toISOString(),
     note: a.note,
     patientId: a.patientId,
     patientName: `${a.patient.firstName} ${a.patient.lastName}`,
@@ -39,6 +51,10 @@ function serializeAdminAppointment(a: FullAppointment) {
     requestedAt: a.requestedAt ? a.requestedAt.toISOString() : null,
     treatment: a.treatment
       ? {
+          toothNumber: a.treatment.toothNumber ?? '',
+          diagnosis: a.treatment.diagnosis ?? '',
+          treatmentItems: a.treatment.items.map((i) => i.text),
+          images: a.treatment.images.map((img) => ({ id: img.id, url: `/api/treatment-images/${img.id}` })),
           servicePrice: a.treatment.servicePrice,
           addOns: a.treatment.addOns.map((ao) => ({
             id: ao.id,
@@ -78,29 +94,53 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { status, serviceId, dentistId, date, note } = body
 
     const nextDentistId = dentistId !== undefined ? dentistId || null : existing.dentistId
-    if (status === 'CONFIRMED' && !nextDentistId) {
+    const nextStatus = status || existing.status
+    if (nextStatus === 'CONFIRMED' && !nextDentistId) {
       return NextResponse.json({ error: 'กรุณาเลือกทันตแพทย์ก่อนยืนยันนัดหมาย' }, { status: 400 })
     }
 
-    const appointment = await prisma.appointment.update({
-      where: { id },
-      data: {
-        ...(status ? { status } : {}),
-        ...(serviceId ? { serviceId } : {}),
-        ...(dentistId !== undefined ? { dentistId: dentistId || null } : {}),
-        ...(date ? { date: new Date(date) } : {}),
-        ...(note !== undefined ? { note: note || null } : {}),
-        requestType: null,
-        requestReason: null,
-        requestedAt: null,
-      },
-      include: {
-        patient: true,
-        service: true,
-        dentist: true,
-        treatment: { include: { addOns: { include: { service: true } } } },
-      },
-    })
+    if (date) {
+      const duplicate = await prisma.appointment.findFirst({
+        where: { id: { not: id }, patientId: existing.patientId, date: new Date(date), status: { not: 'CANCELLED' } },
+      })
+      if (duplicate) {
+        return NextResponse.json({ error: 'คนไข้คนนี้มีนัดหมายในวันเวลานี้อยู่แล้ว' }, { status: 409 })
+      }
+    }
+
+    let appointment
+    try {
+      appointment = await prisma.appointment.update({
+        where: { id },
+        data: {
+          ...(status ? { status } : {}),
+          ...(serviceId ? { serviceId } : {}),
+          ...(dentistId !== undefined ? { dentistId: dentistId || null } : {}),
+          ...(date ? { date: new Date(date) } : {}),
+          ...(note !== undefined ? { note: note || null } : {}),
+          requestType: null,
+          requestReason: null,
+          requestedAt: null,
+        },
+        include: {
+          patient: true,
+          service: true,
+          dentist: true,
+          treatment: {
+            include: {
+              items: true,
+              images: { select: { id: true } },
+              addOns: { include: { service: true } },
+            },
+          },
+        },
+      })
+    } catch (error) {
+      if (isDuplicateBookingError(error)) {
+        return NextResponse.json({ error: 'คนไข้คนนี้มีนัดหมายในวันเวลานี้อยู่แล้ว' }, { status: 409 })
+      }
+      throw error
+    }
 
     await syncAppointmentsToSheet()
 

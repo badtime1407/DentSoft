@@ -1,6 +1,7 @@
 'use client'
 
 import type { AdminAppointment, AdminDentistOption, BookingStatus } from '@/app/admin/appointments/types'
+import { splitBangkok } from '@/lib/shared/bangkok-time'
 
 const START_MIN = 9 * 60 + 30
 const END_MIN = 17 * 60
@@ -30,8 +31,7 @@ function timeToMinutes(time: string): number {
 }
 
 function dateToMinutes(iso: string): number {
-  const d = new Date(iso)
-  return d.getHours() * 60 + d.getMinutes()
+  return timeToMinutes(splitBangkok(new Date(iso)).time)
 }
 
 export function AppointmentScheduleBoard({

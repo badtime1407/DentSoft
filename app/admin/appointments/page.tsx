@@ -15,6 +15,7 @@ import { addDays, toISODate, type AdminAppointment, type AdminDentistOption, typ
 import type { AdminPatient } from '@/app/admin/patients/types'
 import type { AdminDentist } from '@/app/admin/dentists/types'
 import { focusRing } from '@/lib/shared/focus-ring'
+import { splitBangkok } from '@/lib/shared/bangkok-time'
 import { Skeleton, SkeletonStatCard, SkeletonListRows } from '@/components/shared/Skeleton'
 
 const statusConfig: Record<BookingStatus, { label: string; tone: StatusTone }> = {
@@ -44,7 +45,7 @@ function startOfWeek(date: Date): Date {
 }
 
 function apptDateStr(a: AdminAppointment): string {
-  return toISODate(new Date(a.date))
+  return splitBangkok(new Date(a.date)).date
 }
 
 type DrawerState =
@@ -393,8 +394,8 @@ export default function AdminAppointments() {
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{a.patientName}</p>
                       <p className="text-xs text-gray-500 truncate">
-                        {new Date(a.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} ·{' '}
-                        {new Date(a.date).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น. ·{' '}
+                        {new Date(a.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' })} ·{' '}
+                        {new Date(a.date).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })} น. ·{' '}
                         {a.serviceName} · {a.dentistName ?? 'ยังไม่มอบหมาย'}
                       </p>
                     </div>
@@ -520,7 +521,7 @@ export default function AdminAppointments() {
                           .map((a) => (
                             <tr key={a.id} className="hover:bg-slate-50 transition">
                               <td className="px-6 py-4 font-mono font-medium text-gray-900 tabular-nums">
-                                {new Date(a.date).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
+                                {new Date(a.date).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })}
                               </td>
                               <td className="px-6 py-4 text-gray-800">{a.patientName}</td>
                               <td className="px-6 py-4 text-gray-600">{a.serviceName}</td>
