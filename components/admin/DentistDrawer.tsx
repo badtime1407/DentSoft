@@ -28,17 +28,19 @@ const specialties = ['ทันตกรรมทั่วไป', 'ทันต
 
 // เบราว์เซอร์บาง locale โชว์ <input type="time"> เป็น AM/PM ไม่ยอมฟังแม้ตั้ง lang="th-TH"
 // เลยใช้ select ตัวเลือกตายตัวแทน เพื่อบังคับให้เป็นเวลาแบบ 24 ชม.เสมอ
-const timeOptions = Array.from({ length: 48 }, (_, i) => {
-  const h = String(Math.floor(i / 2)).padStart(2, '0')
-  const m = i % 2 === 0 ? '00' : '30'
+// จำกัดตัวเลือกไว้แค่ในเวลาทำการของคลินิก (09:30-17:00)
+const timeOptions = Array.from({ length: 16 }, (_, i) => {
+  const totalMin = 9 * 60 + 30 + i * 30
+  const h = String(Math.floor(totalMin / 60)).padStart(2, '0')
+  const m = String(totalMin % 60).padStart(2, '0')
   return `${h}:${m}`
 })
 
 function defaultSchedule(): WeeklySchedule {
   return Array.from({ length: 7 }, (_, i) => ({
     active: i >= 1 && i <= 5,
-    startTime: '09:00',
-    endTime: '18:00',
+    startTime: '09:30',
+    endTime: '17:00',
   }))
 }
 

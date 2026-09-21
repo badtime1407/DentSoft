@@ -7,9 +7,11 @@ import { focusRing } from '@/lib/shared/focus-ring'
 
 // เบราว์เซอร์บาง locale โชว์ <input type="time"> เป็น AM/PM ไม่ยอมฟังแม้ตั้ง lang="th-TH"
 // เลยใช้ select ตัวเลือกตายตัวแทน เพื่อบังคับให้เป็นเวลาแบบ 24 ชม.เสมอ
-const timeOptions = Array.from({ length: 48 }, (_, i) => {
-  const h = String(Math.floor(i / 2)).padStart(2, '0')
-  const m = i % 2 === 0 ? '00' : '30'
+// จำกัดตัวเลือกไว้แค่ในเวลาทำการของคลินิก (09:30-17:00)
+const timeOptions = Array.from({ length: 16 }, (_, i) => {
+  const totalMin = 9 * 60 + 30 + i * 30
+  const h = String(Math.floor(totalMin / 60)).padStart(2, '0')
+  const m = String(totalMin % 60).padStart(2, '0')
   return `${h}:${m}`
 })
 
@@ -33,7 +35,7 @@ export function PaymentConfirmModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [bookNextVisit, setBookNextVisit] = useState(false)
   const [nextDate, setNextDate] = useState('')
-  const [nextTime, setNextTime] = useState('09:00')
+  const [nextTime, setNextTime] = useState('09:30')
 
   useEffect(() => {
     if (!open) return
@@ -42,7 +44,7 @@ export function PaymentConfirmModal({
     setIsSubmitting(false)
     setBookNextVisit(false)
     setNextDate(appointment?.treatment?.nextVisit ?? '')
-    setNextTime('09:00')
+    setNextTime('09:30')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, appointment?.id])
 
@@ -124,7 +126,12 @@ export function PaymentConfirmModal({
                       type="number"
                       min={0}
                       value={a.unitPrice}
-                      onChange={(e) => updatePrice(a.id, Number(e.target.value))}
+                      onChange={(e) => {
+                        // ตัดเลข 0 นำหน้าออกจาก DOM ตรงๆ เพราะ React เทียบค่า input type="number"
+                        // แบบ loose equality เลยไม่ยอมรีเซ็ตค่าที่แสดงให้ (เช่น พิมพ์ทับ 0 ได้ "0111")
+                        e.target.value = e.target.value.replace(/^0+(?=\d)/, '')
+                        updatePrice(a.id, Number(e.target.value))
+                      }}
                       className={`w-20 px-2 py-1 rounded-md border text-xs text-gray-700 text-right ${
                         a.unitPrice <= 0 ? 'border-amber-300 bg-amber-50' : 'border-gray-200'
                       }`}

@@ -22,6 +22,11 @@ function addDaysToISODate(dateISO: string, days: number): string {
   return next.toISOString().slice(0, 10)
 }
 
+function dayOfWeekFromISODate(dateISO: string): number {
+  const [y, m, d] = dateISO.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay()
+}
+
 type FullAppointment = Appointment & {
   patient: Patient
   service: Service
@@ -334,11 +339,23 @@ export async function POST(req: Request) {
   }
 
   const earliestBookableDate = addDaysToISODate(todayInBangkok(), MIN_ADVANCE_DAYS)
-  if (splitBangkok(appointmentDate).date < earliestBookableDate) {
+  const { date: apptDate, time: apptTime } = splitBangkok(appointmentDate)
+  if (apptDate < earliestBookableDate) {
     return NextResponse.json(
       { error: `คลินิกต้องการให้จองล่วงหน้าอย่างน้อย ${MIN_ADVANCE_DAYS} วัน วันที่เร็วที่สุดที่จองได้คือ ${earliestBookableDate}` },
       { status: 400 }
     )
+  }
+
+  const dayOfWeek = dayOfWeekFromISODate(apptDate)
+  const capacity = await prisma.schedule.count({
+    where: { isActive: true, dayOfWeek, startTime: { lte: apptTime }, endTime: { gt: apptTime } },
+  })
+  const bookedCount = await prisma.appointment.count({
+    where: { date: appointmentDate, status: { not: 'CANCELLED' } },
+  })
+  if (capacity === 0 || bookedCount >= capacity) {
+    return NextResponse.json({ error: 'ช่วงเวลานี้เต็มแล้วหรือคลินิกไม่เปิดให้บริการช่วงเวลานี้' }, { status: 409 })
   }
 
   const patient = await prisma.patient.findUnique({ where: { userId } })

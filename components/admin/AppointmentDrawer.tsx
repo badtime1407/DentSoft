@@ -23,9 +23,11 @@ const labelClass = 'text-xs font-medium text-gray-500 mb-1.5 block'
 
 // เบราว์เซอร์บาง locale โชว์ <input type="time"> เป็น AM/PM ไม่ยอมฟังแม้ตั้ง lang="th-TH"
 // เลยใช้ select ตัวเลือกตายตัวแทน เพื่อบังคับให้เป็นเวลาแบบ 24 ชม.เสมอ
-const timeOptions = Array.from({ length: 48 }, (_, i) => {
-  const h = String(Math.floor(i / 2)).padStart(2, '0')
-  const m = i % 2 === 0 ? '00' : '30'
+// จำกัดตัวเลือกไว้แค่ในเวลาทำการของคลินิก (09:30-17:00)
+const timeOptions = Array.from({ length: 16 }, (_, i) => {
+  const totalMin = 9 * 60 + 30 + i * 30
+  const h = String(Math.floor(totalMin / 60)).padStart(2, '0')
+  const m = String(totalMin % 60).padStart(2, '0')
   return `${h}:${m}`
 })
 
@@ -63,7 +65,7 @@ export function AppointmentDrawer({
     serviceId: services[0]?.id ?? '',
     dentistId: defaults?.dentistId ?? '',
     date: defaults?.date ?? '',
-    startTime: defaults?.startTime ?? '09:00',
+    startTime: defaults?.startTime ?? '09:30',
     note: '',
   })
   const [patientSearch, setPatientSearch] = useState('')
@@ -94,7 +96,7 @@ export function AppointmentDrawer({
         serviceId: services[0]?.id ?? '',
         dentistId: defaults?.dentistId ?? '',
         date: defaults?.date ?? '',
-        startTime: defaults?.startTime ?? '09:00',
+        startTime: defaults?.startTime ?? '09:30',
         note: '',
       })
       setSelectedPatient(null)

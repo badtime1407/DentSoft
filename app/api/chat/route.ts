@@ -12,7 +12,13 @@ function isDuplicateBookingError(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
 }
 
-const TIME_SLOTS = ['10:00', '11:30', '14:00', '16:00']
+// ทุกครึ่งชั่วโมงตลอดเวลาทำการของคลินิก (09:30-17:00)
+const TIME_SLOTS = Array.from({ length: 16 }, (_, i) => {
+  const totalMin = 9 * 60 + 30 + i * 30
+  const h = String(Math.floor(totalMin / 60)).padStart(2, '0')
+  const m = String(totalMin % 60).padStart(2, '0')
+  return `${h}:${m}`
+})
 const MIN_ADVANCE_DAYS = 3
 const MAX_ALTERNATIVES = 3
 const ALTERNATIVE_SEARCH_DAYS = 14

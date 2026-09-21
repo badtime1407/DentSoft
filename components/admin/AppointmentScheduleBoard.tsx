@@ -2,8 +2,8 @@
 
 import type { AdminAppointment, AdminDentistOption, BookingStatus } from '@/app/admin/appointments/types'
 
-const START_MIN = 8 * 60
-const END_MIN = 19 * 60
+const START_MIN = 9 * 60 + 30
+const END_MIN = 17 * 60
 const SLOT_MIN = 30
 const ROW_HEIGHT = 40
 const SLOT_COUNT = (END_MIN - START_MIN) / SLOT_MIN

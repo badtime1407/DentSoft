@@ -20,7 +20,13 @@ function formatPrice(service: Service) {
   return `฿${min} - ฿${service.maxPrice.toLocaleString('th-TH')}`
 }
 
-const TIME_SLOTS = ['10:00', '11:30', '14:00', '16:00']
+// ทุกครึ่งชั่วโมงตลอดเวลาทำการของคลินิก (09:30-17:00)
+const TIME_SLOTS = Array.from({ length: 16 }, (_, i) => {
+  const totalMin = 9 * 60 + 30 + i * 30
+  const h = String(Math.floor(totalMin / 60)).padStart(2, '0')
+  const m = String(totalMin % 60).padStart(2, '0')
+  return `${h}:${m}`
+})
 const MIN_ADVANCE_DAYS = 3
 
 function todayInBangkok() {
@@ -51,6 +57,7 @@ function BookingForm() {
   const [serviceId, setServiceId] = useState('')
   const [date, setDate] = useState(minBookableDate)
   const [time, setTime] = useState(TIME_SLOTS[0])
+  const [fullTimes, setFullTimes] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [result, setResult] = useState<'success' | 'error' | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
@@ -67,6 +74,24 @@ function BookingForm() {
         }
       })
   }, [preselectedServiceId])
+
+  useEffect(() => {
+    if (!date) return
+    let cancelled = false
+    fetch(`/api/appointments/availability?date=${date}`)
+      .then((res) => res.json())
+      .then((data: { fullTimes?: string[] }) => {
+        if (cancelled) return
+        const full = data.fullTimes ?? []
+        setFullTimes(full)
+        setTime((prev) => (full.includes(prev) ? TIME_SLOTS.find((t) => !full.includes(t)) ?? prev : prev))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [date])
+
+  const hasAvailableTime = TIME_SLOTS.some((t) => !fullTimes.includes(t))
 
   async function handleSubmit() {
     if (!serviceId || !date) return
@@ -170,11 +195,14 @@ function BookingForm() {
                     className={`w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm ${focusRing}`}
                   >
                     {TIME_SLOTS.map((slot) => (
-                      <option key={slot} value={slot}>
-                        {slot} น.
+                      <option key={slot} value={slot} disabled={fullTimes.includes(slot)}>
+                        {slot} น.{fullTimes.includes(slot) ? ' (เต็มแล้ว)' : ''}
                       </option>
                     ))}
                   </select>
+                  {!hasAvailableTime && (
+                    <p className="text-[11px] text-rose-500">วันนี้เต็มทุกช่วงเวลาแล้ว กรุณาเลือกวันอื่น</p>
+                  )}
                 </div>
               </div>
 
@@ -184,7 +212,7 @@ function BookingForm() {
 
               <button
                 type="button"
-                disabled={!serviceId || !date || isSubmitting}
+                disabled={!serviceId || !date || !hasAvailableTime || isSubmitting}
                 onClick={handleSubmit}
                 className={`w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-md transition ${focusRing}`}
               >

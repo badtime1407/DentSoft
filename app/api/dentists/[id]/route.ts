@@ -10,8 +10,8 @@ function toWeeklySchedule(schedules: { dayOfWeek: number; startTime: string; end
     const day = schedules.find((s) => s.dayOfWeek === dayOfWeek)
     return {
       active: day?.isActive ?? false,
-      startTime: day?.startTime ?? '09:00',
-      endTime: day?.endTime ?? '18:00',
+      startTime: day?.startTime ?? '09:30',
+      endTime: day?.endTime ?? '17:00',
     }
   })
 }
