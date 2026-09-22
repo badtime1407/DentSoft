@@ -84,7 +84,7 @@ export function SiteFooter({
   return (
     <footer id={id} className={`bg-white border-t ${c.border} ${wrapperClassName}`}>
       <div className={`${containerClassName} mx-auto py-12 grid grid-cols-1 md:grid-cols-[1.6fr_1fr] gap-10`}>
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           <div>
             <p className={`text-sm font-semibold ${c.heading} mb-3`}>ติดต่อเรา</p>
             <ul className={`space-y-2.5 text-sm ${c.body}`}>
