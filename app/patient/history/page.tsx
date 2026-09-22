@@ -67,7 +67,9 @@ export default function PatientHistoryPage() {
   }, [])
 
   const now = new Date()
-  const nextAppointment = appointments.find((a) => a.status !== 'CANCELLED' && new Date(a.date) >= now)
+  const nextAppointment = [...appointments]
+    .filter((a) => (a.status === 'PENDING' || a.status === 'CONFIRMED') && new Date(a.date) >= now)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
   const pastAppointments = [...appointments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   async function submitRequest() {
