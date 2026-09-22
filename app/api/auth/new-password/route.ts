@@ -1,10 +1,16 @@
  import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { validatePassword } from '@/lib/shared/password'
 
 export async function POST(req: Request) {
   try {
     const { token, password } = await req.json()
+
+    const passwordError = validatePassword(password)
+    if (passwordError) {
+      return NextResponse.json({ error: passwordError }, { status: 400 })
+    }
 
     // หา token ใน Database
     const verificationToken = await prisma.verificationToken.findUnique({

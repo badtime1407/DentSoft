@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { validatePassword } from '@/lib/shared/password'
 
 type DaySchedule = { active: boolean; startTime: string; endTime: string }
 
@@ -79,6 +80,11 @@ export async function POST(req: Request) {
 
   if (!firstName || !lastName || !email || !username || !password || !Array.isArray(schedule) || schedule.length !== 7) {
     return NextResponse.json({ error: 'ข้อมูลไม่ครบถ้วน' }, { status: 400 })
+  }
+
+  const passwordError = validatePassword(password)
+  if (passwordError) {
+    return NextResponse.json({ error: passwordError }, { status: 400 })
   }
 
   const validServiceIds: string[] = Array.isArray(serviceIds)

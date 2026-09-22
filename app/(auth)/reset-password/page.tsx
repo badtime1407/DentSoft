@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { PasswordField } from '@/components/auth/AuthField'
+import { validatePassword } from '@/lib/shared/password'
 
 const lockIcon = (
   <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -26,6 +27,12 @@ function ResetPasswordForm() {
   const handleSubmit = async () => {
     if (password !== confirm) {
       setError('รหัสผ่านไม่ตรงกัน')
+      return
+    }
+
+    const passwordError = validatePassword(password)
+    if (passwordError) {
+      setError(passwordError)
       return
     }
 

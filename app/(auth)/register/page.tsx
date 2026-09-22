@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { AuthField, PasswordField } from '@/components/auth/AuthField'
+import { validatePassword } from '@/lib/shared/password'
 
 const userIcon = (
   <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -77,6 +78,12 @@ export default function RegisterPage() {
   }
 
   const handleRegister = async () => {
+    const passwordError = validatePassword(form.password)
+    if (passwordError) {
+      setError(passwordError)
+      return
+    }
+
     setLoading(true)
     setError('')
 
