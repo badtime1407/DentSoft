@@ -278,7 +278,66 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Mobile: stacked cards instead of a cramped table */}
+            <div className="md:hidden divide-y divide-gray-50">
+              {isLoading ? (
+                <div className="p-4"><SkeletonListRows rows={4} /></div>
+              ) : visibleAppointments.length === 0 ? (
+                <p className="px-6 py-12 text-center text-sm text-gray-400">
+                  {searchTerm.trim() !== '' ? 'ไม่พบคนไข้ที่ค้นหา' : 'ไม่มีนัดหมายในสถานะนี้'}
+                </p>
+              ) : (
+                visibleAppointments.map((a) => (
+                  <div key={a.id} className="px-4 py-4 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-semibold shrink-0">
+                          {a.patientName.charAt(0)}
+                        </div>
+                        <span className="text-gray-900 font-medium truncate">{a.patientName}</span>
+                      </div>
+                      <span className="font-mono font-medium text-gray-900 tabular-nums text-sm shrink-0">{splitBangkok(a.date).time}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 text-sm text-gray-600">
+                      <span className="truncate">{a.serviceName} · {a.dentistName ?? 'ยังไม่มอบหมาย'}</span>
+                      <StatusBadge label={statusConfig[a.status].label} tone={statusConfig[a.status].tone} />
+                    </div>
+                    <div className="flex gap-1 pt-1">
+                      {a.status === 'CANCELLED' ? (
+                        <button
+                          type="button"
+                          onClick={() => rescheduleAppointment(a.id)}
+                          className={`inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
+                        >
+                          <IconRotate className="w-3.5 h-3.5" /> จัดคิวใหม่
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/admin/appointments?requestId=${a.id}`)}
+                            className={`text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
+                          >
+                            แก้ไข
+                          </button>
+                          {(a.status === 'CONFIRMED' || a.status === 'WAITING' || a.status === 'PENDING') && (
+                            <button
+                              type="button"
+                              onClick={() => cancelAppointment(a.id)}
+                              className={`text-rose-400 hover:text-rose-600 hover:bg-rose-50 text-xs font-medium transition px-2 py-1.5 rounded-md ${focusRing}`}
+                            >
+                              ยกเลิก
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-50">

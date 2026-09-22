@@ -67,6 +67,11 @@ export default function AdminAppointments() {
   const [weekOffset, setWeekOffset] = useState(0)
   const [selectedDate, setSelectedDate] = useState(() => toISODate(new Date()))
   const [viewMode, setViewMode] = useState<'board' | 'agenda'>('board')
+
+  // ตารางเวลาแบบ grid หลายคอลัมน์อ่านยากบนจอแคบ เลย default เป็นมุมมองรายการแทนบนมือถือ
+  useEffect(() => {
+    if (window.matchMedia('(max-width: 767px)').matches) setViewMode('agenda')
+  }, [])
   const [searchTerm, setSearchTerm] = useState('')
   const [dentistFilter, setDentistFilter] = useState('ALL')
   const [statusFilter, setStatusFilter] = useState<'ALL' | BookingStatus>('ALL')
@@ -503,7 +508,39 @@ export default function AdminAppointments() {
                     onAppointmentClick={(appointment) => { setFormError(''); setDrawer({ open: true, mode: 'edit', appointment }) }}
                   />
                 ) : (
-                  <div className="overflow-x-auto">
+                  <>
+                    {/* Mobile: stacked cards instead of a cramped 6-column table */}
+                    <div className="md:hidden divide-y divide-gray-50">
+                      {[...filteredAppointments].length === 0 ? (
+                        <p className="px-6 py-12 text-center text-sm text-gray-400">ไม่มีนัดหมายตรงกับเงื่อนไข</p>
+                      ) : (
+                        [...filteredAppointments]
+                          .sort((a, b) => a.date.localeCompare(b.date))
+                          .map((a) => (
+                            <div key={a.id} className="px-4 py-4 space-y-2.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-gray-900 font-medium truncate">{a.patientName}</span>
+                                <span className="font-mono font-medium text-gray-900 tabular-nums text-sm shrink-0">
+                                  {new Date(a.date).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between gap-2 text-sm text-gray-600">
+                                <span className="truncate">{a.serviceName} · {a.dentistName ?? '—'}</span>
+                                <StatusBadge label={statusConfig[a.status].label} tone={statusConfig[a.status].tone} />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => { setFormError(''); setDrawer({ open: true, mode: 'edit', appointment: a }) }}
+                                className={`text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2 py-1.5 -ml-2 rounded-md ${focusRing}`}
+                              >
+                                แก้ไข
+                              </button>
+                            </div>
+                          ))
+                      )}
+                    </div>
+
+                    <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-50">
@@ -547,7 +584,8 @@ export default function AdminAppointments() {
                         )}
                       </tbody>
                     </table>
-                  </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>

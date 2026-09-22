@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { SearchBar } from '@/components/admin/SearchBar'
 import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge'
 import { StatCard } from '@/components/shared/StatCard'
-import { SkeletonStatCard, SkeletonTableRows } from '@/components/shared/Skeleton'
+import { SkeletonStatCard, SkeletonTableRows, SkeletonListRows } from '@/components/shared/Skeleton'
 import { PatientDrawer, type PatientFormValues } from '@/components/admin/PatientDrawer'
 import { IconUsers, IconUserCheck, IconClock, IconPlus } from '@/components/admin/icons'
 import type { AdminPatient, RecallStatus } from './types'
@@ -176,7 +176,45 @@ export default function AdminPatients() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile: stacked cards instead of a cramped 7-column table */}
+        <div className="md:hidden divide-y divide-gray-50">
+          {isLoading ? (
+            <SkeletonListRows rows={5} />
+          ) : filteredPatients.length === 0 ? (
+            <p className="px-6 py-12 text-center text-sm text-gray-400">ไม่พบคนไข้ที่ตรงกับเงื่อนไข</p>
+          ) : (
+            filteredPatients.map((p) => (
+              <div key={p.id} className="px-4 py-4 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-7 h-7 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-semibold shrink-0">
+                      {p.firstName.charAt(0)}
+                    </div>
+                    <span className="text-gray-900 font-medium truncate">{p.firstName} {p.lastName}</span>
+                  </div>
+                  <StatusBadge label={sourceConfig[p.source].label} tone={sourceConfig[p.source].tone} />
+                </div>
+                <div className="flex items-center justify-between gap-2 text-sm text-gray-600">
+                  <span className="truncate">{p.phone ?? '—'}</span>
+                  <StatusBadge label={recallConfig[p.recallStatus].label} tone={recallConfig[p.recallStatus].tone} />
+                </div>
+                <p className="text-xs text-gray-400">
+                  นัดล่าสุด {formatDate(p.lastVisitDate)}
+                  {p.nextAppointmentDate && <> · นัดถัดไป {formatDate(p.nextAppointmentDate)} ({p.nextAppointmentLabel})</>}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setDrawer({ open: true, mode: 'edit', patient: p })}
+                  className={`text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium transition px-2 py-1.5 -ml-2 rounded-md ${focusRing}`}
+                >
+                  ดูรายละเอียด
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-50">

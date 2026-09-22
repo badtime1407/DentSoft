@@ -26,7 +26,7 @@ const serviceTemplates: Record<string, { diagnosis: string; treatmentItems: stri
 }
 
 const diagnosisChips = ['ฟันผุ', 'หินปูนสะสม', 'เหงือกอักเสบ', 'ปกติดี']
-const treatmentChips = ['อุดฟันด้วยเรซิน', 'ขูดหินปูนทั่วปาก', 'ถอนฟัน', 'นัดติดตามอาการ']
+const treatmentChips = ['ตรวจฟันทั่วไป', 'อุดฟันด้วยเรซิน', 'ขูดหินปูนทั่วปาก', 'ถอนฟัน', 'นัดติดตามอาการ']
 
 function toDateInputValue(d: Date) {
   const y = d.getFullYear()
