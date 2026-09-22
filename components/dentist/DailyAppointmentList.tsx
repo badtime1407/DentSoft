@@ -41,8 +41,8 @@ export function DailyAppointmentList({
               isHighlight ? 'bg-blue-50/60 border-blue-200' : 'bg-white border-gray-100'
             } ${isCancelled ? 'opacity-60' : ''}`}
           >
-            <div className="flex items-center gap-4 px-5 py-4">
-              <div className="w-16 shrink-0">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4">
+              <div className="w-14 sm:w-16 shrink-0">
                 <p className={`font-mono font-semibold tabular-nums ${isHighlight ? 'text-blue-700 text-lg' : 'text-gray-900 text-base'}`}>{a.time}</p>
                 <p className="text-xs text-gray-400">{a.durationMin} นาที</p>
               </div>
@@ -58,7 +58,7 @@ export function DailyAppointmentList({
                 <p className="text-xs text-gray-500 truncate">{a.serviceName}</p>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
                 <StatusBadge label={statusConfig[a.status].label} tone={statusConfig[a.status].tone} />
                 <button
                   type="button"

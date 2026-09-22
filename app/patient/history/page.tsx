@@ -31,7 +31,7 @@ type Treatment = {
 type Appointment = {
   id: string
   date: string
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
+  status: 'PENDING' | 'CONFIRMED' | 'WAITING' | 'IN_TREATMENT' | 'CANCELLED' | 'COMPLETED'
   requestType: 'CANCEL' | 'RESCHEDULE' | null
   service: { name: string }
   dentist: { title: string; firstName: string; lastName: string } | null
@@ -41,6 +41,8 @@ type Appointment = {
 const statusLabel: Record<Appointment['status'], { label: string; style: string }> = {
   PENDING: { label: 'รอยืนยัน', style: 'bg-amber-50 text-amber-600' },
   CONFIRMED: { label: 'ยืนยันแล้ว', style: 'bg-sky-50 text-sky-600' },
+  WAITING: { label: 'รอคิว', style: 'bg-sky-50 text-sky-600' },
+  IN_TREATMENT: { label: 'กำลังรักษา', style: 'bg-indigo-50 text-indigo-600' },
   COMPLETED: { label: 'เสร็จสิ้น', style: 'bg-emerald-50 text-emerald-600' },
   CANCELLED: { label: 'ยกเลิก', style: 'bg-rose-50 text-rose-500' },
 }
