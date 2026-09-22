@@ -222,7 +222,42 @@ export default function PatientHistoryPage() {
               </h2>
 
               <div className="bg-white rounded-2xl border border-slate-100/90 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* มือถือ: การ์ดแบบเรียงต่อกัน อ่านง่ายกว่าตารางที่ต้องเลื่อนแนวนอน */}
+                <div className="md:hidden divide-y divide-slate-100">
+                  {pastAppointments.map((a) => (
+                    <div key={a.id} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-lg font-extrabold text-slate-900 leading-tight">
+                            {new Date(a.date).getDate()}
+                          </span>
+                          <span className="text-xs font-bold text-blue-600">
+                            {new Date(a.date).toLocaleDateString('th-TH', { month: 'short', year: 'numeric' })}
+                          </span>
+                        </div>
+                        <span className={`shrink-0 inline-block px-2.5 py-1 rounded-xl text-xs font-bold ${statusLabel[a.status].style}`}>
+                          {statusLabel[a.status].label}
+                        </span>
+                      </div>
+                      <p className="font-bold text-slate-900 text-sm">{a.service.name}</p>
+                      <p className="text-xs font-medium text-slate-500">{formatDentist(a.dentist)}</p>
+                      {a.treatment && (
+                        <button
+                          type="button"
+                          onClick={() => setDetailAppointment(a)}
+                          className={`text-blue-600 hover:text-blue-800 text-xs font-bold transition ${focusRing}`}
+                        >
+                          ดูรายละเอียด
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {pastAppointments.length === 0 && (
+                    <p className="py-10 px-6 text-center text-sm text-slate-400">ยังไม่มีประวัติการนัดหมาย</p>
+                  )}
+                </div>
+
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left border-collapse min-w-[650px]">
                     <thead>
                       <tr className="bg-[#f8fafc] text-xs font-bold text-slate-500 border-b border-slate-100">
