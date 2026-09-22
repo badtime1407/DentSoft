@@ -6,7 +6,7 @@ import { focusRing } from '@/lib/shared/focus-ring'
 export const contactDetails = [
   { text: '123 ถนนสุขุมวิท แขวงคลองตัน กรุงเทพฯ 10110', href: undefined, icon: IconLocationPin },
   { text: 'โทร 02-123-4567', href: 'tel:021234567', icon: IconPhone },
-  { text: 'จันทร์-เสาร์ 09:00-19:00 น.', href: undefined, icon: IconTooth },
+  { text: 'จันทร์-เสาร์ 09:30-17:00 น.', href: undefined, icon: IconTooth },
 ]
 
 const toneClasses = {

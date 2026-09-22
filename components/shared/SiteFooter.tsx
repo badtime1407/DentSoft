@@ -49,7 +49,7 @@ const contactItems = [
     ),
   },
   {
-    text: 'จันทร์-เสาร์ 09:00-19:00 น.',
+    text: 'จันทร์-เสาร์ 09:30-17:00 น.',
     href: undefined,
     icon: (
       <>
