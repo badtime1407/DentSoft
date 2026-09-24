@@ -77,7 +77,7 @@ export function AdminHeader() {
           {notifOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
-              <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl border border-gray-100 shadow-lg z-50 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-96 bg-white rounded-2xl border border-gray-100 shadow-lg z-50 overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-gray-100">
                   <p className="text-sm font-semibold text-gray-900">คำขอจากคนไข้</p>
                   <p className="text-xs text-gray-400 mt-0.5">ขอยกเลิก / ขอเลื่อนนัด · รอการพิจารณา</p>
