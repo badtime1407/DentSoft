@@ -19,8 +19,8 @@ export function StatusBadge({
   dot?: boolean
 }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${toneConfig[tone].badge}`}>
-      {dot && <span className={`w-1.5 h-1.5 rounded-full ${toneConfig[tone].dot}`} />}
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${toneConfig[tone].badge}`}>
+      {dot && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${toneConfig[tone].dot}`} />}
       {label}
     </span>
   )
