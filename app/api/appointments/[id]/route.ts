@@ -24,9 +24,20 @@ type FullAppointment = Appointment & {
 }
 
 const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000
+const MIN_ADVANCE_DAYS = 3
 
 function bangkokDateOnly(date: Date): string {
   return new Date(date.getTime() + BANGKOK_OFFSET_MS).toISOString().slice(0, 10)
+}
+
+function todayInBangkok(): string {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' })
+}
+
+function addDaysToISODate(dateISO: string, days: number): string {
+  const [y, m, d] = dateISO.split('-').map(Number)
+  const next = new Date(Date.UTC(y, m - 1, d + days))
+  return next.toISOString().slice(0, 10)
 }
 
 function serializeAdminAppointment(a: FullAppointment) {
@@ -99,7 +110,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: 'กรุณาเลือกทันตแพทย์ก่อนยืนยันนัดหมาย' }, { status: 400 })
     }
 
-    if (date) {
+    if (date && new Date(date).getTime() !== existing.date.getTime()) {
       const duplicate = await prisma.appointment.findFirst({
         where: { id: { not: id }, patientId: existing.patientId, date: new Date(date), status: { not: 'CANCELLED' } },
       })
@@ -187,6 +198,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
     if (!requestReason || typeof requestReason !== 'string') {
       return NextResponse.json({ error: 'กรุณาระบุเหตุผล' }, { status: 400 })
+    }
+
+    {
+      const earliestRequestableDate = addDaysToISODate(todayInBangkok(), MIN_ADVANCE_DAYS)
+      if (bangkokDateOnly(existing.date) < earliestRequestableDate) {
+        const action = requestType === 'RESCHEDULE' ? 'เลื่อนนัด' : 'ยกเลิกนัด'
+        return NextResponse.json(
+          { error: `นัดหมายนี้ใกล้ถึงวันนัดเกินไปแล้ว ต้องขอ${action}ล่วงหน้าอย่างน้อย ${MIN_ADVANCE_DAYS} วันก่อนถึงวันนัด` },
+          { status: 400 }
+        )
+      }
     }
 
     const appointment = await prisma.appointment.update({
