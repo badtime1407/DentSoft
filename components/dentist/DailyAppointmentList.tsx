@@ -4,6 +4,7 @@ import type { DentistAppointment } from '@/components/dentist/types'
 import { statusConfig } from '@/lib/dentist/status-config'
 
 const actionLabel: Record<DentistAppointment['status'], string> = {
+  PENDING: 'ดูรายละเอียดทั้งหมด',
   WAITING: 'ดูรายละเอียดทั้งหมด',
   IN_TREATMENT: 'ดูรายละเอียดทั้งหมด',
   COMPLETED: 'ดูรายละเอียดทั้งหมด',

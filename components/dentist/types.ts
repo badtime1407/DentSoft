@@ -1,4 +1,4 @@
-export type AppointmentStatus = 'CONFIRMED' | 'WAITING' | 'IN_TREATMENT' | 'COMPLETED' | 'CANCELLED'
+export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'WAITING' | 'IN_TREATMENT' | 'COMPLETED' | 'CANCELLED'
 
 export type TreatmentImageRef = { id: string; url: string }
 

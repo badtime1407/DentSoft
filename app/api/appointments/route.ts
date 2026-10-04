@@ -12,8 +12,8 @@ function isDuplicateBookingError(error: unknown): boolean {
 
 const MIN_ADVANCE_DAYS = 3
 
-// ทุกครึ่งชั่วโมงตลอดเวลาทำการของคลินิก (09:30-17:00)
-const TIME_SLOTS = Array.from({ length: 16 }, (_, i) => {
+// ทุกครึ่งชั่วโมงตลอดเวลาทำการของคลินิก (นัดแรก 09:30 นัดสุดท้าย 16:30 เพราะคลินิกปิด 17:00)
+const TIME_SLOTS = Array.from({ length: 15 }, (_, i) => {
   const totalMin = 9 * 60 + 30 + i * 30
   const h = String(Math.floor(totalMin / 60)).padStart(2, '0')
   const m = String(totalMin % 60).padStart(2, '0')

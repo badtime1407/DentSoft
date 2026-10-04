@@ -38,7 +38,7 @@ const timeOptions = Array.from({ length: 16 }, (_, i) => {
 
 function defaultSchedule(): WeeklySchedule {
   return Array.from({ length: 7 }, (_, i) => ({
-    active: i >= 1 && i <= 5,
+    active: i >= 1 && i <= 6,
     startTime: '09:30',
     endTime: '17:00',
   }))
